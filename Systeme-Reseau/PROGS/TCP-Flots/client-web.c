@@ -117,9 +117,9 @@ int main(int argc, char *argv[])
         abandon("nombre de paramètres incorrect");
     }
 
-    char * hote = argv[1];
-    char * service = argv[2];
-    char * adresse_document = argv[3];
+    char *hote = argv[1];
+    char *service = argv[2];
+    char *adresse_document = argv[3];
   
     int fd = ouvrir_connexion_tcp(hote, service);
     demander_document(fd, adresse_document);
