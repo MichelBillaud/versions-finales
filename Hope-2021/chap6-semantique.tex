@@ -1,0 +1,343 @@
+
+\chapter{Supplément~: Notions de Sémantique}
+
+
+%	6.1 Quelques généralités
+%	6.2 Notion d'Environnement
+%	6.3 Sémantique de l'Affectation
+%	6.4 Sémantique de la Composition Séquentielle
+%	6.5 Sémantique de la Répétition
+%	6.6 Conclusion
+
+
+
+\section{Quelques généralités}
+
+
+La \emph{sémantique} est 
+un terme de linguistique qui désigne 
+\begin{citation}``l'étude du 
+sens (ou contenu) des mots et des énoncés, par opposition à l'étude
+des formes (morphologie) et à celle des rapports entre les termes dans
+la phrase'' (dictionnaire Lexis).
+\end{citation}
+
+A la différence des langues naturelles, les langages de programmation
+sont des objets linguistiques relativement simples~:
+
+\begin{itemize}
+\item Ayant une syntaxe assez rigide (il faut qu'un programme (le
+compilateur) puisse analyser une "phrase" sans trop de peine) ;
+\item Possédant, par rapport aux langues naturelles, une sémantique
+volontairement très pauvre (une instruction d'un programme doit avoir
+un sens clairement défini).
+\end{itemize}
+
+\subsection{Aspects Syntaxiques d'un langage de programmation}
+
+Voici par exemple la description de la grammaire d'un petit langage de
+programmation~:
+
+\begin{verbatimtab}
+<programme>    ::= <entête> <bloc>
+<bloc>         ::= début <liste d'instructions> fin
+<liste d'instructions> 
+               ::=   rien
+                 |   <instruction> ; <liste d'instructions>
+<instruction>  ::= <affectation>
+                 |   <bloc>
+                 |   <boucle tantque>
+                 |   <alternative>
+                      ....
+<affectation>  ::= <variable> := <expression>
+<expression>   ::= <constante>
+                 |   <variable>
+                 |   <expression> + <expression>
+                 |   <expression> * <expression>
+                      ....
+<tantque>      ::= tantque <condition> faire <instruction>
+<alternative>  ::= si <condition> alors <instruction> sinon <instruction>
+<condition>    ::= <expression>  <  <expression>
+                 |  ....
+                 |  <condition> et <condition>
+                 | ...
+\end{verbatimtab}
+En Hope, nous pouvons définir des objets assez ressemblants~:
+
+\begin{verbatimtab}
+type id	 	== list(char);
+
+data expr 	== nombre(num)
+		++ variable(id)
+		++ expr plus expr
+		++ expr moins expr
+		++ .... ;
+
+data condition	== expr egal expr
+		++ expr infegal expr
+		++ ...
+		++ condition et condition
+		++ non(condition)
+		++ ...
+			
+data inst	== id~:= expr
+		++ bloc(list(inst))
+		++ sialorssinon( condition X inst X inst )
+		++ tantque( condition X inst )
+		++ ... 
+
+\end{verbatimtab}
+
+\subsection{Sémantique d'un programme}
+
+En informatique, la sémantique est l'étude de la ``signification'' des
+programmes. Comment définir formellement la signification d'un
+programme ? Prenons un exemple~:
+
+\begin{verbatimtab}
+programme m
+donnée en entrée : x,y (entiers positifs)
+résultat en sortie : r (entier)
+début
+     r := 0;
+     tantque x>0 faire 
+          début 
+               x:=x-1; 
+               r:=r+y; 
+          fin
+fin
+\end{verbatimtab}
+
+La signification de ce programme est  une certaine
+fonction $S(m)$ (S pour Sémantique) qui, à deux entiers $x$ et $y$, fait
+correspondre un résultat $r$ en fin de traitement~:
+
+$$\begin{array}{l}
+               S(m): N \times N \rightarrow N \\
+               S(m)(n,p) = n \times p
+\end{array}$$
+
+Plus généralement, tout programme $p$ a une signification qui est
+représentée par une certaine fonction $S(p) : D \rightarrow R$. Cette fonction
+est souvent une fonction partielle, dans le sens o\`u le calcul de $p$
+sur certaines données peut ne pas conduire à un résultat (le programme
+boucle, il y a eu une division par zéro, ...) Le domaine de
+définition de $S(p)$ est donc naturellement l'ensemble des données pour
+lesquelles le calcul se termine normalement.
+
+
+\paragraph{Remarques~:}
+
+\begin{itemize}
+\item On note fréquemment $(E \rightarrow F)$ l'ensemble des fonctions
+partielles qui vont d'un ensemble E dans un ensemble F. On pourra donc
+écrire indifféremment $$f : E \rightarrow F$$  ou $$f \in  (E
+\rightarrow F)$$
+
+\item Réfléchissons un peu sur le statut de $S$ dans la notation 
+$$S(p) : D \rightarrow R$$
+$ S$ est une fonction qui associe à un programme $p$ sa
+signification, qui est elle-m\^eme une fonction qui fabrique un
+résultat à partir d'une donnée.
+
+Notons $P$ l'ensemble des programmes, on a alors~:
+          $$    S : P \rightarrow (D \rightarrow R)    $$
+
+Le problème qui se pose est de
+savoir comment construire cette fonction $S$, c'est-à-dire calculer la
+\emph{signification d'un programme} sans avoir besoin de le faire tourner sur
+toutes les données possibles. 
+\end{itemize}
+
+\paragraph{Nota:} Nous limitons ici à une classe très simple de programmes
+impératifs: programmes structurés, pas d'entrées-sorties, pas de
+procédures.
+
+
+\section{Notion d'Environnement}
+
+Le petit programme donné en exemple va nous permettre de préciser
+quelques notions importantes. Tout d'abord la notion d'\emph{environnement}~:
+un environnement c'est l'association, à un moment donné de l'exécution
+de ce programme, de certaines valeurs aux variables du programme.
+
+Par exemple si on lance le programme pour $x=2$ et $y=3$, on a au départ 
+l'environnement initial      	$$e_1 = \{x \equiv 2 , y \equiv 3\}$$
+puis après l'initialisation  $$e_2 = \{ x \equiv 2, y \equiv 3 , r \equiv 0\}$$
+et ensuite (dans la boucle)  	$$e_3 = \{ x \equiv 1 , y \equiv 3 , r \equiv 0\}$$
+puis $$e_4 = \{x \equiv 1 , y \equiv , r \equiv 3 \}$$
+etc.
+à la fin on aura   $$	e_{48} : \{ x \rightarrow 0 , y \rightarrow 3 , r \rightarrow 6 \}$$
+
+Deux choses à remarquer~:
+
+\begin{itemize}
+\item Un environnement peut \^etre vu comme une fonction qui part de
+l'ensemble $Id$ des identificateurs du programme (ici $Id = {x,y,r}$) et
+qui va dans l'ensemble des $V$ des valeurs (ici des entiers).  
+
+\item
+Lorsqu'une instruction, (ou une séquence d'instructions) s'exécute,
+elle modifie l'environnement. On peut donc décrire la signification
+d'une instruction $i$ (ou d'une séquence par une fonction $S(i)$ qui
+associe à un environnement (celui o\`u on est juste avant d'exécuter
+$i$) un autre environnement (celui d'après l'exécution de $i$).  
+$$S(i) : E
+\rightarrow E $$
+Par exemple $S( x:=x-1 ) (e_2) = e_3$
+\end{itemize}
+
+En pratique, on représente souvent un environnement par une liste de
+		doublets (identificateur, valeur).  
+
+\begin{verbatim}
+type env == list (chaine X num);
+\end{verbatim}
+
+Il nous faut alors quelques fonctions auxiliaires
+
+\begin{alltt}
+dec chercher : chaine X env  -> num ;
+--- chercher ( id , [] ) <= 0 ;		! normalement, cas d'erreur
+--- chercher ( id,(i,v)::r ) <= if id=i 
+				then v 
+				else chercher(id,r);
+
+dec associer : chaine X num X env  ->  env ;
+		....
+
+\end{alltt}
+
+La sémantique sera représentée par une fonction~:
+
+\begin{verbatim}
+dec S : inst -> (env -> env) ;
+\end{verbatim}
+
+
+\section{Sémantique de l'Affectation}
+
+Considérons l'instruction ``\verb+r:=r+y+''. Nous voulons l'exécuter
+dans un certain environnement $e$. Comment fait on ? Tout simplement on
+additionne les valeurs de $r$ et de $y$ (prises dans l'environnement $e$) et
+on modifie la valeur de la variable $r$ dans $e$; plus exactement on crée
+un environnement $e'$ semblable à $e$, sauf en ce qui concerne la valeur
+de $r$.
+
+Nous avons besoin de définir une nouvelle fonction sémantique $V$
+(comme valeur) qui renvoie la valeur d'une expression (si cette valeur
+existe) dans un certain environnement.
+
+par exemple   $V(r+y)(e) = 3$
+
+On définit donc~:
+\begin{verbatim}
+dec V : expr -> (env -> num) ;
+\end{verbatim}
+
+Et, par induction sur la structure des expressions~:
+
+\begin{verbatim}
+--- V(nombre(n))(e) 	<= n;
+--- V(variable(id))(e) 	<= chercher(id,e);
+--- V( a plus b ) (e)	<= V(a)(e) + V(b)(e)
+\end{verbatim}
+etc ...
+
+
+En général, si l'on a une affectation \verb/var := expr/, la fonction
+sémantique $S(\mbox{\texttt{var := expr}})$ qui lui est associée est
+définie de la manière suivante~:
+
+\begin{verbatim}
+--- S(id := expression)(e)  <= let v == V(expression)(e)
+				in modifier(id,v,e);
+\end{verbatim}
+
+
+\section{Sémantique de la Composition Séquentielle}
+
+Lorsqu'on sait faire une instruction, on peut raisonnablement essayer d'en faire deux à la suite l'une de l'autre ! Interrogeons-nous sur la séquence d'instructions ``\verb/x:=x-1; r:=r+y/''. 
+
+Supposons que nous l'exécutions en partant de l'environnement
+               $e$. Aprés la première instruction on se retrouve dans
+               l'environnement $e' = S(\mbox{\texttt{x:=x-1}})(e)$; puis la seconde nous fait
+               passer dans $e" = S(\mbox{\texttt{r:=r+y}})(e')$. Donc
+
+$$\begin{array}{rl}
+S(\mbox{\tt x:=x-1;r:=r+y})(e) &= S(\mbox{\tt r:=r+y})(S(\mbox{\tt x:=x-1})(e)) \\
+&=               (S(\mbox{\tt r:=r+y}) \circ S(\mbox{\tt x:=x-1}))(e)
+\end{array}$$
+
+Pour résumer, si on a deux instructions $i$  et $i'$ ~:
+$$                         S(i ; i' ) =  S(i' ) \circ S(i)S                         $$
+
+
+Ici la composition séquentielle des instructions n'appara\^{\i}t que
+dans la structure de bloc, et donc pour des listes
+d'instructions. Définissons une fonction auxiliaire $Slist$ (sémantique
+d'une liste d'instructions)~:
+
+\begin{verbatim}
+dec Slist : list(inst) -> (env -> env);
+--- Slist ( [] )(e) 		<= e;
+--- Slist ( p::r ) ( e )	<= Slist(r) (S (p)(e));
+\end{verbatim}
+
+On pourra alors poser~:
+
+\begin{verbatim}
+--- S ( bloc (l) ) (e) 	<= Slist(l);
+\end{verbatim}
+
+
+\section{Sémantique de la Répétition}
+
+Examinons maintenant la boucle tant-que. Une boucle tant-que comporte
+deux éléments~: une condition et un corps. Pour évaluer une condition,
+il nous faut une fonction $B$ (booléenne):
+
+\begin{verbatim}
+dec B : condition -> (env -> truval);
+--- B( a egal b)(e) <= V(a)(e) = V(b)(e);
+ ...
+--- B ( c1 et c2 )(e) <= B(c1)(e) and B(c2)(e);
+....
+\end{verbatim}
+
+Nous savons également définir la signification du corps de la boucle. Comment recoller les morceaux ?
+
+Soit $boucle$ l'instruction tantque <cond> faire <corps>/
+
+pour exécuter $boucle$ dans l'environnement $e$, que fait on ?
+\begin{itemize}
+\item  on évalue la condition (dans $e$)
+\item si la condition est fausse, on s'arr\^ete (l'environnement n'a pas changé)
+\item- si elle est vraie, on exécute le corps (l'environnement est
+modifié) et on recommence au début (avec ce nouvel environnement
+$e'$).
+\end{itemize}
+
+Ce qui s'écrit~: 
+
+\begin{verbatim}
+--- S(tantque(c,i))(e) <= if B(c)(e)
+			then   S(tantque(c,i))( S(i)(e) )
+			else   e;
+\end{verbatim}
+
+
+\begin{exercice}
+\begin{enumerate}
+\item Définir la sémantique de l'alternative~:
+``\verb/si <condition> alors <i1> sinon <i2>/''
+\item Définir la sémantique de la répétition~:
+     ``\verb/répéter <i> jusqu'à <condition>/''
+\item Utiliser cet arsenal mathématique pour démontrer que 
+
+    pour tout $e \in E$  avec $e(x)=a$ et $e(y)=b$  ($a,b \in N$)), on a~: 
+$$ (S(m)(e))(r) = a \times b$$    
+\end{enumerate}
+\end{exercice}
+
+

@@ -1,0 +1,703 @@
+\chapter{Les listes}
+
+%	4.1 Axiomatique des listes
+%	4.2 Les listes en Hope
+%	4.3 Induction naturelle sur les listes
+%	4.4 Quelques méthodes de tri
+%	4.5 Fonctionnelles usuelles
+%	4.6 Exercices
+
+\section{Axiomatique des listes}
+
+Les \emph{listes} ou \emph{séquences} sont des groupements d'objets
+qu'on ne peut accéder que dans un certain ordre préétabli.
+
+Par exemple le troisième enregistrement d'un fichier séquentiel ne
+peut \^etre consulté qu'après avoir lu les deux premiers
+successivement.
+
+Pour construire l'ensemble $ListeNombres$ (les listes de
+nombres) par exemple, il nous suffit de deux choses~:
+\begin{itemize}
+\item la liste vide,
+\item un moyen de rajouter un nombre quelconque à une liste.
+De proche en proche, nous aurons donc la liste vide, puis les listes à un élément, puis à deux éléments, etc. 
+\end{itemize}
+
+Ce qui conduit à l'axiomatique suivante~:
+\begin{enumerate}
+\item $vide$ est une liste de nombres
+\item si $n$ est un nombre et $l$ une liste de nombres, 
+	alors $cons(n , l)$ est aussi une liste de nombres.
+
+Ainsi, un élément de base (la liste vide) et une fonction 
+\begin{verbatim}
+cons : num X ListeNombres - > ListeNombres
+\end{verbatim}
+ nous permettent-ils de construire
+des listes de plus en plus grandes~:
+
+\begin{verbatimtab}
+vide
+cons(732,vide)
+cons(1789, cons(732 , vide))
+cons(1515, cons(1789 , cons(732 , vide))) 
+\end{verbatimtab}
+\item Il n'existe pas de couple $(n,l)$ tel que $cons(n , l) = vide$.
+\item  cons est injective~: si $cons(n,l) = cons(n',l')$, c'est que 
+forcément $n=n'$ et $l=l'$.
+\item Si une propriété $P$ est vraie pour $vide$
+	 et que $P(l) \Rightarrow  P( cons(n,l) )$ pour tout entier $n$ et toute liste $l$  
+	alors $P$ est vraie pour toute liste de nombres.	(Principe d'induction)
+\end{enumerate}
+On retrouve là une axiomatique semblable à celle de PEANO pour les entiers. C'est bien normal, il suffit de faire correspondre à toute liste sa longueur~: 
+\begin{itemize}
+\item la liste vide a pour longueur zéro, 
+\item si $l$ est de longueur $n$,  $cons( a,l )$ est de longueur $n+1 = succ(n)$.
+\end{itemize}
+
+\section{Les listes en Hope}
+
+En Hope, il suffirait d'écrire (si les listes n'étaient pas déjà prédéfinies)~:
+
+\begin{verbatimtab}
+data ListeNombres == vide ++ cons( num X ListeNombres ) ;
+\end{verbatimtab}
+
+Ce qui définirait les listes de nombres (\texttt{num}), mais pas les
+listes de caractères (\texttt{char}) ou de booléens (\texttt{truval}),
+ni les autres.
+
+
+\subsection{Le type générique \texttt{list}}
+
+Le langage HOPE nous donne les moyens de construire des listes
+d'objets d'un type arbitraire, par exemple on peut définir des listes
+de nombres, des listes de caractères, des listes de listes de
+caractères:
+
+\begin{verbatimtab}
+type ListeNombres == list(num);
+type Chaine == list(char);
+type Texte == list(Chaine);
+\end{verbatimtab}
+
+En quelque sorte les listes sont d'un type paramétrable (c'est ce
+qu'on appelle la \emph{généricité}). Les \emph{listes génériques} HOPE sont
+prédéfinies sous la forme~:
+
+\begin{verbatimtab}
+typevar truc ;
+data list (truc) == nil 
+                 ++  truc ::  list (truc) ;
+\end{verbatimtab}
+
+Remarque sur les notations~: par commodité ``\verb+::+'' a été
+prédéclarée comme étant une opération infixe, ce qui explique pourquoi
+on écrit~:
+\begin{verbatimtab}
+data list (truc) == nil 
+                 ++  truc :: list (truc)  ;
+\end{verbatimtab}
+au lieu de~:
+\begin{verbatimtab}
+data list (truc) == nil 
+		 ++  ::( truc X list (truc)  );
+\end{verbatimtab}
+mais la signification est  la m\^eme.
+
+Attention, les listes doivent \^etre homogènes !
+
+\begin{itemize}
+\item \verb+{(3 :: (true :: nil))+ n'est pas une liste convenable.
+\item \verb+(  ('a',true) :: (('b',false) :: nil ))+ est homogène~: 
+ses éléments sont de type \verb+(char X truval)+.
+\end{itemize}
+
+\subsection{Notations simplifiées}
+
+La notation des listes par des assemblages de \verb+::+ et \verb+nil+
+est peu commode, à cause de la quantité de parenthèses. Hope permet
+d'écrire les listes entre crochets, les éléments étant séparés par des
+virgules. Exemples~:
+
+\begin{verbatim}
+[1,2,3,4]  =   (1 :: (2 :: (3 :: (4 :: nil) ) ) ) 
+[ ]        =   nil
+\end{verbatim}
+
+Dans le cas des listes de caractères, on les écrit entre guillemets~:
+
+\begin{verbatim}
+"abcd"  =  [ 'a', 'b', 'c', 'd' ]  =  ('a' :: ('b' :: ('c' :: ('d' :: nil ))))
+\end{verbatim}
+
+Attention, il ne faudra pas confondre~:
+
+\begin{itemize}
+\item \verb+'a'+, 		qui est de type \texttt{ char},
+\item \verb+"a" = ['a']+ 	qui est de type \texttt{list(char)},
+\item \verb+["a"] = [ ['a']]+ 	qui est de type \texttt{list(list(char))}.
+\end{itemize}
+
+\begin{exercice}
+Quels est le type des listes suivantes ? Vérifiez vos réponses sur machine.
+\begin{verbatimtab}
+1-      (1 :: ( 2::nil))				
+2-      ('a' :: ('b' :: nil))
+3-      (1 :: nil)
+4-      ('w' :: nil)
+5-      nil
+6-      (false :: (true :: nil))
+7-      "berlingot"
+8-      [ "pommes","frites"]
+9-      [ [ "pommes","vapeur"],["carottes","sautees"]]
+10-     ( 12  :: (true :: nil) )
+11-     (1 ::2)
+\end{verbatimtab}
+\end{exercice}
+
+\section{Induction naturelle sur les listes}
+\label{fonclistes}
+Les listes sont définies à partir d'un objet de base 
+\texttt{nil} et d'un constructeur  \verb+::+, selon le
+\emph{schéma d'induction}~:
+
+\begin{itemize}
+\item $nil$ est une liste
+\item si $a$ est un objet et $l$ une liste, alors $(a::l)$ est une liste
+\end{itemize}
+
+La majeure partie des fonctions que vous aurez à écrire seront
+définies selon le m\^eme schéma d'induction. Par exemple, la fonction
+qui retourne la longueur d'une liste~:
+\begin{verbatimtab}
+dec long : list(alpha) -> num;   ! le type des éléments est indifférent
+--- long ( nil )  <= 0
+--- long ( a::l ) <= 1+long(l);
+\end{verbatimtab}
+Ici nous avons défini la fonction $long$ en indiquant~:
+
+\begin{itemize}
+\item sa valeur pour l'élément de base $nil$,
+\item comment on calcule, à partir de la valeur pour une liste $l$, la valeur de la fonction pour ($a::l$).
+\end{itemize}
+
+Nous pouvons suivre les étapes du calcul de $long( [ 12, 7, 4 ] )$~:
+$$\begin{array}{rll}
+long( [ 12, 7, 4 ] ) &= 1 + long( [7, 4 ] )&	\mbox{en appliquant la seconde équation} \\
+			&= 1 + 1 + long( [ 4 ] )&\mbox{idem.}\\
+			&= 1 + 1 + 1 + long ( [ ] )&\mbox{idem.}\\
+			&= 1 + 1 + 1 + 0 &\mbox{en appliquant la première.} \\
+			&= 3 &
+\end{array}$$
+
+
+
+\paragraph*{Remarque~:} C'est une fonction \emph{polymorphe}, 
+dans la mesure o\`u elle peut agir sur plusieurs types de données~:
+listes de nombres, de caractères, etc. Le polymorphisme, ajouté à la
+génericité, donnent aux langages fonctionnels une grande puissance
+d'abstraction. Dans les langages impératifs, si l'on veut calculer la
+longueur de listes d'objets de 12 types différents, il faut écrire 12
+sous-programmes.
+
+
+\begin{exercice}
+ Ecrire la fonction ``somme des éléments d'une liste de nombres''~:
+\begin{verbatimtab}
+dec somme : list ( num) -> num ;
+
+--- somme ( [ ] )       <= 				
+
+--- somme ( n :: l )    <=   somme(l)                    ;
+\end{verbatimtab}
+et montrez les étapes du calcul de somme ( [ 2,5,13,3 ] )~:
+\begin{verbatimtab}
+somme ( [ 2,5,13,3 ] ) 	=
+
+
+
+
+
+\end{verbatimtab}
+\end{exercice}
+
+
+
+
+
+
+\begin{exercice}
+ Ecrire une fonction qui indique si un élément est présent ou non dans une liste. Exemples~:
+\begin{verbatimtab}
+element (  'h' , "la cucarracha" ) = true
+element ( 12 , [ 2,3,5,7,11,13] ) = false
+
+dec element :  alpha X list(alpha) ->
+
+--- element ( e , [ ] )         <=
+
+--- element ( e , (a::l) )      <=  
+
+
+\end{verbatimtab}
+\end{exercice}
+\begin{exercice}
+ Ecrire la fonction ``nombre d'éléments qui sont supérieurs à une
+ certaine valeur''.
+Exemple~: \verb+super([1,3,12,4,6,2] , 5) = 2+	puisque 2 éléments sont 
+plus grands que 5.
+\begin{verbatimtab}
+dec super : list ( num ) X num  -> num ; 
+
+--- super ( [ ]     , val )     <=
+
+--- super ( n :: l , val )      <= 		
+
+
+\end{verbatimtab}
+\end{exercice}
+
+\begin{exercice}
+Ecrire la fonction ``liste des éléments qui sont supérieurs à une certaine valeur''.
+
+Exemple~: \verb+suplis([1,3,12,4,6,2] , 5) = [12,6]+
+\begin{verbatimtab}
+dec suplis : list ( num ) X num  -> 
+
+--- suplis ( [ ]     , val ) 	<=
+
+--- suplis ( n :: l , val )	<= 		
+
+\end{verbatimtab}
+\end{exercice}
+
+\begin{exercice}
+
+Ecrire une fonction qui, à tout entier positif $n$, fait correspondre la liste \texttt{[$n$,$n-1$,$n-2$,\ldots,$2$,$1$]}.
+Exemple~: \verb+{yop(5) = [5,4,3,2,1]+
+\begin{verbatimtab}
+dec yop : 
+
+---
+
+---
+
+\end{verbatimtab}
+\end{exercice}
+\begin{exercice}
+Démontrez que pour tout entier $n$ on a 	
+$$long(yop(n)) = n$$  
+\end{exercice}
+
+
+\begin{exercice}
+
+
+
+
+
+Démontrez que $$somme(yop(n))=som(n)$$
+
+\end{exercice}
+
+
+
+
+
+
+
+
+\begin{exercice}
+
+ Ecrire une fonction qui concatène deux listes (c-à-d qui les met bout-à-bout).
+Exemple~: \verb+conc("abra","cadabra") = "abracadabra"+
+
+\begin{verbatimtab}
+dec conc : list(alpha) X list(alpha) -> list(alpha) ;
+
+--- conc ( [  ]   ,  l2 ) 	<=
+
+--- conc ( (a::l) , l2 )	<= 
+
+\end{verbatimtab}
+\end{exercice}
+
+\paragraph*{Remarque~: } Cette fonction de concaténation 
+est très utilisée en pratique. Par souci d'efficacité, elle a été
+intégrée à l'interprèteur sous forme d'une fonction prédéfinie ``\verb+<>+''
+(en notation infixe)~:
+
+\begin{verbatimtab}
+"etoile " <> "des neiges" = "etoile des neiges"
+\end{verbatimtab}
+
+\begin{exercice}
+Démontrez les propriétés suivantes de la concaténation~:
+\begin{itemize}
+\item $nil$ est élément neutre pour l'opération $conc$~: 
+$$\begin{array}{rcl}
+conc(nil,l2) &=& l2\\
+conc(l1,nil) &=& l1
+\end{array}$$
+\item la concaténation est associative~: 
+$$ conc(l1,conc(l2,l3)) = conc( conc(l1,l2) , l3) $$
+\item $long(conc(l1,l2)) = long(l1) + long(l2)$
+\item $ suplis(conc(l1,l2),val) = conc( suplis(l1,val) , suplis(l2,val) )$
+\end{itemize}
+\end{exercice}
+
+\section{Quelques méthodes de tri}
+
+A titre d'exemple de programmes fonctionnels sur les listes, nous allons maintenant voir quelques méthodes pour trier une liste de nombres.
+
+\subsection{Tri par insertion}
+
+\paragraph*{Le principe~:}  Pour trier la liste à 4 
+éléments \verb+[8,5,12,3]+~:
+\begin{itemize}
+\item on enlève un élément (le premier = 8)
+\item on trie
+ (récursivement) le reste de la liste~: on obtient la liste ordonnée 
+\verb+[3,5,12]+
+\item on insère le premier élément (8) à sa place
+\item ce qui donne [3,5,8,12]~: le résultat voulu.
+\end{itemize}
+	
+Mais comment a-t-on trié la liste à 3 éléments \verb+[5,12,3]+~? Et bien, de la m\^eme fa\c{c}on~:
+\begin{itemize}
+\item on a enlevé le premier (5)
+\item on a trié le reste~: ce qui donnait \verb+[3,12]+
+\item on a inséré le premier élément (5) à sa place
+\item et on a obtenu \verb+[3,5,12]+.
+\end{itemize}
+
+Mais comment a-t-on trié \verb+[12,3]+~?
+\begin{itemize}
+\item ...
+\end{itemize}
+
+\paragraph*{Mise en oeuvre~:} Tout d'abord il 
+nous faut une fonction auxiliaire pour insérer un élément à sa place
+dans une liste ordonnée.
+
+\begin{verbatimtab}
+dec insertion : num X list(num) -> num ;
+
+--- insertion (element , [ ] ) 	<=			;
+
+--- insertion (element, premier :: reste)  
+                           <= if element < premier
+                                 then
+
+                                 else
+ 
+\end{verbatimtab}
+
+Ceci fait, nous pouvons écrire la fonction TriInsertion~:
+
+\begin{verbatimtab}
+dec TriInsertion : list(num) - > list(num);
+
+--- TriInsertion ( [ ] )              <=
+
+--- TriInsertion ( premier :: reste ) <= 
+
+\end{verbatimtab}
+
+Cette méthode est facile à programmer, mais elle n'est pas très
+efficace~: en effet dans le pire des cas, par exemple la liste
+\verb+[15,13,8,5,1]+ les insertions se font toujours à la fin. Pour insérer
+15 dans la liste triée \verb+[1,5,8,13]+ il faut 5 étapes de calcul. Pour
+insérer 13 dans \verb+[1,5,8]+ il a fallu 4 étapes, etc.
+
+Donc, toujours dans le pire des cas (une liste ordonnée en sens
+inverse de longueur n), il faudra effectuer $n+(n-1)+(n-2)+\ldots+2+1 =
+\frac{n(n+1)}{2}$ étapes. Le temps du calcul est donc de l'ordre de $n^2$.
+
+\subsection{Tri par partition (version na\"{\i}ve)}
+
+\paragraph*{Le principe~:}  Pour trier la liste à 5 éléments 
+\verb+[8,12,5,3,9]+
+\begin{itemize}
+\item on met de c\^oté le premier élement (8)n
+\item on extrait du reste deux listes : 
+\begin{itemize}
+	\item les éléments plus petits que 8, 
+	\item ceux qui sont plus grands~;
+\end{itemize}
+\item ce qui donne deux listes \verb+[5,3]+  et \verb+[12,9]+
+\item on trie ces deux listes (récursivement) ; on trouve alors
+\verb+[3,5]+ et \verb+[9,12]+
+\item on regroupe~:  \verb+[3,5] <> (  [8] <>  [9,12] )+
+\item ce qui donne la liste triée \verb+[3,5,8,9,12]+.
+\end{itemize}
+
+\paragraph*{Mise en oeuvre~:} Il nous faut d'abord 
+deux fonctions, qui extraient respectivement d'une liste les éléments
+qui sont plus petits (ou plus grands) qu'un certain nombre.
+
+\begin{verbatimtab}
+dec PlusPetits : num X list(num) -> list(num);
+
+--- PlusPetits ( n , [ ] ) <=
+
+--- PlusPetits ( n , p :: r ) <=
+
+
+dec PlusGrands : num X list(num) -> list(num);
+
+--- PlusGrands ( n , [ ] ) <=
+
+--- PlusGrands ( n , p :: r ) <=
+
+\end{verbatimtab}
+
+Et la définition du tri par partition s'en suit facilement~:
+
+\begin{verbatimtab}
+dec TriPartition : list(num) -> list(num) ;
+--- TriPartition ( [ ] )    <= [ ]  ;
+--- TriPartition ( p :: r ) <=  
+              let pp == PlusPetits(p, r)
+           in let pg == PlusGrands(p, r)
+           in TriPartition(pp) <>( [p] <> TriPartition(pg) ) ;
+\end{verbatimtab}
+
+\subsection{Tri par partition (version améliorée)}
+
+Le co\^ut de calcul peut \^etre diminué par une technique relativement
+simple. D'abord o\`u est le problème~? Il vient de ce que le co\^ut
+d'une concaténation \verb+g<>d+ est proportionnel à la longueur de la liste
+\verb+g+. Et donc le co\^ut de l'évaluation de l'expression~:
+\begin{verbatim}
+TriPartition(pp) <> ( [p] <> TriPartition(pg) ) 
+\end{verbatim}
+est la somme du co\^ut
+du tri de \verb+pp+ et \verb+pg+, et d'un facteur proportionnel à la taille de
+\verb+pp+. (C'e\^ut été encore pire en groupant les parenthèses différemment)
+
+Voici la technique~: on définit une nouvelle fonction à partir de 
+\verb+TPConc+, apparemment plus compliquée, en ajoutant un paramètre  supplémentaire  (appelé parfois \emph{paramètre tampon}):
+\begin{verbatimtab}
+dec TPConc : list(num) X list(num) -> list(num);
+--- TPConc( premiere , seconde ) <= TriPartition( premiere ) <> seconde ;
+\end{verbatimtab}
+Remarquez que~: 	
+\begin{verbatim}
+TriPartition( liste ) = TPConc( liste , [ ] ) 
+\end{verbatim}
+
+
+Maintenant nous allons voir que nous pouvons redéfinir \texttt{TPConc} de
+manière à n'utiliser, dans sa définition, ni la concaténation , ni
+\texttt{TriPartition}.
+
+Dédoublons \texttt{TPConc}, selon que son premier argument est la liste vide ou pas~:
+\begin{verbatimtab}
+dec TPConc : list(num) X list(num) -> list(num);
+--- TPConc( [ ]  , seconde ) <= TriPartition( [ ] ) <> seconde ;
+--- TPConc(  p::r , seconde ) <= TriPartition( p::r ) <> seconde ;
+\end{verbatimtab}
+En utilisant la définition de \texttt{TriPartition} ceci équivaut à~:
+\begin{verbatimtab}
+dec TPConc : list(num) X list(num) -> list(num);
+--- TPConc( [ ]  , seconde ) <= [ ] <> seconde ;
+--- TPConc ( p :: r , seconde) )  
+           <=  let pp == PlusPetits (p , r)
+            in let pg == PlusGrands(p, r)
+               in TriPartition(pp) <> ([p] <> TriPartition(pg)) <> seconde) ;
+\end{verbatimtab}
+La concaténation étant associative, on va pouvoir introduire TPConc~:
+\begin{verbatimtab}
+TriPartition(pp) <> ([p] <> TriPartition(pg) )  <> seconde
+        = TriPartition(pp) <> ([p] <> (TriPartition(pg)   <> seconde)) ;
+        = TriPartition(pp) <> ([p] <> TPConc(pg, seconde) );
+        = TriPartition(pp) <> ( p :: TPConc(pg, seconde) ;
+        = TPConc( pp , p::TPConc(pg,seconde) )
+\end{verbatimtab}
+Ce qui nous mène à une version nettement améliorée du tri par partition~:
+\begin{verbatimtab}
+dec TPConc : list(num) X list(num) -> list(num);
+--- TPConc( [ ]  , seconde ) <=  seconde ;
+--- TPConc ( p :: r , seconde) )  
+           <=  let  pp == PlusPetits (p , r)
+             in let pg == PlusGrands(p, r)
+             in TPConc( pp , p::TPConc(pg,seconde) );
+
+dec TriPartition : list(num) -> list(num) ;
+--- TriPartition ( liste ) <= TPConc( liste , [ ] );
+\end{verbatimtab}
+On peut montrer que le c\^out moyen du tri d'une liste de n éléments
+est proportionnel à $n \times log(n)$, ce qui est bien meilleur que pour le
+tri par insertion. Cependant le co\^ut maximal (dans le pire des cas,
+qui est statistiquement très rare) reste de l'ordre de $n^2$.
+
+\subsection{Le tri-fusion}
+
+Pour terminer, une méthode à la fois élégante et efficace, puisque ses co\^uts moyens et maximaux sont proportionnels à $n \times log(n)$.
+
+\paragraph*{Principe~:} Pour trier une liste de 7 éléments 
+\verb+[3,5,2,9,7,1,0]+~:
+\begin{itemize}
+\item on partage cette liste en deux sous-listes, en prenant un
+	 élément sur deux.  On obtient alors deux listes \verb+[3,2,7,0]+ et
+	\verb+[5,9,1]+ 
+\item on les trie, récursivement. On obtient deux listes
+	ordonnées \verb+[0,2,3,7]+ et \verb+[1,5,9]+
+\item on fusionne ces deux listes,
+	 ce qui donne le résultat \verb+[0,1,2,3,5,7,9]+.
+\end{itemize}
+
+L'opération de \emph{fusion} ou \emph{interclassement} (algorithme
+classique en informatique de gestion) consiste à construire une liste
+ordonnée à partir de deux listes également ordonnées~:
+\begin{verbatimtab}
+dec fusion : list(num) X list(num) -> list(num) ;
+
+--- fusion ( [ ] , l2) <=
+
+--- fusion ( l1, [ ] ) <=
+
+--- fusion ( p1::r1 , p2::r2 ) <=  if p1<p2     then
+
+                                                else
+\end{verbatimtab}
+
+Il faut savoir extraire un élément sur deux~:
+\begin{verbatimtab}
+dec RangPair, RangImpair : list(num) -> list(num);
+
+--- RangPair ( [ ] ) 	<= [ ]
+--- RangPair ( p::r ) 	<= RangImpair(r);
+
+--- RangImpair ( [ ] ) 	<= [ ] ;
+--- RangImpair ( p::r ) <= p :: RangPair(r) ;	!  récursivité croisée
+\end{verbatimtab}
+et le tri-fusion s'écrit facilement~:
+\begin{verbatimtab}
+dec TriFusion : list(num) X list(num) -> list(num) ;
+--- TriFusion ( [ ] ) <= [ ] ;
+--- TriFusion ( [ seul ] ) <= [ seul ] ;
+--- TriFusion ( liste ) <= let (l1,l2) == (RangImpair(liste),RangPair(liste))
+				in Fusion( TriFusion(l1) , TriFusion(l2) );
+\end{verbatimtab}
+Question~: Pourquoi devons nous traiter séparément le cas des listes à
+un seul élément ?
+
+
+
+\section{Fonctionnelles usuelles sur les listes}
+
+Les fonctions simples vues en \ref{fonclistes} se généralisent
+facilement en fonctionnelles ``d'intér\^et général''. Par exemple la
+fonction ``nombre des éléments supérieurs à une certaine valeur''
+\begin{verbatimtab}
+dec super : list(num) X num -> num ;
+--- super ( [ ] , val ) <= 0 ;
+--- super ( n::l , val) <= if n>val 	then 1+super(l) 
+					else super(l);
+\end{verbatimtab}
+est un cas particulier de la fonction ``nombre des éléments qui
+possèdent une certaine propriété P''. Il suffit de passer en paramètre
+le prédicat (fonction à résultat booléen) qui indique si un certain $x$
+possède ou non la propriété recherchée. Par exemple on passera le
+prédicat ``\verb+lambda (x) => x>5+'' 
+pour compter les éléments supérieurs à 5. Voici la fonctionnelle~:
+\begin{verbatimtab}
+dec combien : list(num) X (num -> truval) -> num ;
+--- combien ( [ ] , P ) <= 0 ;
+--- combien ( n::l , P ) <= if P(n) 	
+                            then 1+combien(l) 
+		  	     else combien(l);
+\end{verbatimtab}
+De plus nous n'avons aucune raison de nous limiter aux listes de
+nombres~: cette fonctionnelle marche pour des listes de tous types, à
+condition bien s\^ur que le domaine du prédicat soit du type
+convenable. Nous obtenons la fonctionnelle~:
+\begin{verbatimtab}
+dec combien : list(alpha) X (alpha -> truval) -> num ;
+--- combien ( [ ] , P ) <= 0 ;
+--- combien ( n::l , P ) <= if P(n) 	
+                            then 1+combien(l,P) 
+			    else combien(l,P);
+\end{verbatimtab}
+
+\begin{exercice}
+
+\begin{enumerate}
+\item Généraliser \texttt{suplis} (liste des
+éléments supérieurs à une valeur) pour obtenir une fonctionnelle
+\texttt{selection} qui extrait d'une liste les éléments qui
+  possèdent une certaine propriété (par exemple ceux qui sont pairs,
+  ou ceux qui sont premiers, ou qui sont entre \texttt{"BERTHE"} et
+  \texttt{"CHARLOTTE"}, etc.)
+\item
+ Montrez comment écrire \texttt{suplis} à partir de \texttt{sélection}.
+\end{enumerate}
+\end{exercice}
+
+
+\section{Exercices}
+
+\subsection{Sur les fonctionnelles}
+\begin{exercice}
+ Ecrire une fonction de tri à tout faire (il faudra passer en paramètre un prédicat qui représente la relation d'ordre choisie). Par exemple~:
+\begin{verbatim}
+TriGeneral ( [ 1,5,4,3,2 ]  , lambda(a,b) => a < b ) = [1,2,3,4,5]
+TriGeneral ( [ 1,5,4,3,2 ]  , lambda(a,b) => a > b ) = [5,4,3,2,1]
+\end{verbatim}
+\end{exercice}
+
+\begin{exercice}
+\begin{enumerate}
+\item Ecrire une fonction \texttt{liscar} qui prend comme paramètre une
+liste de nombres, et renvoie la liste des carrés de ces
+nombres. Exemple~:
+\begin{verbatim}
+liscar [2, 8, 3] = [4, 64, 9]
+\end{verbatim}
+\item
+Genéraliser cette fonction pour obtenir en une fonctionnelle \texttt{map}~:
+liste des images par une certaine fonction.
+\item Exprimer \texttt{liscar} à partir de \texttt{map}.
+\end{enumerate}
+\end{exercice}
+
+\begin{exercice}
+\begin{itemize}
+\item 
+   Trouvez une fonctionnelle \texttt{reduction} qui généralise les
+   deux fonctions "somme des éléments d'une liste", et "produit des
+   éléments d'une liste".
+\item
+ Montrez que cette fonctionnelle \texttt{reduction} permet
+ d'exprimer \texttt{map} aussi bien que \texttt{combien}.
+\end{itemize}
+\end{exercice}
+
+
+\subsection{Sur les transformations de programmes}
+
+(revoir méthode du paramètre supplémentaire)~:
+
+\begin{exercice}
+Ecrire une fonction \texttt{iota} qui à tout entier $n$ fait
+correspondre la liste des $n$ premiers entiers positifs dans le sens
+croissant.  Exemple \verb/iota(5) = [1,2,3,4,5]/.
+
+Soit \texttt{iotaconc} la fonction définie par 
+\verb+iotaconc( n , liste ) = iota(n) <> liste +
+\begin{itemize}
+\item donnez une définition récursive directe de \texttt{iotaconc}.
+\item en déduire une définition plus efficace de \texttt{iota}.
+\end{itemize}
+\end{exercice}
+	
+\begin{exercice}
+Par la m\^eme méthode, donnez une définition efficace (conduisant à un
+	co\^ut linéaire) de l'inverse d'une liste. Exemple~:
+	\verb+inverse("pomme" ) = "emmop"+
+\end{exercice}
+

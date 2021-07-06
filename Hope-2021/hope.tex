@@ -1,0 +1,72 @@
+% rubber: module xelatex
+
+\documentclass[twoside]{book}
+
+\usepackage[a4paper,top=2cm, bottom=2cm, left=2.5cm,right=2.5cm]{geometry}
+
+% compiler avec xelatex 
+% ou : rubber --module xelatex fichier.tex 
+
+\usepackage{fontspec}
+\usepackage[french]{babel}
+
+\usepackage{lmodern}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{moreverb}
+\usepackage{alltt}
+
+\columnsep 1.0cm
+
+\newcommand{\barre}{\hspace{0pt} \hrulefill \hspace{0pt}}
+\newcommand{\tape}[1]{\underline{#1}}
+
+\newtheorem{exemple}{Exemple}[chapter]
+\newtheorem{exercice}{Exercice}[chapter]
+
+\renewenvironment{citation}{\begin{quotation}\em}{\end{quotation}}
+
+\def\siecle#1{\textsc #1\textsuperscript{e}}
+
+\title {Programmation Fonctionnelle en HOPE}
+\author{Michel Billaud \\
+\texttt{michel.billaud@u-bordeaux.fr} \\
+Département Informatique \\
+IUT Université de Bordeaux I}
+\date{Révision \today}
+
+\sloppy
+
+\begin{document}
+\pagenumbering{roman}
+\maketitle
+
+\tableofcontents
+% \makeindex
+
+
+
+
+\include{preface}
+\pagenumbering{arabic}
+
+
+\bibliographystyle{plain}
+
+
+\include{chap1-introduction}
+\include{chap2-programmer-avec-fonctions}
+\include{chap3-induction-recursion}
+\include{chap4-listes}
+\include{chap5-arbres}
+\include{chap6-semantique}
+\include{conclusion}
+
+\clearpage
+
+% \bibliography{hope}
+\clearpage
+
+\include{index}
+
+\end{document}

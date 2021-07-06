@@ -1,0 +1,436 @@
+
+\chapter{Structures arborescentes}
+
+
+
+%	5.1 Les arbres binaires
+%	5.2 Fonctions sur les arbres
+%	5.3 Arbres binaires de recherche
+%	5.4 Expressions arithmétiques
+%	5.5 Calcul symbolique
+
+
+
+
+
+\section{Les arbres binaires}
+
+Nul besoin n'est de présenter ici la notion d'arbre~: répertoires et
+fichiers, structure des programmes, tout ou presque est arborescence
+en Informatique. Dans cette partie nous nous restreindrons à la
+catégorie la plus simple~: les arbres binaires. Nous montrerons un peu
+plus loin une utilisation (très classique) des arbres binaires pour le
+tri.
+
+Un arbre binaire est, en quelques mots, un arbre dont les noeuds
+"portent" deux sous-arbres, à gauche et à droite.  Voici quelques
+exemples (rappelons que, par convention, la racine de l'arbre est en
+haut)~:
+
+\begin{center}
+\input{Pictures/pic_arbres}
+\end{center}
+
+Les arbres binaires peuvent \^etre vides~: c'est le cas par exemple du
+sous-arbre droit du second exemple, et aussi du quatrième exemple
+(invisible). Le troisièmes est réduit à un simple racine.
+On appelle \emph{feuilles de l'arbre}  les sommets dont les deux
+sous-arbres sont vides.
+
+\begin{exercice}
+\begin{itemize}
+\item
+ Dessinez tous les arbres à  0, 1, 2, 3 et 4 sommets.
+\item  En général, combien y a-t'il d'arbres à $n$ sommets ?
+\end{itemize}
+\end{exercice}
+
+
+\subsection{Définition inductive des arbres binaires}
+
+Le plus souvent, on associe une information (\emph{étiquette}) à
+chaque noeud de l'arbre~.
+
+\begin{center}
+\input{Pictures/pic_arbin}
+\end{center}
+
+
+Voici une définition inductive de l'ensemble $ArbreBin(E)$ arbres
+binaires prenant leurs étiquettes dans un certain ensemble
+(tout-à-fait arbitraire) $E$. 
+
+Pour commencer, il nous faut un objet représentant l'arbre
+vide, et une fonction $noeud~: ArbreBin(E) \times E \times ArbreBin(E) \rightarrow
+ArbreBin(E)$ pour fabriquer un arbre à partir de deux arbres plus
+petits et d'une étiquette.
+
+On pose les axiomes suivants~:
+\begin{enumerate}
+\item L'arbre vide appartient à $ArbreBin(E)$
+\item si $A1$ et $A2$ appartiennent à $ArbreBin(E)$ et $e$ appartient à $E$,
+		alors $noeud(A1,e,A2)$ appartient à $ArbreBin(E)$
+\item $vide$ n'est l'image par $noeud$ d'aucun triplet $(A1,e,A2)$
+\item  $noeud$ est injective
+\item soit $P$ une propriété sur $ArbreBin(E)$. Si
+\begin{itemize}
+\item $P(vide)$ est vraie, 
+\item pour tous $A1,A2$ dans $ArbreBin(E)$ possédant la propriété P, 
+et quelque soit $e$ dans $E$, on a  $P( noeud(A1,e,A2) )$;
+\end{itemize}
+		alors $P$ est vraie pour tout $a$ dans $ArbreBin(E)$
+\end{enumerate}
+
+\subsection{Définition en Hope}
+
+En Hope, c'est une définition d'un type générique~:
+
+\begin{verbatimtab}
+data ArbreBin(alpha) == vide 
+                     ++ noeud(ArbreBin(alpha) X alpha X ArbreBin(alpha));
+\end{verbatimtab}
+
+L'exemple précédent, qui est de type \texttt{ArbreBin(char)}, est représenté par l'expression~:
+\begin{verbatimtab}
+dec ex1 : ArbreBin(char);
+--- ex1 <= noeud( noeud( vide,'b',vide ) , 
+		'a' , 
+		noeud( noeud(vide,'k',vide) , 
+			'c', 
+			noeud(vide,'v',vide) ) ):
+\end{verbatimtab}
+
+\section{Fonctions sur les arbres}
+
+La plupart des fonctions sur les arbres sont construites à partir du
+schéma d'induction naturelle. Par exemple la fonction ``Somme des
+étiquettes d'un arbre de nombres''~:
+\begin{verbatimtab}
+dec somarbre : ArbreBin(num) -> num ;
+	
+--- somarbre ( vide ) 	<= 
+
+--- somarbre ( noeud(a1,e,a2) )  <= 	somarbre(a1)		somarbre(a2)
+\end{verbatimtab}
+
+\begin{exercice}
+Ecrire une fonction ``liste des étiquettes des feuilles d'un arbre''.
+\begin{verbatimtab}
+dec ListeFeuilles : ArbreBin(alpha) -> list(alpha) ;
+
+--- ListeFeuilles ( vide )  <=
+
+--- ListeFeuilles ( noeud (a1,e,a2) ) <= 
+
+\end{verbatimtab}
+\end{exercice}
+
+\begin{exercice}
+
+\begin{itemize}
+\item Ecrire une fonction $ListePrefixe$ qui renvoie la liste des
+étiquettes d'un arbre, dans l'ordre préfixe, c'est-à-dire d'abord
+l'étiquette de la racine, puis celles des sous-arbres gauche et
+droit. Par exemple~: \verb+ListePrefixe(ex1) = "abckw"+
+\item
+M\^eme question pour l'ordre infixe (d'abord le sous-arbre gauche,
+puis la racine et enfin le sous-arbre droit). Par exemple~:
+\verb+ListeInfixe(ex1) <= "bakcw"+
+\item Montrez que, pour chacune de ces fonctions, le temps de calcul (évalué
+en nombre d'étapes) est (dans le pire des cas) proportionnel au carré
+du nombre de sommets de l'argument.
+\item
+Transformez ces définitions (méthode du ``param\^etre tampon'') pour obtenir des fonctions dont le temps de calcul soit linéaire.
+\end{itemize}
+\end{exercice}
+
+\section{Arbres binaires de recherche}
+
+Nous avons vu au chapitre précédent une version du tri par insertion
+qui n'était guère efficace, parce que nous cherchions à insérer un
+élément dans une liste. Au lieu de construire une liste, nous allons
+fabriquer un arbre de recherche qui contiendra tous les objets à
+trier.
+
+\paragraph*{Définition~:} un \emph{arbre de recherche} 
+est un arbre binaire dans lequel toutes les étiquettes du sous-arbre
+gauche (resp. droit) sont inférieures (resp. supérieures ou égales) à
+l'étiquette de la racine, et de m\^eme pour tous les sous-arbres de
+cet arbre.
+
+Exemple : 
+\begin{center}
+\input{Pictures/pic_abr}
+\end{center}
+
+\begin{exercice}
+Ecrire une fonction qui recherche la plus petite étiquette dans un
+arbre binaire de recherche (non vide bien s\^ur).
+\begin{verbatimtab}
+dec PlusPetite : ArbreBin(num) -> num;
+
+--- PlusPetite
+\end{verbatimtab}
+
+M\^eme question pour la plus grande étiquette.
+\end{exercice}
+
+
+\begin{exercice}
+ Ecrire une fonction qui indique si un arbre binaire quelconque est oui ou non un arbre de recherche.
+\begin{verbatimtab}
+dec estOrdonne : ArbreBin(num) -> truval ;
+
+--- estOrdonne( vide ) <= true ;
+
+--- estOrdonne( noeud(a1,e,a2) ) <= 
+\end{verbatimtab}
+
+\end{exercice}
+
+\begin{exercice}
+Montrez que si l'arbre binaire A est un arbre de recherche, alors la
+liste $ListeInfixe(A)$ est ordonnée.
+\end{exercice}
+
+\subsection{Insertion dans un arbre binaire de recherche}
+
+Pour insérer 9 dans l'arbre de l'exemple, il faudra d'abord aller à
+gauche car $9<10$, puis à droite puisque $5<9$, puis encore à droite car
+$8<9$. La place étant libre, on peut alors y mettre 9.
+
+\begin{verbatimtab}
+dec Insertion : num  X ArbreBin(num) -> ArbreBin(num);
+
+--- Insertion ( n , vide ) <= 
+
+--- Insertion ( n , noeud(a1,e,a2) ) <= if n<e 
+
+			then noeud( Insertion(n,a1) , e , a2 ) 
+
+			else 
+
+\end{verbatimtab}
+
+\begin{exercice}
+
+Montrez que si l'arbre A est ordonné, alors Insertion(n,A) est
+également ordonné.
+\end{exercice}
+
+Rappelons le principe du tri par insertion. On dispose d'une liste de
+nombres à trier. On prend les éléments de cette liste, et on les
+insère un-à-un dans une structure de données qui était vide au
+départ. Dans la première version la structure était une liste, ici la
+structure de données c'est un arbre binaire de recherche. Voici
+comment on fabrique un arbre à partir d'une liste~:
+\begin{verbatimtab}
+dec Arbre : list(num) -> ArbreBin(num) ;
+--- Arbre ( [ ] ) <= vide ;
+--- Arbre ( n::r ) <= Insertion ( n , Arbre( r ) );
+\end{verbatimtab}
+Et nous obtenons un nouveau tri par insertion~:
+\begin{verbatimtab}
+dec TriIns : list( num ) -> list( num ) ;
+--- TriIns (liste) <= ListeInfixe (FabriquerArbre ( liste ) ) ;
+
+\end{verbatimtab}
+
+\subsection{ Expressions arithmétiques}
+
+Les expressions arithmétiques, comme par exemple $3.a.x + b + 1$ sont
+également des structures arborescentes familières. Les objets de base
+en sont les nombres~: ici $1$ et $3$, les variables~: $a, x, b$, et ils sont
+combinés par les opérateurs arithmétiques~: addition, multiplication,
+etc.
+
+En Hope on peut très facilement créer un ensemble \texttt{expr} semblable aux
+expressions arithmétiques (nous nous limiterons aux 4 opérations de
+base) en écrivant, dans un premier temps~:
+\begin{verbatimtab}
+type chaine == list(char);	! par commodité
+
+data expr == 			! une expression peut être ...
+   	nombre(num)		! 	- un nombre ayant une certaine valeur
+++	var(chaine)		! 	- une variable avec un nom
+++	plus( expr X expr )	! 	- la somme ...
+++ 	moins ( expr X expr )	!	- la différence ...
+++ 	mult ( expr X expr )	! 	- le produit ...
+++ 	divis ( expr X expr ) ;	!	- ou le quotient de deux expressions
+\end{verbatimtab}
+
+L'expression ``$a.x + b$" sera représentée par~:  
+
+\begin{verbatim}
+plus( mult ( var("a") , var("x") ) , var("b") );
+\end{verbatim}
+
+\paragraph*{Remarque}
+
+En Hope on ne peut pas réutiliser les symboles \verb/+/, \verb/-/,
+etc. comme constructeurs pour de nouveaux types. En effet cette
+\emph{surcharge} (\emph{overloading}) conduirait à des ambiguités sur les types
+des objets~: la fonction ``\verb/+/'' serait à la fois de type 
+``\verb/num X num -> num/'' et ``\verb+expr X expr -> expr+''.
+
+
+Il est préférable de signaler préalablement que \verb+plus+,
+\verb+moins+, etc. sont des opérateurs infixes avec des priorités
+semblables à celles de ``\verb/+/'', ``\verb/-/'', etc. Ceci conduit à~:
+\begin{verbatimtab}
+infix plus, moins : 5 ;
+infix mult, divis : 6 ;
+type chaine == list(char);
+
+data expr == nombre(num)
+	  ++ var(chaine)
+ 	  ++ expr plus expr
+	  ++ expr moins expr
+ 	  ++ expr mult expr
+  	  ++ expr divis expr ;
+\end{verbatimtab}
+Déclarons maintenant quelques exemples, sous forme d'une fonction qui
+renvoie une expression correspondant au numéro d'exemple que l'on
+veut~:
+\begin{verbatimtab}
+dec exemple : num -> expr;
+--- exemple(1) <= var "a" mult var "x"  plus var "b" ;
+--- exemple(2) <= nombre 1 divis var "x";
+--- exemple(3) <= nombre 1 divis exemple(1);
+\end{verbatimtab}
+
+\begin{exercice}
+
+\begin{itemize}
+\item  A quelles expressions correspondent ces trois exemples ?
+\begin{verbatimtab}
+exemple 1 -> 
+
+exemple 2 ->
+
+exemple 3 ->
+\end{verbatimtab}
+\item Ajouter un exemple 4 représentant $a.x^2 - b.x + c$.
+\begin{verbatimtab}
+exemple(4) <= 
+\end{verbatimtab}
+\end{itemize}
+\end{exercice}
+\section{Calcul symbolique}
+
+Dans cette partie nous allons développer un petit exemple typique de ce qu'on appelle programmation symbolique  ou encore manipulation d'expressions symboliques.
+
+Il s'agit d'écrire un programme capable d'effectuer, comme tout
+honn\^ete bachelier, la différentiation (ou dérivation) d'une
+expression par rapport à une variable. Pour un début, nous
+nous contenterons des expressions simples, limitées aux 4 opérations,
+que nous avons vues dans la partie précédente.
+
+Vue de près, la différentiation est une opération \texttt{diff} qui, à partir
+d'une expression $E$ et d'une variable $V$, permet de trouver une autre
+expression $E'$ qui représente la dérivée de $E$ par rapport à $V$. Par
+commodité, nous déclarons \texttt{diff} comme opération infixe, ce qui donne~:
+\begin{verbatimtab}
+infix diff : 4 ;
+dec diff : expr X expr -> expr ;
+\end{verbatimtab}
+Il ne nous reste plus qu'à étudier les différents cas, qui
+correspondent aux différentes manières de manières de fabriquer les
+expressions~:
+\begin{verbatimtab}
+--- nombre n     	diff  v       <= nombre 0 ;
+
+--- var x        	diff  v       <= if var x = v
+					then 
+
+					else
+
+--- (f plus g)	diff v	<= let (ff,gg) == (f diff v, g diff v)
+
+				in ff plus gg ;
+
+--- (f moins g)	diff v	<= let (ff,gg) == (f diff v, g diff v)
+                                  
+				in
+
+--- (f mult g)	diff v	<= let (ff,gg) == (f diff v, g diff v)
+
+				in
+
+--- (f divis g)	diff v	<= let (ff,gg) == (f diff v, g diff v)
+                                  
+				in 
+\end{verbatimtab}
+
+Et voilà tout. Ce programme de quelques lignes sait calculer la
+dérivée d'une expression par rapport à une variable ! Quelques
+exemples pour s'en convaincre~:
+\begin{verbatimtab}
+>: var "x" diff var "x";
+>:  nombre ( 1) : expr
+
+>: exemple 1 diff var "x";
+>: ((( nombre ( 0) mult  var ("x")) plus ( nombre ( 1) mult  var ("a"))) 
+plus  nombre ( 0)) : expr
+\end{verbatimtab}
+C'est-à-dire : $0.x + 1.a + 0$ 
+\begin{verbatimtab}
+>: exemple 2 diff var "x";
+>: ((( nombre ( 0) mult  var ("x")) moins ( nombre ( 1) mult  nombre ( 1))) 
+divis (var ("x") mult  var("x"))) : expr
+\end{verbatimtab}
+Autrement dit ~: $\frac{0.x - 1.1}{x.x}$
+\begin{verbatimtab}
+>: exemple 3 diff var "x" ;
+>: ((( nombre ( 0) mult (( var ("a") mult  var ("x")) plus  var ("b"))) 
+moins ((((nombre ( 0) mult  var("x")) plus ( nombre ( 1) mult  var ("a"))) 
+plus  nombre ( 0)) mult nombre ( 1))) divis ((( var ("a") mult  var ("x")) 
+plus  var ("b")) mult (( var("a") mult var ("x")) plus  var ("b")))) : expr
+\end{verbatimtab}
+En clair ?
+
+
+Bien que surprenants, ces résultats sont tout-à-fait corrects~: il
+suffit de faire quelques simplifications pour retrouver les
+expressions attendues. Mais pourquoi la fonction n'a-t-elle pas fait
+ces simplifications ? Tout simplement parce que nous ne l'avons pas
+demandé !
+
+La manière la plus simple de procéder est de faire les simplifications
+au moment o\`u l'on construit les expressions. Par exemple nous
+remplacerons l'équation ``dérivée d'une somme d'expressions'' par~:
+\begin{verbatimtab}
+--- f plus g	diff  v	<= let (ff,gg) == (f diff v, g diff v)
+				in ff Plus gg ;
+\end{verbatimtab}
+o\`u \verb+Plus+ est une nouvelle fonction déclarée (préalablement) ainsi~:
+\begin{verbatimtab}
+infix Plus : 5 ;
+dec Plus : expr X expr -> expr ;
+\end{verbatimtab}
+La fonction \verb+Plus+ construit une somme d'expressions, comme plus,
+mais elle ``sait'' effectuer un certain nombre de simplifications~:
+\begin{verbatimtab}
+--- nombre n	Plus 	nombre p 	<= nombre (n+p);
+--- nombre 0	Plus 	g      		<= g;
+--- f 		Plus 	nombre 0 	<= f;
+--- f          	Plus 	g      		<= f plus g;
+
+\end{verbatimtab}
+
+\begin{exercice}
+
+\begin{itemize}
+\item Modifier \texttt{diff} en introduisant de nouvelles fonctions
+\texttt{Moins}, \texttt{Mult} et \texttt{Divis}. (Attention pour la
+division, Hope ne connait que les nombres entiers.)
+\item Testez sur machine~:
+\begin{verbatimtab}
+exemple 1 diff var "x" = 
+
+exemple 2 diff var "x" = 
+
+exemple 3 diff var "x" = 
+\end{verbatimtab}
+\end{itemize}
+\end{exercice}

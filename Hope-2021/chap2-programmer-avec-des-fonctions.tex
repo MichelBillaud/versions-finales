@@ -1,0 +1,576 @@
+
+\chapter{Programmer avec des Fonctions}
+
+%	2.1 Quelques rappels mathématiques 
+%	2.2 Les fonctions vues comme des boîtes noires
+%	2.3 Transparence référentielle
+%	2.4 Une session avec HOPE 
+%	2.5 Un programme fonctionnel
+%
+%	Annexe : Quelques éléments du langage HOPE
+
+
+
+
+
+\section{Quelques rappels mathématiques}
+
+Soient $ A$ et $B$ deux ensembles quelconques. Le {\em produit cartésien}
+\index{produit cartésien (définition}
+$ A \times B$ est l'ensemble de tous les couples $(a,b)$ dont le premier 
+élément appartient \`a $A$ et le second \`a $B$. 
+Une {\em relation} \index{relation (définition)} 
+entre $A$ et $B$ est un sous-ensemble de $A \times B$.
+
+Une fonction  $f$ de $A$ dans $B$ (notée  $f : A \rightarrow B$ 
+est une relation telle que, pour tout élément a de $A$, il existe 
+{\em au plus} un élément $b$ de $B$ qui soit en correspondance 
+avec lui. Si un tel élément existe, on dit que $f$ est {\em définie}
+ pour $a$ et on appelle $b$ l'{\em image} de $a$ par $f$, ce que l'on note
+$ b = f(a)$. 
+
+Les ensembles $A$ et $B$ sont alors appelés respectivement {\em ensemble
+ de départ} et {\em ensemble d'arrivée} de la fonction $f$.
+
+Le {\em domaine de définition} de $f$ est la partie de $A$ pour laquelle $f$
+ est définie, c'est-à-dire les éléments qui possèdent une image.
+
+Une fonction est {\em totale} si elle est définie sur 
+tout l'ensemble de départ 
+(on dit également que c'est une {\em application} de $A$ dans $B$, et on
+ le note $f : A \mapsto B$). Dans le cas contraire, 
+c'est une fonction {\em partielle}.
+
+Prenons un exemple simple, la fonction \textsl{signe} qui à tout
+nombre entier fait correspondre $positif, négatif$ ou $nul$ selon le
+signe du nombre~: nous appellerons naturellement cette fonction
+signe. L'ensemble de départ est $Z$, l'ensemble d'arrivée est
+$\{positif, négatif, nul\}$.
+
+On peut caractériser cette fonction en écrivant la liste des couples
+qui constituent la relation~:
+$$signe = \{ \ldots (-2,négatif), (-1,négatif), (0,nul), (1,positif),
+(2,positif), \ldots \} $$
+ou bien par une suite d'équations~:
+\begin{eqnarray*}
+& \vdots & \\
+signe ( - 2 ) &=& négatif \\
+signe ( - 1 ) &=& négatif \\
+signe ( 0 ) &=& nul \\
+signe ( 1 ) &=& positif \\
+signe ( 2 ) &=& positif \\
+ & \vdots & 
+\end {eqnarray*}
+ou encore par un diagramme qui montre la correspondance entre les
+éléments des ensembles de départ et d'arrivée.
+
+\begin{center}
+\input{Pictures/pic_patate}
+\end{center}
+
+Dans tous les cas, il y a un problème de notation évident, dans la
+mesure où l'ensemble de départ est infini.
+
+On peut aussi décrire \textsl{signe} par une simple règle~:
+\[ 	signe ( x ) = \left\{
+	\begin{array}{ll}
+		négatif & \mbox{si $x<0$} \\
+		nul	  & \mbox{si $x=0$} \\
+		positif	  & \mbox{si $x>0$}
+	\end{array}
+	\right.  \]
+
+    
+$x$ est appelé le {\em paramètre formel} de $signe$, et 
+représente n'importe quel élément de l'ensemble de 
+départ de la fonction. Le \emph{corps de la règle} (la partie droite) 
+indique l'élément de l'ensemble d'arrivée  
+qui est en correspondance avec cet $x.$
+
+Lorsqu'on applique la fonction $signe$ à un paramètre {\em effectif}
+  (par exemple le nombre $6$), le corps de la règle est évalué et 
+renvoie la valeur $positif$.
+
+{\bf Remarque}~: Pendant longtemps le concept de fonction ne
+recouvrait que les fonctions qui possèdent une expression,
+c'est-à-dire dont on sait déterminer la valeur en tout point. Au
+\siecle{XIX} siècle cette notion s'est généralisée aux correspondances
+arbitraires, que l'on s'est mis alors à classer selon leurs propriétés
+(en s'intéressant surtout aux fonctions numériques)~: fonctions
+continues, discontinues, différentiables, intégrables, etc., en
+faisant apparaître des cas pathologiques défiant l'intuition, comme la
+fonction de Weierstrass, qui est continue sur un intervalle mais n'est
+dérivable en aucun de ses points.
+
+
+\section{Les fonctions vues comme des boîtes noires}
+
+La plupart des sciences de l'ingénieur (électronique, automatique, mécanique, etc.) utilisent la notion de {\em  boîte noire}
+\footnote{qui n'a pas grand chose à voir avec l'aéronautique, o\`u les fameuse boîtes noires sont de couleur orange}. 
+
+Une boîte noire est un dispositif dont on connaît le comportement (c'est-à-dire les sorties qu'il fournira en réponse à certaines entrées) sans toutefois en connaître (ou en préférant oublier) les détails internes. 
+
+On peut voir la fonction $signe$ comme une boîte noire avec 
+des entrées (paramètres effectifs) et une sortie (la valeur renvoyée).
+
+\begin{center}
+\input{Pictures/pic_signe}
+\end{center}
+
+La {\em composition de fonctions} correspond à un agencement de plusieurs boîtes. Voici une fonction qui calcule le maximum de deux nombres~:
+
+
+\[	max2 ( a, b ) = \left\{
+	\begin{array}{ll}
+		a	& \mbox{si $a > b$} \\
+		b	& \mbox{sinon} 
+	\end{array} \right. \]
+
+Pour fabriquer une fonction qui calcule le maximum de trois nombres, on peut écrire~:
+
+\[	max3 ( a, b, c ) = \left\{
+	\begin{array}{ll}
+ 	a	& \mbox{si $a \geq b$ et $a \geq c$} \\
+	b	& \mbox{si $b \geq a$ et $b \geq c$} \\
+	c	& \mbox{sinon} 
+	\end{array} \right. \]
+
+mais c'est assez maladroit, car il est clairement préférable d'écrire~:
+
+\[ max3 ( a, b, c ) =	max2 ( a, max2 ( b, c ) ) \]
+
+Nous obtenons un assemblage de boites que nous pouvons voir, avec un
+petit effort d'abstraction, comme une nouvelle boîte noire~:
+
+\begin{center}
+\input{Pictures/pic_max3}
+\end{center}
+
+\begin{exercice} Représenter la fonction qui renvoie le signe 
+du maximum de 4 nombres.
+\end{exercice}
+
+A partir de fonctions de base prédéfinies, qui réalisent des
+opérations simples, nous pouvons donc construire des fonctions de plus
+en plus élaborées, qui représentent des traitements complexes.
+
+
+\section{Transparence référentielle}
+
+Si nous pouvons ``brancher'' à volonté ces boîtes noires entre
+elles, c'est grâce à une propriété fondamentale des fonctions
+mathématiques~: la {\em transparence
+référentielle}. \index{transparence référentielle} Cette expression
+\footnote{qui peut sembler curieuse à propos de boîtes noires.}
+signifie simplement que la valeur d'une expression (l'application
+d'une fonction à des paramètres effectifs) ne dépend pas du tout
+du référent (le contexte général) qui est donc imperceptible, mais
+seulement de la valeur des données fournies en entrée.
+
+Pour éclaircir ces propos quelque peu obscurs, 
+considérons l'exemple de la figure \ref{ExempleTrompeur}
+
+\begin{figure}[htb]
+\barre
+\begin{verbatim}
+program exemple(output);
+var flag : boolean;
+
+    function f (n:integer) : integer;
+    begin
+      flag := not flag;
+      if flag then f := n
+              else f := 2*n;
+    end;
+
+begin
+  flag := true;
+  writeln( f(1) + f(2) );
+  writeln( f(2) + f(1) );
+end.
+\end{verbatim}
+\caption{L'addition est-elle commutative~?}
+\barre
+\label{ExempleTrompeur}
+\end{figure}
+
+Si vous avez la curiosité de faire exécuter ce programme, 
+vous ferez une découverte  importante~: l'addition n'est plus une opération commutative !
+
+Bien entendu, ce n'est pas l'arithmétique qu'il faut remettre en cause,
+ mais plut\^ot l'assimilation un peu h\^ative que l'on peut faire 
+entre les fonctions Pascal et les fonctions mathématiques. Ici la ``fonction'' {\tt f}
+ dépend d'un ``paramètre caché''{ \tt flag}, qu'elle  modifie 
+par {\em effet de bord}. \index{effet de bord}.
+
+Cet exemple peut vous sembler artificiel, il est cependant typique de
+ l'esprit des langages impératifs~: les procédures consultent et
+ modifient les variables globales. Autrement dit, le résultat d'une
+ évaluation dépend du contexte dans lequel cette évaluation se produit
+~: c'est le contraire de la transparence référentielle.
+
+Un ``module logiciel'' ne peut être réutilisé a priori que dans un
+contexte semblable à celui pour lequel il a été con\c{c}u, ce qui ne
+facilite pas la réutilisation de modules déjà écrits~: il faudra les
+adapter, ce qui co\^ute du temps.
+
+Le programmeur professionnel adoptera donc un style applicatif en
+évitant les effets de bords ; s'il ne peut pas les éviter, il doit les
+signaler avec soin dans la documentation. En Génie Logiciel on appelle
+langages applicatifs les langages de programmation qui interdisent (ou
+restreignent) l'utilisation d'effets de bords. Les langages
+fonctionnels purs sont des langages applicatifs~: les modules déjà
+écrits sont immédiatement réutilisables.
+
+\begin{exercice} La logique la plus élémentaire nous dit que 
+$$A \Rightarrow B$$ et $$A \Rightarrow C$$ entraînent 
+ $$ A \Rightarrow B \mbox{ et } C$$ 
+
+Soient maintenant $ A =$ ``J'ai 10 Fr'', 
+$B =$``Je peux me payer un sandwitch à 9 Fr'', 
+C = ``Je peux me payer un demi à 7 Fr''. Discutez le paradoxe.
+\end{exercice}
+
+\section{Une session avec HOPE}
+
+Il existe plusieurs versions du langage Hope, qui ont chacune fait
+l'objet de plusieurs réalisations. L'interpréteur dont nous disposons
+sur le HP9000 a été écrit en Pascal (environ 8000 lignes) par un
+étudiant de Hong-Kong dans une université britannique, et a fait
+l'objet de portages successifs, ainsi que de diverses corrections. Le
+produit final est loin d'être parfait, mais il fonctionne
+suffisamment pour démontrer les concepts de la programmation
+fonctionnelle.
+
+Dans tout ce qui suit, ce que vous tapez apparaît en caractères
+soulignés, les réponses de l'ordinateur en maigre, ainsi que nos
+commentaires qui seront précédés d'un point d'exclamation.
+
+Pour utiliser l'interpréteur Hope sur le HP9000, connectez-vous et
+tapez la commande~:
+
+\begin{alltt}
+% \tape{hope}
+\end{alltt}
+Sur compatibles PC, tapez :
+\begin{alltt}
+A> \tape{ichope}
+\end{alltt}
+Il apparaît  une bannière, le dialogue peut alors commencer~:
+
+\begin{alltt}
+>: \tape{5+4;}                         ! une question comme ça ...
+>:  9 : num                     ! le type du résultat est num (nombre)
+>: \tape{(6-4)*2;}
+>:  4 : num                     ! sans surprises ...
+>: \tape{7 div 3;}
+>:  2 : num 
+\end{alltt}
+
+Définissons une fonction, et appliquons-la~:
+\begin{alltt}
+>: \tape{dec double : num -> num;}     
+>: \tape{--- double(n) <= 2*n;}
+>:
+>: \tape{double(4);}                   
+>:  8 : num
+>: \tape{double (double (3));}
+>:  12 : num
+>: \tape{1 + double(5-17);}
+>:  -23 : num
+\end{alltt}
+
+On peut revoir les définitions~:
+\begin{alltt}
+>: \tape{display;}
+dec double  : num  -> num  ;
+--- double ( n )
+       <=( 2 *  n ) ;
+\end{alltt}
+
+Essayons de nouvelles fonctions~:
+\begin{alltt}
+>: \tape{dec max2 : num X num -> num;}      ! X = produit cartésien
+>: \tape{--- max2 (a, b) <= if a > b then a else b;}
+>: \tape{max2 (4,2);}
+>:  4 : num
+
+>: \tape{dec max3 : num X num X num -> num;}	! de plus en plus fort
+>: \tape{--- max3(x, y, z) <= max2(x, max2(y, z));}
+>: \tape{max3(4, 12, 2);}
+>:  12 : num
+\end{alltt}
+
+Nous pouvons bien sûr charger un fichier de fonctions (\verb+ex1.hope+ sous
+Unix, \verb+ex1.hop+ sous DOS)~:
+\begin{alltt}
+>: \tape{load ex1;}                    
+data signes == positif ++ negatif ++ nul;	! un ensemble
+
+dec signe : num -> signes ;
+--- signe (n) <=     if n<0 then negatif
+                else if n>0 then positif
+                            else nul;
+
+dec fac : num -> num ;
+--- fac (0) <= 1;                               ! cas particulier n=0
+--- fac (n) <= n * fac(n - 1);                  ! cas général
+\end{alltt}
+
+Essayons ces fonctions~:
+\begin{alltt}
+>: \tape{signe(12);}
+>:  positif  : signes
+>: \tape{signe(6-9);}
+>:  negatif  : signes
+>: \tape{fac (2+1) ;}
+>: 6
+>: \tape{trace on;}                                    ! pour suivre les calculs
+>: \tape{trace fac;}                                   ! de la fonction fac
+>: \tape{fac(3);}
+ fac ( 3)                                       ! les appels à fac
+ fac ( 2)                                       ! ...
+ fac ( 1)
+ fac ( 0)
+ 1                                              ! les réponses
+ 1                                              ! ...
+ 2
+ 6
+>:  6 : num
+>: \tape{trace off;}
+>: \tape{fac(5);}
+>:  120 : num
+>: \tape{exit;}                                        ! sortie de HOPE
+\end{alltt}
+
+
+\section{Un exemple de programme}
+
+Nous allons écrire maintenant un (petit) programme en HOPE. La
+programmation fonctionnelle va certainement vous sembler étrange car
+il n'y aura pas de variables, pas d'affectations, pas de boucles et,
+à proprement parler, même pas d'instructions~!
+
+Au lieu de cela, un programme fonctionnel décrit comment, à
+ certaines données (entrées), on peut associer des résultats
+ (sorties), au moyen de fonctions.
+
+
+\subsection{Exemple~: Un distributeur de boissons}
+
+Pour faire marcher un distributeur de boissons, il faut mettre
+quelques pièces dans la fente et appuyer sur un bouton.  Le breuvage
+de votre choix s'écoule alors d'un réservoir dans un gobelet.
+
+\bigskip
+\begin{center}
+\begin{tabular}{llcc}
+\hline
+	Bouton &	Boisson & Prix &  Réservoir	\\
+\hline 
+
+bleu &	café &		300		&	1 \\
+rouge &	chocolat & 	300 &		2\\
+		vert &	pepsi & 		250 &		3\\
+\hline
+\end{tabular}
+\end{center}
+\bigskip
+
+Nous allons écrire un programme fonctionnel pour~:
+\begin{itemize}
+ \item définir le prix des boissons ;
+\item  indiquer la correspondance entre les boutons, les réservoirs et les boissons ;
+ \item indiquer ce qui sort quand on appuie sur un bouton après avoir mis une somme suffisante ;
+ \item indiquer ce qui sort de la machine qui rend la monnaie.
+\end{itemize}
+
+Tout d'abord, précisons les valeurs que peuvent prendre les entrées et sorties~:
+
+\begin{alltt}
+	data  bouton	== bleu ++ rouge ++ vert ;
+	data  reservoir	== r1 ++ r2 ++ r3 ;
+	data  boisson	== cafe ++ chocolat ++ pepsi ++ rien ;
+\end{alltt}
+Nous venons de définir trois ensembles, de cardinaux respectifs 3, 3 et 4).
+\begin{alltt}
+	type  argent 	== num ;
+\end{alltt}
+
+Le type \texttt{argent} est maintenant synonyme de \texttt{num} qui signifie
+``entier''~: cette version de
+Hope ne connaît pas les nombres en virgule flottante ... Qu'à
+cela ne tienne, nous compterons en centimes.
+
+
+\subsection{Le prix des boissons}
+
+Indiquons le nom de la fonction et sa ``signature'', c'est-à-dire
+les ensembles de départ et d'arrivée~:
+\begin{alltt}
+	dec prix : boisson -> argent;
+\end{alltt}
+et la valeur des différentes boissons :
+\begin{alltt}
+--- prix(cafe)		<= 300;
+--- prix(pepsi)		<= 250;
+--- prix(chocolat)	<= 300;
+\end{alltt}
+Les trois tirets ``{\tt ---}'' ordonnent à l'interpréteur d'ajouter
+ la ligne à la définition de la fonction.
+
+
+\subsection{Correspondance entre boutons, réservoirs et boissons}
+
+Indiquez maintenant à quel réservoir correspond chaque bouton~:
+\begin{alltt}
+dec reserve : 		 -> 		;
+
+--- reserve (bleu)  	<= 	r1;
+
+---
+
+---
+\end{alltt}
+
+Et le contenu des réservoirs~:
+\begin{alltt}
+dec contenu : 	reservoir -> 		;
+
+---
+
+---
+
+---
+\end{alltt}
+
+\subsection{Le distributeur}
+
+Comment marche le distributeur ? C'est une ``boîte noire'' que l'on
+fait fonctionner en mettant de l'argent et en appuyant sur un bouton ;
+il en ressort alors une boisson. On représente donc le distributeur
+par une fonction \texttt{distrib}~:
+\begin{alltt}
+dec distrib : 	argent X bouton	->	boisson ;
+\end{alltt}
+Quand on appuie sur le bouton \texttt{bou}, cela correspond au
+réservoir \texttt{reserve(bou)} qui délivre la boisson
+\texttt{contenu(reserve(bou))}~: le bouton rouge correspond au
+chocolat par composition des fonctions \texttt{reserve} et
+\texttt{contenu}. Mais, attention, nous n'aurons à boire que si nous
+avons mis assez d'argent, c'est-à-dire une somme au moins égale à
+\texttt{prix(contenu(reserve(bou)))} !
+\begin{alltt}
+--- distrib ( arg , bou ) <= 
+          if  arg >= prix(contenu(reserve(bou)))
+              then contenu(reserve(bou))
+              else rien ;
+\end{alltt}
+
+\paragraph{Remarques~: }
+\begin{itemize}
+\item L'ensemble de départ de \texttt{distrib} est 
+le produit cartésien de deux ensembles, dont l'un est infini.
+
+\item Pour les fonctions \texttt{prix}, 
+\texttt{reserve} et \texttt{contenu} nous avions 
+donné une équation pour chaque élément de l'ensemble de départ. Ici
+nous écrivons une seule équation, avec deux paramètres formels \texttt{arg}
+et \texttt{bou} ; cette équation résume une infinité de cas.
+
+\end{itemize}
+
+\subsection{Un distributeur qui rend la monnaie}
+
+On met de l'argent et on appuie sur un bouton, il ressort la monnaie
+et la boisson choisie~:
+\begin{alltt}
+dec distrib2 : 	argent X bouton	-> argent X boisson ;
+
+--- distrib2 (arg , bou ) <= 
+        if distrib( arg , bou ) = rien
+        then ( arg , rien )
+        else ( arg - prix(distrib(arg,bou)) , distrib(arg,bou) );
+\end{alltt}
+
+\paragraph*{Remarque~:} Ici l'ensemble d'arrivée est également un produit cartésien~: les résultats sont des couples  notés entre parenthèses.
+
+
+
+\section{Annexe~: Quelques éléments du langage HOPE}
+
+
+\subsection*{Domaines prédéfinis}
+\begin{center}
+\begin{tabular}{lll}
+\hline
+Nom & Signification & Exemples\\
+\hline
+\texttt{num} & nombres entiers & \texttt{0,1,2,12654} \\ 
+\texttt{char} & caractères
+	&'a','5','!' \\ 
+\texttt{truval} & valeurs logiques & \texttt{true, false} \\
+	\texttt{alpha,beta} & types variables (génériques) &voir plus loin \\
+\hline
+\end{tabular}
+\end{center}
+
+\subsection*{Déclaration de domaine}
+
+\begin{alltt}
+data  nom	==  ... ++ ... ++ ... ;
+\end{alltt}
+
+Hope ne possède que peu de fonctions prédéfinies~: en voici la liste
+(presque) exhaustive, chacune avec sa signature, et son niveau de
+priorité quand elle est déclarée infixe.
+
+\subsection*{Opérations arithmétiques }
+\begin{alltt}
+infix + , -  : 5 ;
+infix * , div , mod : 6 ;
+dec + , - , * , div , mod  : (num X num) -> num ;
+\end{alltt}
+
+\subsection*{Comparaisons}
+	Ces fonctions permettent de comparer deux objets, à
+	condition qu'ils soient comparables, c'est-à-dire qu'ils
+	appartiennent à un même domaine.
+	
+\begin{alltt}
+infix = , < , > , /= , =< , >= : 6 ;
+	dec  = , < , > , /= , =< , >= : (alpha X alpha) -> truval ;
+\end{alltt}
+\subsection*{Opérateurs logiques}
+\begin{alltt}
+infix and : 5 ;
+infix or  : 4 ;
+dec and, or : (truval X truval) -> truval ;
+dec not : truval -> truval ;
+\end{alltt}
+
+\subsection*{Expressions prédéfinies}
+
+Expression conditionnelle~:
+\begin{alltt}
+if \textit{condition}               
+    then \textit{expression}  
+    else \textit{expression} 	
+\end{alltt}
+
+Expressions qualifiées :
+\begin{alltt}
+let \textit{variable} == \textit{expression}  
+    in \textit{expression}	
+
+\textit{expression}
+  where \textit{variable} == \textit{expression}
+\end{alltt}
+
+\subsection*{Définition de fonction}
+\begin{alltt}
+dec nom : \textit{dépar}t -> \textit{arrivée}  ;
+--- \textit{nom} ( .... ) <= \textit{expression} ;
+...
+--- \textit{nom} ( .... ) <= \textit{expression} ;
+\end{alltt}

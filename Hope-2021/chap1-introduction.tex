@@ -1,0 +1,434 @@
+\chapter{Introduction}
+
+
+%	1.1 Un peu d'histoire
+%	1.2 La programmation imp\'erative 
+%	1.3 La programmation d\'eclarative
+%	1.4 Quelques langages fonctionnels 
+%	1.5 La crise du logiciel
+%	1.6 La programmation fonctionnelle, une solution d'avenir ?
+
+
+
+
+
+\section{Un peu d'histoire}
+
+Les ordinateurs sont, dans leur principe, des machines assez simples
+construites autour de quelques types de circuits élémentaires~:
+registres, mémoires, additionneurs, décodeurs, etc.
+
+Ces machines exécutent séquentiellement des programmes, qui sont des
+suites d'instructions élémentaires enregistrées dans la mémoire
+centrale. Les données (également en mémoire) que peuvent manipuler ces
+instructions appartiennent à quelques types bien connus~: nombres
+entiers ou réels, caractères, adresses, etc.
+
+Cette structure simple, appelée architecture Von Neumann \index{Von
+Neumann, machine de} (du nom d'un mathématicien américain d'origine
+hongroise qui contribua au développement du concept de programme
+enregistré dans les projets ENIAC et EDVAC, vers 1946), convenait bien
+aux premières applications des calculateurs (années 40)~: il
+s'agissait d'effectuer des suites fastidieuses de calculs répétitifs,
+pour établir des tables numériques (par exemple calculs balistiques
+sur le ``directeur de tir antiaérien M9'' fabriqué par Bell vers 1942),
+décrypter des messages secrets (machines britanniques Robinson et
+Colossus), calculs numériques pour la recherche nucléaire (ENIAC),
+etc.
+
+
+\subsection*{Références}
+
+L'étude détaillée du fonctionnement est faite dans le cours de
+Première Année de DUT Informatique intitulé ``Architecture des
+Systèmes Informatiques'', et on trouvera sans peine des ouvrages sur
+ce sujet à la bibliothèque.
+
+Pour une perspective historique, consulter {\em Préhistoire et
+Histoire des Ordinateurs} de Robert LIGONNIÈRE (1987), aux éditions
+Robert Laffont.
+
+
+\section{La programmation impérative}
+
+Les programmes écrits à l'époque ne pouvaient guère être
+compliqués, ne serait-ce qu'en raison de la très faible capacité des
+mémoires centrales (quelques milliers d'octets).  Cette capacité
+augmentant naturellement au cours du temps (et par conséquent la
+longueur et la complexité des programmes), on s'est avisé qu'il
+pouvait être intéressant~:
+
+\begin{itemize}
+
+\item d'écrire des programmes en utilisant des noms mnémotechniques 
+pour chacune des instructions de la machine (naissance du langage
+d'assemblage), et en donnant des noms symboliques aux
+emplacements-mémoire destinés à contenir des valeurs intermédiaires
+du calcul (autrement dit les variables). Ainsi les programmes sont
+plus faciles à écrire, et surtout à relire~;
+
+
+\item d'utiliser des langages de programmation {\em évolués}~: chaque
+instruction en langage évolué est traduite par un \emph{compilateur}
+en une séquence d'instructions dans le langage de la machine (Fortran,
+etc). Cela facilite la tâche du programmeur~;
+\item de rendre les programmes indépendants de la machine utilisée~: un programme écrit dans un langage normalisé pourra tourner sans trop de modifications sur des machines de marques différentes  (Algol, Cobol, etc.);
+\item d'autoriser le programmeur à se définir ses propres types de
+données, à partir des types de base et de constructeurs~: tableaux,
+enregistrements, pointeurs (PL/I, Algol/W, etc.); \item d'imposer une
+certaine discipline au programmeur (programmation structurée), en
+limitant l'emploi de l'instruction de branchement {\em goto} qui rend
+les programmes spécialement illisibles (Pascal)~;
+\item d'inciter à la \emph{réutilisation de modules} déjà écrits et à
+la constitution de bibliothèques de modules, en intégrant aux langages
+de programmation des mécanismes de modularisation (MODULA, ADA,
+EIFFEL)~;
+\end{itemize}
+
+Cette évolution considérable nous à fait passer, en moins d'un
+demi-siècle, du code binaire à l'assembleur, Cobol, Fortran, PL/I
+jusqu'à ADA, Eiffel, etc. Elle préserve cependant deux traits
+fondamentaux de l'informatique des origines, à savoir la {\em
+séquentialité} des programmes et la notion d'{\em affectation}
+(modification du contenu d'une variable), qui caractérisent la
+``\emph{programmation impérative}''.
+
+Dans ce style de programmation, il incombe au programmeur de décrire
+la suite exhaustive des actions que la machine devra effectuer
+(affectations, comparaisons, additions, etc.) dans un ordre précis
+pour parvenir au résultat voulu. C'est tout à fait fastidieux. Le
+programmeur qui aborde une tâche d'une certaine importance se
+trouverait rapidement emporté par un flot de détails de programmation,
+s'il n'avait une méthode de travail efficace~:
+
+\begin{itemize}
+	\item décomposer les problèmes compliqués en problèmes de plus
+	en plus simples~; 
+\item ne pas essayer de réinventer la roue~:
+	connaître et utiliser les algorithmes classiques~; 
+\item	réfléchir d'abord, programmer ensuite~;
+\item laisser une
+	trace écrite de son raisonnement (la fameuse documentation).
+\end{itemize}
+
+Ce genre de métier demande une certaine minutie et beaucoup de
+ténacité\footnote{parfois à la limite du comportement obsessionnel}, mais il
+n'est pas requis d'avoir un cerveau particulièrement brillant~: une
+bonne formation suffit.
+
+
+\section{La programmation déclarative}
+
+\index{déclaratifs (langages)}
+La plupart des langages de programmation (il en existe plusieurs
+milliers) relèvent de la catégorie précédente~: Fortran, Cobol, PL/I,
+Basic, Pascal, Ada, C, etc., pour les raisons historiques évoquées
+ci-dessus (évolution progressive depuis le langage d'assemblage).
+
+Il existe cependant une autre catégorie digne d'intérêt (pour des
+raisons que nous expliciterons plus loin)~: les langages {\em
+déclaratifs}
+\index{langages déclaratifs}.
+
+Dans un langage déclaratif, programmer c'est essentiellement indiquer
+ à une machine la nature des données dont on dispose d'une part, la
+ nature des résultats que l'on veut d'autre part, plutôt que la
+ séquence de traitements qui mène des unes aux autres.
+
+En quelque sorte, les langages déclaratifs décrivent des
+\emph{spécifications} de traitements plutôt que des algorithmes~:
+\begin{itemize}
+\item  une \emph{spécification}  résume ce que fait une procédure,  
+\item un \emph{algorithme} décrit comment la procédure le fait. 
+\end{itemize}
+
+Les spécifications et algorithmes font partie de la documentation
+interne (commentaires) et externe (dossier de programmation) de tout
+programme sérieux.  Voir l'exemple de la figure \ref{progpascal}.
+
+\begin{figure*}[htb]
+\barre
+\begin{verbatim}
+function PGD (n:integer) : integer;
+
+(* Spécification : pour tout entier n>1,  
+   PGD(n) est le plus grand diviseur de n 
+   qui lui soit strictement inférieur *)
+
+var d : integer; 
+
+begin
+
+(* Algorithme :
+    boucle descendante de n-1 à 1
+    sortie quand d vaut 1 ou divise n
+    le résultat est dans d
+*) 
+    d := n - 1;
+    while (n mod d) <> 0 
+       do d := d - 1; 
+    PGD := d;
+end;
+\end{verbatim}
+\caption{Un programme Pascal bien documenté}
+\label{progpascal}
+\barre
+\end{figure*}
+
+\index{documentation} Traditionnellement ressentie comme une corvée
+fastidieuse par les programmeurs\footnote{et les étudiants} qui la
+remettent toujours à plus tard (``quand le programme tournera''), la
+documentation des programmes contribue à réduire les coûts de
+programmation~:
+\begin{itemize}
+\item Rédiger une spécification, c'est expliquer la vision que 
+l'on a d'un problème. Vision que l'on doit confronter à celle de
+l'utilisateur, avant de se lancer dans l'écriture d'un
+programme. Combien de programmes ont été jetés à la poubelle parce
+qu'ils ne correspondaient pas du tout à ce que le client avait
+demandé~?
+\item Lors de l'écriture des programmes, si on n'est pas capable
+d'écrire, en bon français, ce que l'on veut faire, il est évident
+que l'on aura de graves difficultés à dire à une machine stupide (par
+définition), comment elle doit le faire, que ce soit en Pascal, en
+Cobol, ou quoi que ce soit.\footnote{\em Le vent souffle toujours dans
+le mauvais sens pour celui qui ne sait pas où il veut aller}. Il
+faut donc rédiger la documentation \emph{avant} le programme, et non
+l'inverse.
+\item Lors de la mise au point~: une procédure est valide si 
+les sous-procédures qu'elle utilise sont correctes et employées
+conformément à leurs spécifications respectives, et si l'algorithme
+correspond à ce que la procédure est censée faire. Il est plus facile
+de vérifier une procédure lorsqu'on a sa spécification sous les yeux~:
+la documentation doit faire partie du programme
+\item Pour la maintenance~: il est inutile de relire tout le code 
+pour savoir si l'on peut modifier une procédure sans conséquences
+graves sur le reste du programme~: l'effet d'une procédure est
+entièrement décrit dans sa spécification. Et on ne passe plus des
+heures à se demander ce que fait la procédure \texttt{toto}.
+\end{itemize}
+
+La programmation déclarative existe sous deux formes~:
+
+\begin{itemize}
+\item La Programmation Logique~:  une formule logique décrit 
+la relation qui existe entre les données et les résultats. Ce qui est
+à rapprocher des langages d'interrogation de bases de données
+relationnelles du type SQL. Le langage le plus connu est Prolog.
+\item
+La Programmation Fonctionnelle~: tout traitement informatique consiste
+à calculer des résultats à partir de données, c'est donc une fonction
+$f : \{Données\} \rightarrow \{Résultats\}$ au sens mathématique du terme.
+\end{itemize}
+
+\section{Quelques langages fonctionnels}
+
+Il existe un très grand nombre de langages fonctionnels (La figure
+\ref{ExemplesDivers} montre le même exemple écrit en 
+Scheme, ML, Miranda, Hope et FP).
+
+Le premier (et le plus connu) a été con\c{c}u par John MacCarthy à la
+fin des années 50. LISP \index{LISP} était, au départ, un langage de
+traitement de listes (\emph{LISt Processing language}) comportant un
+``noyau'' purement fonctionnel et - pour des raisons d'efficacité -
+diverses ``améliorations'' comme les notions de variable et
+d'affectation.\footnote{Le concepteur d'un langage de programmation
+doit toujours trouver un compromis entre un objectif de ``propreté''
+(allant parfois jusqu'au minimalisme) du langage qu'il définit, et des
+concessions souhaitables à l'{\em efficacité}.  Mais comme le souci
+d'efficacité s'estompe peu à peu avec l'augmentation des performances
+des machines, il est donc difficile de juger {\em a posteriori} du
+caractère raisonnable des compromis qui ont été décidés il y a
+plusieurs dizaines d'années.}
+
+LISP a de très nombreux descendants. Un des plus prometteurs est
+Scheme (1974), qui est très utilisé dans l'enseignement
+\footnote{Notamment en 
+DEUG et Licence-Maîtrise d'Informatique à Bordeaux}.
+
+
+
+\begin{figure*}[htb]
+\barre
+\begin{itemize}
+\item Scheme~:
+\begin{verbatim}
+(define (fac n)
+  (if   (eqv? n 0) 
+        1 
+        (* n (fac (- n 1 )))
+))
+\end{verbatim}
+\item ML~:
+\begin{verbatim}
+fun fac(n) =  if n = 0 
+                 then 1 
+                 else n * fac(n - 1)
+\end{verbatim}
+\item HOPE~: 
+\begin{verbatim}
+dec fac : num -> num;
+--- fac 0 <= 1;
+--- fac n <=  n * fac(n - 1);
+\end{verbatim}
+\item MIRANDA~: 
+\begin{verbatim}
+fac 0 = 1
+fac n = n * fac (n - 1)
+\end{verbatim}
+\item FP~:
+\begin{verbatim}
+def fac = eq0 -> 1 ;  * o [ id, fac o ( - [id, 1] ) ]
+\end{verbatim}
+\end{itemize}
+\caption{Une fonction dans plusieurs langages}
+\barre
+\label{ExemplesDivers}
+\end{figure*}
+
+En 1974 apparaissait ML  à l'Université d'Edimbourg (Écosse).  ML
+était au départ le ``métalangage'' d'un système de preuve formelle de
+fonctions récursives\emph{La démonstration automatique est une des
+branches de l'intelligence artificielle}~: le système LCF \index{LCF
+(système de démonstration automatique)}(\emph{Logic of Computable
+Functions}).
+
+En raison de ses nombreuses qualités, le langage ML a été ensuite
+redéfini par les mêmes auteurs en reprenant des idées de ML et de HOPE
+(voir plus loin) pour conduire à SML \index{SML (STandart ML}
+(\emph{Standart ML}) (1986). Parallèlement, une équipe de l'INRIA (France) a
+développé CAML, \index{CAML (langage fonctionnel)} basé sur le concept
+de Machine Abstraite Catégorique (1986).
+
+Le langage Hope a également été développé à Edimbourg vers 1980. Son
+nom provient de l'ancienne adresse de l'Institut pour l'Intelligence
+Artificielle~: \emph{Hope Park Square}. C'est un langage fonctionnel pur,
+contrairement à Standard ML qui contient des concepts ``impératifs''
+(variables, affectations, pointeurs, traitement des exceptions). Le
+langage Miranda est également de la même famille.
+
+À peu près à la même époque (1978), J.W. Backus - un des inventeurs de
+FORTRAN (1955) et d'ALGOL (1958)
+\footnote{Rappelez-vous, BNF = Backus-Naur Form\ldots}
+\index{FP (Functional Programming)}- proposait FP.
+
+\subsection*{Quelques références bibliographiques}
+\begin{itemize}
+\item Backus, J.W, (1978). 
+{\em Can programming be liberated from the von Neumann style ? A
+functional style and its algebra of programs}, Communications of the
+ACM, 21, 613-41.
+
+\item Cousineau, G., Curien, P.L, Mauny, M., (1985).
+{\em The Categorical Abstract Machine, in Proc. Conference on
+Functional Programming Languages and Computer Architecture}, Nancy,
+50-64, LNCS 201, Springer Verlag.
+
+\item Burstall, R.M., MacQueen, D.B., Sanella, D.T., (1980). 
+{\em Hope, an Experimental Applicative Language, CSR-62-80, Department
+of Computer Science}, University of Edimburgh.
+
+\item  Gordon M.J., Milner, A.J., Wadsworth, C.P, (1979)
+{\em  Edimburgh LCF}. LNCS 78. Springer Verlag.
+
+\item MacCarthy, J., (1960). 
+{\em Recursive functions of symbolic expressions and their computation
+by machine}. Communications of the ACM, 3(4), 184-95.
+
+\item Rees, J., Clinger, W., eds. (1986). {\em Revised3 Report on the Algorithmic Language Scheme}.  SIGPLAN Notices, 37-79, Vol 21 n 12, Dec. 1986.
+
+\item Turner, D.A., (1985). {\em Miranda, a non-strict functional language with polymorphic types}, in Proc. Conference on Functional Programming Languages and Computer Architecture, Nancy, 1-16, LNCS 201, Springer Verlag.
+
+\item Wirsig, M., Sannella, D., (1987). 
+{\em Une Introduction à la Programmation Fonctionnelle~: Hope et ML},
+in Technique et Science Informatiques, vol.6 n 6, 517-525,
+AFCET-Bordas.
+\end{itemize}
+
+\section{La crise du logiciel}
+
+Que l'informatique soit un secteur en pleine expansion, voila bien un
+lieu commun journalistique d'une trompeuse évidence. Car
+l'extraordinaire miniaturisation, l'amélioration fantastique des
+performances et la chute vertigineuse des prix des composants
+matériels se sont accompagnés, depuis une bonne dizaine d'années,
+d'une gigantesque crise du logiciel~: la production du logiciel est de
+plus en plus coûteuse. Quelques éléments~:
+
+\begin{itemize}
+\item la part du logiciel dans les coûts informatiques est de plus de 90 \%~;
+\item un service informatique ``normal'' consacre 
+plus de 80 \% de son activité à la maintenance d'applications
+existantes~;
+\item un programmeur moyen produit en moyenne 20 à 30 lignes
+ de code par jour (indépendamment du langage de programmation
+ utilisé!)~;
+\item Les langages Cobol et Fortran ont été conçus dans 
+les 10 premières années de l'informatique d'entreprise. 30 ans plus
+tard, ils représentent encore 80 \% des programmes utilisés et
+maintenus~;
+\item Les langages de programmation 
+classiques ne sont pas adaptés (et c'est un euphémisme) à
+l'utilisation de machines massivement parallèles (par exemple réseaux
+de 64000 processeurs).
+\end{itemize}
+
+{\bf Références}~: Feuilletez la presse informatique
+(professionnelle), ainsi que les ouvrages consacrés au ``génie
+logiciel''.
+
+
+\section{La programmation fonctionnelle, une solution d'avenir ?}
+
+Trois aspects de la programmation fonctionnelle permettent de la 
+considérer comme une solution possible à cette crise du logiciel~:
+
+\begin{itemize}
+\item Les programmes fonctionnels sont généralement beaucoup plus 
+courts que leurs homologues impératifs~: ils sont écrits plus
+rapidement, à moindre coût. Ils sont également plus abstraits
+\index{Abstraction}
+\footnote{Il convient de ne pas confondre les différents sens 
+de l'adjectif 'abstrait'. Cf. Dictionnaire de la Langue fran\c{c}aise
+Lexis (éditions Larousse).  {\bf Abstrait,e}~: adj. (lat. abstractus,
+isolé par la pensée; 1390)
+\begin{enumerate}
+\item Se dit d'une qualité considérée en elle-même,
+ indépendamment de l'objet (concret) dont elle est un des caractères,
+ de sa représentation, ou de tout ce qui dépasse le particulier pour
+ atteindre le général~: la grandeur et la couleur sont des qualités
+ abstraites (= concepts). Les noms abstraits, comme ``blancheur'' et
+ ``politesse'', désignent en grammaire une qualité ou une manière
+ d'être (contr. CONCRET).
+\item Se dit d'une personne (de son esprit ou de son oeuvre) difficile 
+à comprendre à cause de la généralité de son expression ou,
+péjor. dont la pensée est vague et exprimée de manière confuse~: 
+\emph{Je
+suivais mal son raisonnement abstrait} (syn. non péjor. SUBTIL,
+contr. CLAIR). \emph{C'est un écrivain abstrait, qui se refuse à illustrer
+sa pensée par des exemples concrets} (syn. lit. ABSCONS, ABSTRUS). Un
+exposé abstrait qui ennuyait l'auditoire (syn. pejor. et fam. FUMEUX;
+contr. PRÉCIS).  \item Art abstrait, art qui tend à représenter la
+réalité abstraite et non pas les apparences de la réalité~: \emph{L'art
+abstrait utilise les lignes et les masses pour traduire l'idée ou le
+sentiment} (contr. FIGURATIF).
+\end{enumerate}
+} (on pourra donc réutiliser tels quels des modules d'un programme
+ déjà écrit) et plus faciles à comprendre (moins de ``petits détails''
+ de programmation).
+\item Les programmes fonctionnels se prêtent bien aux techniques
+ de preuve de programmes et de manipulation formelle (transformation
+ de programmes). C'est un style qui se rapproche des techniques
+ modernes de ``spécifications formelles'' de programmes.
+\item Ils peuvent facilement, 
+et avec profit, être implantés sur des machines massivement
+parallèles (par exemple réseaux de 64000 processeurs).
+\end{itemize}
+
+Ces aspects favorables proviennent de la nature mathématique des
+programmes fonctionnels~: les éléments d'un langage fonctionnel sont
+des fonctions qui décrivent l'obtention de résultats (sorties) à
+partir de données (entrées) indépendamment de l'environnement où
+elles sont utilisées (c'est la \emph{transparence référentielle}). On peut
+très facilement les combiner entre elles, ce qui n'est pas le cas des
+programmes impératifs.

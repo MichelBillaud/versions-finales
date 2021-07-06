@@ -1,0 +1,892 @@
+\chapter{Induction et récursion}
+
+
+%	3.1 Un peu d'histoire 
+%	3.2 Axiomatique de PEANO
+%	3.3 Définitions récursives
+%	3.4 Raisonnement par récurrence
+%	3.5 Fonctions d'ordre supérieur
+%	3.6 À propos des fonctions auxiliaires
+%	3.7 Exercices et problème
+
+
+
+\section{Un peu d'histoire}
+
+Le \siecle{XIX} est le siècle de la Révolution Industrielle et de la
+Science Triomphante. C'est l'époque de la foi en un progrès
+scientifique inéluctable et bénéfique, fondé sur l'étude rigoureuse
+des faits (positivisme d'Auguste COMTE), et sur l'existence d'un
+déterminisme qui régirait aussi bien les phénomènes physiques
+(MAXWELL, BERTHELOT) biologiques (BERNARD, DARWIN), que l'organisation
+sociale (TAINE, naturalisme de ZOLA) et politique (MARX).
+
+À l'extr\^eme, c'est le scientisme~:
+\begin{citation}
+Une chose évidente d'abord, c'est que chaque découverte pratique de
+l'esprit humain correspond à un progrès moral, à un progrès de dignité
+pour l'universalité des hommes. [...] Je suis convaincu que les
+progrès de la mécanique, de la chimie, seront la rédemption de
+l'ouvrier~; que le travail matériel de l'humanité ira toujours en
+diminuant et en devenant moins pénible~; que de la sorte l'humanité
+deviendra plus libre de vaquer à une vie heureuse, morale,
+intellectuelle. Aimez la science. Respectez-la, croyez-le, c'est la
+meilleure amie du peuple, la plus s\^ure garantie de ses progrès.
+{\em Ernest RENAN }
+\end{citation}
+
+
+\subsection*{La mécanisation du calcul}
+
+La Révolution Industrielle na\^{\i}t de la mécanisation du travail
+physique humain. Les travaux de Charles BABBAGE (1792-1871) ont montré
+à ses contemporains la possibilité de mécaniser également le calcul,
+c'est-à-dire de faire exécuter des calculs numériques par une machine
+sous contr\^ole d'un programme (possibilité théorique surtout, car
+Charles BABBAGE mourut sans voir sa ``Machine Analytique'' réalisée,
+faute de moyens).
+
+C'est le fils aîné de BABBAGE, Henry, qui fabriqua une version très
+réduite de la Machine Analytique à partir de 1880. Le 21 janvier 1888,
+la machine imprima une table des 44 premiers multiples de $\pi$, avec 29
+décimales. Mais un incident technique d\^u à la technologie employée
+(roues dentées, cylindres à picots) provoqua une erreur au 32$^e$
+multiple. Découragé, Henry BABBAGE ne reprit les essais qu'en 1906, il
+trouva la cause de l'erreur et y remédia. Il put alors faire une
+démonstration réussie devant l'Académie d'Astronomie. La machine ayant
+prouvé la justesse des idées de son inventeur, elle fut remise à un
+musée en 1910.
+
+Lady Ada LOVELACE (1815-1852), l'assistante de Charles BABBAGE,
+écrivit un jour que la machine ``pourrait peut-\^etre ne pas traiter
+que des nombres''.
+
+
+\subsection*{La  formalisation du raisonnement}
+
+En 1854, George BOOLE (1815-64) publia son ouvrage {\em Les Lois de la
+ Pensée} dans lequel il expliquait que le raisonnement logique pouvait
+ \^etre assimilé à du calcul algébrique, relan\c{c}ant alors la
+ ``logique formelle'' - étude du raisonnement déductif, des
+ syllogismes, etc. - qui sommeillait depuis quelques siècles. BOOLE
+ rencontra BABBAGE en 1862, mais il mourut trop t\^ot
+\footnote{Il contracta une congestion pulmonaire en allant à pied, sous la pluie, donner une conférence au Queen's College de Cork.}
+pour qu'une collaboration ait pu na\^{\i}tre.
+
+William Stanley JEVONS (1835-82) fut le seul mathématicien à
+comprendre immédiatement la portée de l'oeuvre de BOOLE. Il réalisa un
+``piano logique'' qui pouvait résoudre des équations logiques. Très
+enthousiaste, il aurait sans doute exploré la mécanisation du
+raisonnement beaucoup plus loin s'il ne s'était noyé accidentellement.
+
+
+\subsection*{L'axiomatisation des mathématiques}
+
+\subsubsection*{L'état de l'art au \siecle{XIX}  siècle}
+
+Les connaissances mathématiques sont bien avancées au \siecle{XIX} siècle~: la
+plupart des branches ont été créées depuis déjà longtemps~:
+
+\begin{itemize}
+\item Éléments d'EUCLIDE (\siecle{III} avant J.C)~: Algèbre, Géométrie,
+  Arithmétique ...
+\item Traité d'algèbre d'AL-KHWARIZMI (\siecle{IX} siècle)
+\item Résolution de l'équation du 3$^e$ degré par Hieronimo CARDAN
+(1545), 4$^e$ degré par son élève Ludovico FERRARI
+\item Nombres Négatifs et Complexes~: Rapha\"{e}l BOMBELLI (1526-72)
+\item Symbolisme Algébrique~:  Fran\c{c}ois VIETE (1540-1603)
+\item Théorie des Nombres~: Pierre de FERMAT (1601-65)
+\item Calcul Infinitésimal~: Isaac NEWTON (1642-1727) 
+\item Calcul Différentiel~: Gottfried Wilheim LEIBNITZ (1646-1716)
+\end{itemize}
+
+Mais les mathématiciens se heurtent à des paradoxes inextricables,
+notamment sur l'infiniment petit et l'infiniment grand. Appara\^{\i}t
+alors un courant de pensée qui vise, dans le m\^eme esprit qu'EUCLIDE,
+à donner des définitions précises des objets mathématiques que l'on
+utilisait jusque-là de manière assez intuitive, dans l'intention
+d'éliminer ces paradoxes.
+
+\subsubsection*{La démarche d'Euclide}
+
+L'oeuvre du grec EUCLIDE (\siecle{III} av. JC) est un modèle de
+rigueur~: ses Eléments récapitulent en une quinzaine de volumes les
+connaissances mathématiques de l'époque. PROCLUS (\siecle{V} siècle après J.C)
+affirme qu'Euclide, en rassemblant ses Eléments, 
+\begin{citation}
+en a coordonné
+beaucoup d'Eudoxe, perfectionné beaucoup de Théétète et qu'il a évoqué
+dans d'irréfutables démonstrations ceux que ses prédécesseurs avaient
+démontré d'une manière rel\^achée.
+\end{citation}
+
+Le Livre I des Éléments est précédé par une présentation assez
+intuitive des concepts utilisés dans la suite~:
+\begin{citation}
+Un point est ce qui n'a aucune partie. Une ligne est une longueur sans largeur.
+\end{citation}
+
+et par une série de postulats (affirmations admises sans qu'il y ait
+lieu de les démontrer) qui indiquent les relations entre ces concepts~:
+\begin{citation}
+On demande~:
+\begin{enumerate}
+\item qu'on puisse conduire une droite d'un point quelconque à un point quelconque,
+	\item qu'on puisse prolonger continuellement, selon sa
+	direction, une droite finie en une droite,
+\item  que d'un point quelconque, et avec un intervalle quelconque, on puisse décrire une circonférence quelconque,
+\item et que tous les angles droits soient égaux entre eux,
+\item et que si une droite tombant sur deux droites fait les angles intérieurs du m\^eme c\^oté plus petits que deux droits, ces droites, prolongées à l'infini, se rencontreront du c\^oté o\`u les angles sont plus petits que deux droits.
+\end{enumerate}
+\end{citation}
+
+Après avoir exposé systématiquement les définitions, postulats et
+axiomes, EUCLIDE en déduit les propriétés élémentaires des triangles,
+et de leurs bissectrices, milieux des c\^otés, etc.
+
+\subsubsection*{Le courant formaliste}
+
+Au \siecle{XIX} les mathématiciens-logiciens du courant ``formaliste'' (et
+ plus tard Russell, Hilbert, etc.) essaient de formuler les quelques
+ hypothèses (axiomes, postulats) qui sont vraiment indispensables pour
+ définir les objets mathématiques, et dont on pourra déduire toutes
+ les propriétés qui sont ``intuitivement vraies''.
+
+En 1876 c'est un Allemand, Julius Wilheim Richard DEDEKIND
+(1831-1916), qui donne une définition formelle de l'ensemble $\mathbb{R}$ des
+nombres réels à partir des coupures de $\mathbb{Q}$ (l'ensemble des
+rationnels).
+\begin{citation}
+Une coupure est un partage de $\mathbb{Q}$ en deux partitions non vides $A$ et $B$
+telles que tout élément de $A$ est plus petit que tout élément de $B$. À
+chaque coupure correspond alors un nombre réel unique~: par exemple,
+le nombre irrationnel $\sqrt{2}$ est défini par la coupure 
+$$\begin{array}{rl}
+A &= \{ q | q>0 \mbox{\ et\ } q^2<2 \} \\
+ B &= \{ q | q<0 \mbox{\ ou\ } q^2 \geq 2 \} 
+\end{array}$$
+
+\end{citation}
+
+Vers 1880, Georg Ferdinand Ludwig Philipp CANTOR (1845-1918) met au
+point la théorie des ensembles, qui permet de résoudre de nombreux
+paradoxes de la théorie des limites liés, en fait, à l'existence de
+plusieurs types d'infinis.
+
+Quelques problèmes typiques, que vous pouvez essayer de résoudre~:
+
+\begin{exercice}
+  Montrez qu'il y a
+  \begin{itemize}
+\item - autant de couples d'entiers que d'entiers (on peut
+  construire une bijection entre $\mathbb{N}$ et $\mathbb{N}^2$) ;
+  \item plus de nombres réels dans l'intervalle $[0,1[$ que de nombres
+    entiers~ : il n'existe pas d'injection de $[0,1[$ dans N).
+  \end{itemize}
+\end{exercice}
+
+\begin{exercice}
+ L'ensemble des parties d'un ensemble $E$ est ``plus gros'' que cet
+ ensemble~: il n'existe pas d'injection de ${\cal P}(E)$ dans $ E$ (résultat
+ d\^u à CANTOR).
+\end{exercice}
+
+
+
+Malheureusement pour CANTOR, sa théorie fait appara\^{\i}tre à nouveau
+des paradoxes (comme le paradoxe de RUSSELL~: l'ensemble des ensembles
+qui ne se contiennent pas eux-m\^emes se contient-il lui-m\^eme ? ).
+La théorie des ensembles sera axiomatisée plus tard par Ernst ZERMELO
+(1871-1953) en 1908. Génial mais incompris à son époque, CANTOR est
+mort dans un asile psychiatrique.
+
+En 1889, le mathématicien et logicien Giuseppe PEANO propose (enfin !) 
+une définition formelle de l'ensemble des entiers naturels (positifs).  
+
+
+\subsection*{Mathématiques et Réalité}
+
+L'approche ``hypothético-déductive'' pose le problème du choix du système d'axiomes de base~: 
+\begin{itemize}
+\item pour LEIBNIZ (et d'autres), ``tout ce qui est vrai est démontrable''~: pour arriver à tout démontrer toute propriété vraie dans le cadre d'une théorie (c'est la complétude de la théorie),  il faut prendre suffisamment d'axiomes~;
+\item il ne faut pas que les axiomes choisis conduisent à des contradictions (consistance de la théorie)~;
+\item il faut éviter aussi de choisir des axiomes qui seraient des conséquences des autres axiomes (ils seraient inutiles).
+\end{itemize}
+
+Par exemple, la question s'est longtemps posée de savoir si le fameux cinquième postulat d'EUCLIDE
+\begin{citation} par un point extérieur à une droite on peut mener une seule et unique droite parallèle à celle-ci
+\end{citation}
+ était ou non un axiome.
+ De nombreux mathématiciens essayèrent en vain de montrer que ce postulat était une conséquence des autres axiomes de la géométrie d'Euclide, jusqu'en 1826, lorsque LOBATCHEVKI (1793-1856) présente une géométrie non-euclidienne dans laquelle 
+\begin{citation} par un point extérieur à une droite passent une infinité de parallèles à cette droite.
+\end{citation}
+ Un peu plus t\^ot, vers 1813, GAUSS (1777-1844) avait inventé la
+ géométrie hyperbolique, 
+\begin{citation}
+``une étrange géométrie,
+ tout à fait différente de la n\^otre''
+\end{citation} mais il n'avait pas
+ osé publier ses travaux~: 
+\begin{citation}
+``J'appréhende les clameurs des
+ Béotiens si je voulais exprimer complètement mes vues''
+\end{citation}
+
+ En
+ effet, à l'époque, la géométrie euclidienne était censée {\em rendre
+ compte de la réalité physique du monde} (KANT); par conséquent ses
+ axiomes étaient donc considérés comme {\em vrais dans l'absolu}~: il
+ était inimaginable de fonder une théorie sur leur négation.
+
+
+
+De la m\^eme fa\c{c}on, l'hypothèse du continu 
+\begin{citation} le cardinal de
+l'ensemble des nombres réels est le premier qui soit supérieur à celui
+de l'ensemble des nombres entiers
+\end{citation}
+ formulée par CANTOR qui essaya de
+la démontrer jusqu'à sa mort, fut montrée
+\emph{indécidable}\footnote{on ne peut pas la démontrer, ni la réfuter
+: on peut l'ajouter comme nouvel axiome, aussi bien que la proposition
+contraire} par P.J. COHEN en 1963.
+
+
+L'espoir de trouver un jour quand m\^eme un ``bon'' système d'axiomes
+qui suffirait à tout démontrer s'effondre en 1931 après la publication
+du Théorème d'Incomplétude de Kurt G\"{O}DEL (né en 1906)~:
+\begin{citation}
+Toute formulation axiomatique de la théorie des nombres est soit incomplète, soit contradictoire.
+\end{citation}
+
+Autrement dit, dans toute théorie T (contenant la théorie des
+nombres), il existe des propositions indécidables, dont on ne peut
+démontrer ni la vérité ni la fausseté. Par exemple, la proposition
+``la théorie T est non-contradictoire'' est indécidable dans la
+théorie T elle-m\^eme.
+
+
+\subsection*{Bonnes lectures~:}
+
+\begin{itemize}
+\item Douglas HOFSTADTER (1985), G\"{o}del, Escher et Bach, les Brins d'une Guirlande Éternelle,  InterEditions.
+\item R. APERY, M.CAVEING, et al. (1982) Penser les mathématiques, Points Inédits S29, ed. du Seuil.
+\item A. DAHAN-DALMEDICO, J. PFEIFFER, (1986). Une histoire des mathématiques, Points Sciences S49, ed. du Seuil.
+\item Gustave FLAUBERT, Bouvard et Pécuchet, Livre de poche 440-441.
+\end{itemize}
+
+
+
+\section{Axiomatique de PEANO}
+
+Cette définition des entiers naturels tient en 5 axiomes, elle repose
+sur un objet de base (zéro) et un ``constructeur''~: la fonction qui a
+tout entier $n$ associe son successeur $n+1$
+\begin{enumerate}
+\item zéro est un entier
+\item tout entier a un successeur, qui est également un entier
+\item zéro n'est le successeur d'aucun entier
+\item	 deux entiers différents ont des successeurs différents
+\item Principe d'induction~: si une propriété P est vraie pour
+ zéro (cas de base)
+		 et que P(n) entra\^{\i}ne
+ P(successeur(n)) pour tout entier n,  (étape d'induction)
+		alors P est vraie pour tout entier .
+\end{enumerate}
+
+C'est le premier exemple d'ensemble défini inductivement~: on part
+d'un objet de base zero (0) auquel on adjoint son successeur (1) puis
+le successeur du successeur (2), etc. Nous verrons plus loin quantité
+d'autres ensembles (listes, arbres) définis de la m\^eme fa\c{c}on, à
+partir d'objets de base et de constructeurs.
+
+Le principe d'induction est à la base de la technique de preuve par
+récurrence~: pour prouver qu'une propriété est vraie pour tous les
+entiers on montre~:
+\begin{itemize}
+	\item quelle est vraie pour $0$ (en général c'est plut\^ot
+	facile), \item que si elle est vraie pour un entier $n$
+	(hypothèse de récurrence), alors elle est vraie pour son
+	successeur $n+1$.
+\end{itemize}
+Nous avons donc le droit de définir des fonctions par induction naturelle~: une fonction $f$ est définie pour tout entier positif à partir du moment o\`u~:
+\begin{itemize}
+\item on connaît $f(0)$,
+\item on peut exprimer $f(n+1)$ à partir de $f(n)$, pour tout $n$.
+\end{itemize}
+\begin{exercice} Construire un ensemble qui satisfasse tous les axiomes de PEANO sauf le troisième.
+\end{exercice}
+\begin{exercice} Idem, mais en excluant cette fois-ci le quatrième.
+\end{exercice}
+\begin{exercice} Idem, sans le cinquième.
+\end{exercice}
+\begin{exercice} Montrez que l'on peut remplacer le principe d'induction par la variante~:
+	« si une propriété $Q$ est vraie pour $zero$ (cas de base) et que
+	 $Q(zero)$ et $Q(successeur(zero)$ et .... $Q(n)$ implique
+	 $Q(successeur(n))$ pour tout entier $n$, alors $Q$ est vraie pour
+	 tout entier. » et comparez les mérites respectifs des deux
+	 formulations.
+\end{exercice}
+ 
+
+Le lecteur attentif ne manquera pas de nous soup\c{c}onner~: peut-on
+honn\^etement prétendre \emph{définir les nombres entiers} sans parler des
+opérations arithmétiques comme l'addition, la comparaison, etc.~?  Et
+bien oui~! L'addition, par exemple, n'est pas une notion primitive de
+la théorie des nombres, mais une fonction que l'on définit par
+récurrence~:
+
+$$\begin{array}{rcrcl}
+	plus ( &0& , 	&p ) =& p \\				
+	plus ( &succ(n)& , &	p ) =& succ(  plus (n ,p ) )
+\end{array}$$
+
+		pour tous entiers $n$ et $p$.
+
+Rassurez-vous, deux plus deux font toujours quatre, en effet 
+$$deux = succ(succ(zero))$$
+et
+$$\begin{array}{rcl}
+	plus(deux, deux) 	&=& plus ( succ(succ(zero)),  succ(succ(zero)) ) \\
+				&=& succ ( plus ( succ(zero)),  succ(succ(zero)) )) \\
+				&=& succ (succ ( plus (zero),  succ(succ(zero)) )) \\
+				&=& succ ( succ (succ ( succ ( zero ) ) ) )
+\end{array}$$
+
+
+
+\begin{exercice} Définir la multiplication.
+\end{exercice}
+
+\begin{exercice} Définir la relation ``inférieur ou égal''.
+\end{exercice}
+
+L'axiomatique de PEANO nous suffit donc pour reconstruire les notions
+connues de l'arithmétique.
+
+
+\section{Définitions récursives}
+
+\begin{quotation}
+Il fut saisi par la frénésie des factorielles~: $1!~= 1~$; $2!~= 2~$; 
+$3!~=~6~$; $4!~= 24$~; $5!~= 120~$; $6!~= 720~$; $7!~=~5~040~$; $8!~=~40~320~$; 
+$9!~=362~880~$; $10!~=~3~628~800~$; $11!~=~39~916~800~$; $12!~=~479~001~600~$; [...]
+$22!~=~1~124~000~727~777~607~680~000$, soit plus d'un milliard de fois
+soixante-dix-sept milliards~!  Smautf en est aujourd'hui à $76!$ mais il
+ne trouve plus de papier au format suffisant et en trouverait-il, il
+n'y aurait pas de table assez grande pour l'étaler.
+
+La vie mode d'emploi {\em Georges PEREC}, Livre de Poche 5341 (1978)
+\end{quotation}
+
+Nous allons essayer de spécifier formellement la fonction factorielle,
+c'est-à-dire de préciser ce qu'elle fait, de manière aussi claire que
+possible.
+
+
+\subsection*{Comment spécifier la fonction factorielle ?}
+
+Premier essai, par une phrase~:
+\begin{citation}
+	La fonction factorielle associe, à tout entier positif ou nul n, un autre entier qui est le produit des entiers de 1 à n.
+\end{citation}
+
+Cette spécification est correcte~: elle identifie clairement et sans
+ambig\"{u}ité la fonction dont nous parlons. Mais sa formulation
+littéraire la rend difficilement exploitable ensuite par le calcul
+algébrique qui est l'outil de base du raisonnement mathématique~: nous
+préférerions une bonne formule.
+
+Seconde tentative, par une expression mathématique~:
+
+\[factorielle (n) = 1 \times 2 \times 3 \ldots \times n\]
+
+C'est une définition \emph{elliptique}~: il faut un certain effort de
+la part du lecteur pour comprendre ce qu'il convient de mettre en lieu
+et place des points de suspension. Elle n'est donc pas idéale.
+
+Et m\^eme avant ces points, car avec un peu de mauvaise foi, on
+pourrait conclure que 
+$$factorielle (2) = 1\times 2 \times 3 \times 2 =
+12$$
+Bref, le ``$1 \times 2 \times 3 \ldots$'' est à prendre avec des
+pincettes~: lorsqu'il y a des points de suspension ensuite, $1 \times
+2 \times 3$ n'est plus égal à $6$, mais $1$, $2$ ou $6$ selon
+les circonstances !
+
+La troisième tentative, et la bonne, sera de définir la fonction
+factorielle par une spécification récursive .
+
+
+\subsection*{Construire une spécification récursive}
+
+Une spécification est dite \emph{récursive} lorsqu'elle définit un
+objet mathématique (un ensemble, une relation, une fonction) à l'aide
+de lui-m\^eme. 
+
+Ceci doit vous sembler pour le moins obscur, aussi
+revenons à notre exemple et regardons quelques valeurs de la fonction
+$factorielle$~:
+
+$$\begin{array}{rcl}
+	factorielle (0) 	&=& 1 \\
+	factorielle (1) 	&=& 1 \\
+	factorielle (2) 	&=& 1 \times 2 \\
+	factorielle (3) 	&=& 1 \times 2 \times 3 \\
+	factorielle (4) 	&=& 1 \times 2 \times 3 \times 4 \\
+	... && \\
+	factorielle (n - 2) &=& 1 \times 2 \times 3 \times ... \times (n-2)  \\
+	factorielle (n - 1) &=& 1 \times 2 \times 3 \times ... \times (n-2) \times (n-1) \\
+	factorielle (n ) 	&=& 1 \times 2 \times 3 \times ... \times (n-2) \times (n-1) \times n \\
+\end{array}$$
+
+Nous remarquons que chaque ligne ne diffère de la précédente que par
+un seul terme. Par exemple, $factorielle(4)$ est égal à$
+factorielle(3) \times 4$. Nous sommes donc tentés de définir
+$factorielle$ par l'équation~
+	$$factorielle (n) = factorielle (n-1) \times n $$ valable pour
+tout entier positif $n$, dans laquelle la fonction $factorielle$ est
+exprimée à partir d'elle-m\^eme. Mais il y a un hic~: en appliquant
+cette équation au cas $n=0$, nous obtenons $ factorielle(0) =
+factorielle(-1)\times0$ et donc $1=0$, ce qui n'est pas raisonnable
+(sans parler du fait que $-1$ n'est pas dans le domaine de définition
+de la fonction).
+
+Il faut donc limiter l'usage de l'équation $factorielle (n) =
+factorielle(n-1) \times n$ aux cas o\`u n est strictement positif, et
+préciser ce qui se passe lorsque $n=0$ (le cas de base). Voici donc
+une bonne définition de la factorielle~:
+$$\begin{array}{rll}
+factorielle (n) &= factorielle (n-1) \times n & 
+\mbox{\ pour tout entier positif\ } n \\
+factorielle (0) &= 	1
+\end{array}$$
+
+
+\subsection*{Traduction en HOPE}
+
+Dans le langage HOPE, nous déclarerons cette fonction sous la forme~:
+\begin{verbatim}
+dec factorielle : num -> num ;
+--- factorielle (0) <= 1 ;
+--- factorielle (n) <=  factorielle (n-1) * n ;
+\end{verbatim}
+
+Attention, l'ordre des équations est important en Hope, car
+l'interprèteur va essayer de les utiliser dans l'ordre o\`u elles ont
+été déclarées. Le calcul de $factorielle(2)$ se déroule comme suit~:
+
+\begin{itemize}
+\item rejet de la première équation~: $2$ est différent de la constante $ 0 $, donc l'équation ne convient pas.
+\item essai de la seconde équation~: on peut poser $n=2$. Donc on remplace
+$ factorielle(2)$ par $factorielle(2-1)\times 2$ :
+	$factorielle(2) = factorielle(2-1)\times 2 = factorielle(1)\times 2$
+\end{itemize}
+
+reste à résoudre $factorielle(1)$~:
+
+\begin{itemize}
+\item rejet de la première équation car $1$ est différent de la constante $0$.
+\item essai de la seconde équation~: on peut poser $n=1$. Donc on remplace
+$ factorielle(1)$ par $ factorielle(1-1)\times 2 $:
+
+$$\begin{array}{rl}
+factorielle(2) &= factorielle(1)\times 2 \\
+		&= factorielle(1-1)\times 1\times 2 \\\
+	& = factorielle(0)\times 1\times 2
+\end{array}$$
+\end{itemize}
+reste à résoudre factorielle(0)~:
+\begin{itemize}
+\item la première équation ``colle''~: on remplace$ factorielle(0)$ par$ 1$, et on obtient~:
+
+$$\begin{array}{rl}
+factorielle(2)  &= factorielle(0)\times 1\times 2 \\
+&= 1\times 1\times 2 \\
+&= 2
+\end{array}$$
+\end{itemize}
+
+Il est clair que si nous avions posé les équations dans l'ordre
+inverse, nous n'aurions jamais pu détecter le cas de base, et le
+calcul ne se serait jamais terminé.  En règle générale donc, il faut
+écrire les équations de base en t\^ete, et ensuite les équations de
+récurrence.
+
+
+\paragraph{Remarque~: }on pouvait aussi écrire~:
+
+\begin{verbatim}
+dec factorielle : num -> num ;
+--- factorielle (n) <= if n=0 
+                       then 1 
+                       else factorielle (n-1) * n ;
+\end{verbatim}
+
+Mais, sous cette forme, on voit moins bien les équations
+sous-jacentes. Quand c'est possible, il faut éviter l'emploi de la
+structure conditionnelle.
+
+
+Exercices~:
+\begin{exercice}
+ Écrire une fonction \texttt{som} qui calcule la somme des $n$ premiers entiers strictement positifs, c'est-à-dire~:	$som(n) =   1+2+3+...+n $.
+
+Indications~:
+\begin{verbatim}
+som(0) =
+som(1) =
+som(2) =
+som(3) =
+som(4) =
+...
+\end{verbatim}
+\end{exercice}
+
+
+
+
+
+
+\begin{exercice}
+ Écrire une fonction \texttt{somcarre} qui calcule la somme des carrés des $n$ premiers entiers strictement positifs, c'est-à-dire~:	
+$$ somcarre(n) =   1^2+2^2+3^2+\ldots.+n^2$$
+
+\end{exercice}
+\begin{exercice}
+ Écrire une fonction \texttt{somcube} qui calcule la somme des cubes des n premiers entiers strictement positifs, c'est-à-dire~:	
+$somcube(n) =   1^3+2^3+3^3+....+n^3$.
+\end{exercice}	
+
+\begin{exercice}	
+ En utilisant le type prédéfini \texttt{truval} (\emph{truth value} =
+ booléen) qui possède deux valeurs \texttt{true} et \texttt{false}, écrire une fonction
+ \texttt{pair} qui détermine si un entier (positif) est pair ou non.
+	
+\begin{verbatim}
+pair(0) =
+pair(1) =
+pair(2) =
+pair(3) = 
+...
+\end{verbatim}
+\end{exercice}
+
+
+
+\begin{exercice}
+Voici la suite de Fibonnacci  (Léonard de Pise 1170 ?- 1250)~:
+$$ 1, 1, 2, 3, 5, 8, 13, 34, 55, 89 \ldots $$ Comme vous pouvez le remarquer,
+chaque élément de cette suite est la somme des deux précédents (sauf
+les deux premiers, qui sont les cas de base)~: il en sera évidemment
+également ainsi pour les termes suivants.
+\begin{verbatim}
+dec fib : num -> num ;
+
+--- fib (1) 	<=
+
+--- fib (2) 	<=	
+
+--- fib (n)	<=
+\end{verbatim}
+\end{exercice}
+
+\begin{exercice}
+Et vous ne pouvez ignorer le triangle de Pascal, les fameux
+coefficients binomiaux~:
+\begin{tabular}{lllll}
+c(0,0)=1 \\
+c(1,0)=1 &	c(1,1)=1\\
+c(2,0)=1&	c(2,1)=2	&c(2,2)=1 \\
+c(3,0)=1	&c(3,1)=3	&c(3,2)=3	&c(3,3)=1 \\
+c(4,0)=1 	&c(4,1)=4 	&c(4,2)=6 	&c(4,3)=4	&c(4,4)=1\\
+\end{tabular}
+
+
+\end{exercice}
+
+
+\section{Raisonnement par récurrence}
+
+L'écriture d'une spécification récursive est une activité
+intellectuelle très proche du raisonnement par récurrence. Soit à
+démontrer par exemple la proposition~:
+
+\paragraph*{Proposition}
+	Pour tout entier $n$ positif ou nul,  on a  
+$$som(n)= \frac{n\times(n+1)}{2}$$
+
+
+\subsection{Preuve formelle}
+
+Nous allons d'abord présenter une preuve formelle de cette
+proposition~: la démonstration sera une suite d'étapes dont nous
+montrerons systématiquement les justifications. Ainsi nous serons
+certains que notre preuve est inattaquable.
+
+
+\textbf{Début de la Preuve.}
+
+Nous allons montrer que pour tout entier $n$ possède la
+propriété  $P(n)$  définie par~: 
+$$P(n) \equiv  \left( som(n)=\frac{n\times(n+1)}{2} \right)$$
+
+\begin{itemize}
+\item A. P(0) est vrai en effet~:
+
+\begin{tabular}{rll}
+1.&	$P(0) \equiv (som(0)=0)$	&	par définition de $P$	 \\
+2.&	$som(0)=0$ &				par définition de $som(0)$ \\
+3.&	$P(0)$ est vrai		&		conséquence de 1 et 2
+\end{tabular}
+
+\item B. pour tout entier $n$, $P(n) \Rightarrow  P(n+1)$, car
+
+\begin{tabular}{rll}
+4. &	$P(n)$ vrai		 & Hypothèse \\
+5. &	$som(n)=\frac{n \times(n+1)}{2}$ &	conséquence de 4 et définition de P \\
+6. &	$P(n+1) \equiv (som(n+1) = \frac{(n+1)\times(n+2)}{2})$ &par définition de P \\
+7. &	$som(n+1) = som(n) + (n+1)$		& par définition de som \\
+8. &	$som(n+1) = \frac{n\times(n+1)}{2}  + (n+1)$	&conséquence de 7 et 5 \\
+9. &	$som(n+1) = \frac{n\times(n+1)}{2}  + \frac{2(n+1)}{2}$	&petit calcul \\
+10.& 	$som(n+1) = \frac{(n+2)\times(n+1)}{2}$		&idem. \\
+11.& 	$P(n+1)$ vrai				&conséquence de 6 et 10 \\
+\hline 
+12.&	$P(n) \Rightarrow P(n+1)$			&car l'hypothèse 4 entraîne 11 
+\end{tabular}
+\item C. D'après A et B, et en vertu du principe de récurrence, nous concluons~:
+la propriété $P(n)$ est  vraie pour tout entier $n$ positif ou nul.
+\end{itemize}
+\textbf{Fin de la Preuve.}
+
+On peut difficilement mettre en doute la rigueur d'un raisonnement
+présenté sous cette forme !
+
+
+\subsection{Preuve par transformation de programme}
+
+Prouver qu'une fonction possède une certaine propriété revient à
+démontrer qu'une autre fonction est constante. C'est évident~: sur
+notre exemple, la propriété~:
+
+\paragraph*{Propriété}	Pour tout entier positif ou nul, on a  $som(n)= \frac{n\times(n+1)}{2}$.
+
+est vraie si et seulement si la fonction~:
+
+\begin{verbatim}
+dec P : num -> truval;
+--- P(n) <= ( som(n) = n*(n+1)/2 );
+\end{verbatim}
+vaut \texttt{true} pour tout entier positif ou nul.
+
+Nous allons modifier cette définition de \texttt{P}, pas à pas, jusqu'à ce que
+nous puissions conclure que \texttt{P} vaut toujours \texttt{true}.
+
+\begin{itemize}
+\item Séparation en deux cas, selon que $n$ est nul ou non. On obtient une
+définition équivalente~:
+
+\begin{verbatim}
+dec P : num -> truval
+--- P(0) <= ( som(0) = 0*(0+1)/2 );
+--- P(n) <= ( som(n) = n*(n+1)/2 );
+\end{verbatim}
+
+\item Comme $som(0)=0$ et, quand $n$ est différent de $0$, on a 
+$som(n)=som(n-1)+n$, on simplifie~:
+\begin{verbatim}
+dec P : num -> truval;
+--- P(0) <= true;
+--- P(n) <= ( som(n-1)+n  = n*(n+1)/2 );
+\end{verbatim}
+\item Mais nous avons les équivalences~:
+	
+$$\begin{array}{llcl}
+	& som(n-1) + n	&=&   \frac{n \times (n+1)}{2}    \\
+\Leftrightarrow &   	som(n-1) 	&=&   \frac{n\times(n+1)}{2} - n    \\
+\Leftrightarrow &	som(n-1) 	&=&   \frac{n\times(n -1)}{2}
+\end{array}$$
+\item  Mais, d'après la définition initiale de P, on a~:
+$$\begin{array}{rl}
+	P(n-1)  	&= (  som(n-1) = \frac{(n-1)\times(n+1-1)}{2})  \\
+		&= (  som(n-1) = \frac{(n-1)\times n}{2} )
+\end{array}$$
+
+Ce qui amène à redéfinir une dernière fois \texttt{P}~:
+
+\begin{verbatim}
+dec P : num -> truval;
+--- P(0) <= true ;
+--- P(n) <= P(n-1) ;
+\end{verbatim}
+\end{itemize}
+
+L'axiome d'induction nous permet de conclure que pour tout entier
+positif ou nul n, \texttt{P(n) = true}.
+
+
+
+
+\begin{exercice} Démontrez que 
+$$\begin{array}{rl} 
+somcarre(n) &= 1^2+2^2+3^2+\ldots+n^2) \\
+	&= \frac{n(n+1)(2n+1)}{6}
+\end{array}$$
+\end{exercice}
+\begin{exercice} $somcube(n) = (1^3+2^3+3^3+....+n^3) = som(n)^2$
+  	(AL-KARAGI, fin du \siecle{X} siècle).\end{exercice}
+\begin{exercice} $ 1\times factorielle(1)+2\times factorielle(2)+...+n\times factorielle(n) = factorielle(n+1)-1 $
+\end{exercice}
+
+\section{Fonctions d'ordre supérieur}
+
+Vous avez sans doute remarqué une certaine ressemblance d'écriture
+entre les fonctions \texttt{som}, \texttt{somcarre}, et
+\texttt{somcube}. Si l'on vous demandait d'écrire une fonction \texttt{tresor}
+qui calcule, pour tout entier $n$, la somme~:
+
+\[	tresor(n) = azor(1) + azor(2) + .... azor(n) \]
+
+dans laquelle \texttt{azor} est une fonction de type 
+``\verb+num -> num+'', 
+vous trouveriez que l'enseignant abuse de votre bonne volonté,
+- ou manque sérieusement d'imagination - en vous posant toujours le
+m\^eme genre d'exercices, que vous savez très bien faire.
+
+
+% \citation{Programmer, c'est toujours la m\^eme chose (enfin presque).}
+
+Dans la vie quotidienne du programmeur, cette situation se produit
+fréquemment~: il vous faudra écrire un programme P2 qui fait presque
+la m\^eme chose qu'un programme P1 que vous avez déjà écrit
+auparavant~: t\^ache d'intér\^et uniquement alimentaire~! Dans un tel
+cas bien s\^ur on ne repart pas de zéro~: on récupère le texte de P1,
+et on le bricole un peu.
+
+Par exemple, on ``bidouillerait'' la définition de \texttt{som} en la rebaptisant
+\texttt{tresor}, et en rempla\c{c}ant \texttt{n+som(n-1)} par 
+\texttt{azor(n)+tresor(n-1)}. Et le
+tour est joué !
+
+
+La programmation fonctionnelle offre une alternative plus séduisante
+que ce bricolage indigne~: c'est l'utilisation de \emph{fonctions
+d'ordre supérieur}. Expliquons-nous~: dans tous les cas il s'agit
+d'additionner les valeurs $f(1)+f(2)+ ... + f(n)$, pour une certaine
+fonction $f$ qui est soit l'identité, soit la fonction $carre$, la
+fonction $cube$, $azor$ ou ce qu'on voudra. Alors nous allons écrire
+une \emph{fonctionnelle} qui fera le calcul voulu pour tout entier $n$
+et toute fonction $f$~:
+
+
+\begin{verbatim}
+dec somfonc : num X ( num -> num ) -> num ;
+--- somfonc ( 0 , f )  <= 0 ;
+--- somfonc ( n , f )  <= f(n) + somfonc (n-1 , f );
+\end{verbatim}
+
+\textbf{Vocabulaire}~: en mathématiques, on appelle
+\emph{fonctionnelle} ou \emph{fonction d'ordre supérieur} une fonction
+dont un (au moins) des paramètres est lui-m\^eme une fonction.
+
+Maintenant \texttt{tresor} s'écrit plus simplement~:
+\begin{verbatim}
+dec tresor : num -> num ;
+--- tresor ( n) <= somfonc ( n , azor ) ;
+\end{verbatim}
+
+Pour réécrire \texttt{somcarre} à l'aide de \texttt{trésor}, on peut~:
+
+\begin{itemize}
+\item soit se donner la peine d'écrire une fonction \texttt{carre}~:
+\begin{verbatim}
+dec carre : num -> num
+--- carre(n) <= n*n ;
+
+dec somcarre2 : num -> num ;
+--- sommcarre2(n) <= somfonc( n , carre ) ;
+\end{verbatim}
+
+\item soit utiliser une \emph{fonction anonyme}~:
+\begin{verbatim}
+dec somcarre3 : num -> num ;
+--- somcarre3(n) <= somfonc( n , lambda (n) => n*n  ) ;
+\end{verbatim}
+\end{itemize}
+
+En HOPE la forme~:
+\begin{alltt}
+lambda ( \textrm{x, y, z} \ldots ) => \textrm{expression}
+\end{alltt}
+sert à désigner la fonction anonyme qui à $x, y, z \ldots$ fait correspondre
+une certaine valeur décrite par l'expression. On peut utiliser les
+lambda-expressions à volonté, tapez par exemple~:
+\begin{alltt}
+	(lambda (a,b) => 2*a - 3*b) (10,4) ;
+\end{alltt}
+et vous verrez appara\^{\i}tre ? 
+
+
+\section{À propos des fonctions auxiliaires}
+
+Pour résoudre un problème compliqué, on le décompose en problèmes plus
+simples. En programmation fonctionnelle, on aura souvent besoin
+d'écrire des fonctions auxiliaires, pour résoudre une partie d'un
+problème. Pensez-y car~:
+
+\begin{itemize}
+\item Souvent on ne peut pas faire autrement ! Par exemple il semble
+difficile décrire la fonction $f(n,k) = 1^k + 2^k + \ldots + n^k$ sans
+écrire une fonction auxiliaire {\em a puissance b}
+\item Vous aurez peut-\^etre besoin de la m\^eme fonction auxiliaire
+ailleurs.
+\item L'emploi d'une ``bonne'' fonction auxiliaire peut conduire à un
+gain d'efficacité énorme.
+\end{itemize}
+
+
+Par exemple, avec la définition suivante :
+
+\begin{verbatim}
+dec fib : num -> num ;
+--- fib(1) <= 1;
+--- fib(2) <= 1 ;
+--- fib(n) <= fib(n-1) + fib(n-2);
+\end{verbatim}
+
+Que vaut $mystere(1,n)$ ?
+
+\begin{exercice}
+Prouvez-le !
+\end{exercice}
+
+
+\begin{exercice}
+Exercice 2 ( ``variable tampon'' )
+\begin{verbatim}
+dec bizarre : num X num X num -> num ;
+--- bizarre ( a, 0, c) <= c;
+--- bizarre ( a, b, c) <= bizarre(a-1, b, a*c);
+\end{verbatim}
+Que vaut $bizarre( n, p, 1)$ ? 
+ 
+\end{exercice}
+
+
+\begin{exercice}
+\textbf{Test de primalité} : 
+Un nombre (entier positif) est premier s'il admet exactement deux
+diviseurs~: l'unité et lui m\^eme. Ècrire une fonction qui indique si
+un nombre est premier.
+
+Indications~:
+\begin{itemize}
+\item contrairement à une opinion très répandue, 1 n'est pas premier !
+\item un nombre $ n \geq 2 $ n'est pas premier s'il a un diviseur dans
+l'intervalle entier $\{ 2 \ldots n-1 \}$
+\item $ \{ a \ldots b \} = \{ a \ldots b-1 \} \cup \{ b \}$ si  $a<b$.
+\item $p$ est divisible par $q$ si et seulement si $p\ modulo\ q = 0$.
+\end{itemize}
+
+\end{exercice}
+
