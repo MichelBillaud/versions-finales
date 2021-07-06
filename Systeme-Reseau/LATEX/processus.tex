@@ -1,0 +1,537 @@
+
+Dans beaucoup de programmes il est nécessaire d'avoir plusieurs
+processus qui tournent simultanément pour réaliser ensemble un certain
+travail. Ils collaboreront à travers des tuyaux, du partage de mémoire
+et autres techniques décrites ailleurs dans ce document.
+
+Ici nous présentons deux types de processus. Le premier, présent dès
+les premières versions d'UNIX, s'obtient essentiellement en dupliquant
+le processus qui le lance (contenu de la mémoire, fichiers ouverts,
+ressource diverses, etc).  Le processus ``fils'' possède alors un
+espace mémoire totalement séparé de celui du ``père qui l'a lancé''.
+
+
+Cette duplication fait qu'on l'appelle souvent \emph{processus lourd},
+par opposition aux \emph{processus légers} introduits plus tard qui,
+eux, partagent le même espace mémoire et les mêmes ressources.
+Cette ``lourdeur'' est à relativiser, le système met en oeuvre
+des techniques comme le copy-on-write qui limitent les dégâts.
+
+Contrairement aux signaux POSIX par rapport aux signaux Unix, on ne
+peut pas dire que les processus légers rendent obsolètes les processus
+``lourds'' : les deux ont leur utilité, leurs avantages et inconvénients.
+
+
+\section{Les processus lourds}
+\sloppy
+\subsection{\texttt{fork()}, \texttt{wait()}}
+\label{fork}
+
+\index{processus!fork()}
+\index{fork()}
+\index{processus!wait()}
+\index{wait()}
+
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+pid_t fork(void);
+pid_t wait(int *status)
+\end{lstlisting}
+
+
+La fonction \texttt{fork()} crée un nouveau processus (\emph{fils})
+semblable au processus courant (\emph{père}). La valeur renvoyée
+n'est pas la même pour le fils (\texttt{0}) et pour le père (numéro de
+processus du fils). \texttt{-1} indique un échec.
+
+
+La fonction \texttt{wait()} attend qu'un des processus fils soit
+terminé.  Elle renvoie le numéro du fils, et son \texttt{status} (voir
+\texttt{exit()}) en paramètre passé par adresse.
+
+
+\textbf{Attention. } Le processus fils \emph{hérite} des descripteurs
+ouverts de son père. Il convient que chacun des processus ferme
+les descripteurs qui ne le concernent pas.
+
+\textbf{Exemple :}
+
+
+
+\source
+\lstinputlisting{../PROGS/Divers/biproc.c}
+
+
+
+\textbf{Exercice :} Observez ce qui se passe si, dans la fonction
+\texttt{affiche()}, on remplace l'appel à \texttt{lire()} par un
+\texttt{read()} ? Et si on ne fait pas le \texttt{wait()} ?
+
+\subsection{ \texttt{waitpid()} : attente de changement d'état}
+
+\index{processus!waitpid()}
+\index{waitpid()}
+
+La fonction \texttt{waitpid()} permet d'attendre un \emph{changement
+  d'état} d'un des processus fils désigné par son \emph{pid}
+(n'importe lequel si \emph{pid = -1}), et de récupérer éventuellement
+son code de retour.
+
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/wait.h>
+
+pid_t  waitpid (pid_t pid, int *status, int options);
+\end{lstlisting}
+
+L'option \texttt{WNOHANG} rend \texttt{waitpid} non bloquant (qui
+retourne alors \texttt{-1} si le processus attendu n'est pas terminé).
+
+\textbf{Exemple :}
+
+
+\extrait
+\begin{lstlisting}
+int pid_fils;
+int status;
+
+if( (pid_fils = fork()) != 0) {
+   code_processus_fils();
+   exit(EXIT_SUCCESS);
+   };
+...
+if (waitpid(pid_fils,NULL,WMNOHANG) == -1)
+   printf("Le processus fils n'est pas encore terminé\n");
+...
+\end{lstlisting}
+
+
+La fonction retourne 
+\begin{itemize}
+\item
+si un processus fils s'est terminé, le numéro du processus fils ;
+\item
+  \texttt{-1} si le processus a reçu un signal, 
+et la variable \texttt{errno} contient alors  \texttt{EINTR} ;
+\item
+  \texttt{0} si l'option \texttt{WNOHANG} était indiqué, et qu'aucun
+  processus n'a changé d'état
+\end{itemize}
+
+Les macros suivantes permettent de connaître la nature du changement d'état
+
+\index{processus!status}
+
+\begin{itemize}
+\item 
+  \texttt{WIFEXITED(status)} Vrai si le fils s'est terminé normalement
+  (appel à \texttt{exit()} ou \texttt{return} depuis \texttt{main()}.
+  Dans ce cas \texttt{WEXITSTATUS(status)} donne la
+  valeur du code de retour status fourni par le processus fils.
+\item
+  \texttt{WIFSIGNALED(status)}
+  Vrai si le fils s'est terminé à cause d'un signal non intercepté.
+  Dans ce cas \texttt{WTERMSIG(status)}
+              donne le numéro du signal qui a causé la fin du fils. 
+\item \texttt{WIFSTOPPED(status)}
+  Vrai si le fils est actuellement stoppé.
+  Dans ce cas \texttt{WSTOPSIG(status)}
+  donne le numéro du signal qui a causé l'arrêt du fils. 
+\item \texttt{WIFCONTINUED(status)}
+  indique si le processus a été continué.
+\end{itemize}
+
+
+\source
+\lstinputlisting{../PROGS/Essais/test-waitpid.c}
+
+
+\subsection{\texttt{exec()}}
+
+\index{exec()!famille de fonctions}
+
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+
+int execv (const char *FILENAME, char *const ARGV[])
+int execl (const char *FILENAME, const char *ARG0,...)
+int execve(const char *FILENAME, char *const ARGV[], char *const ENV[])
+int execle(const char *FILENAME, const char *ARG0,...char *const ENV[])
+int execvp(const char *FILENAME, char *const ARGV[])
+int execlp(const char *FILENAME, const char *ARG0, ...)
+\end{lstlisting}
+
+  
+Ces fonctions font toutes la même chose : activer un exécutable
+\emph{à la place} du processus courant. Elles diffèrent par
+la manière d'indiquer les paramètres.
+
+\begin{itemize}
+\item  \texttt{execv()} : les paramètres de la commande sont transmis
+sous forme d'un tableau de pointeurs sur des chaînes de caractères (le
+dernier étant \texttt{NULL}). Exemple:
+
+
+\source
+\lstinputlisting{../PROGS/Divers/execv.c}
+
+
+
+\item \texttt{execl()} reçoit un nombre variable de paramètres.
+Le dernier est \texttt{NULL}). Exemple:
+
+
+\source
+\lstinputlisting{../PROGS/Divers/execl.c}
+
+
+
+\item  \texttt{execve()} et \texttt{execle()} ont un paramètre
+supplémentaire pour préciser l'\emph{environnement}.  
+
+\item 
+\texttt{execvp()} et \texttt{execlp()} utilisent la variable
+d'environnement \texttt{PATH} pour localiser l'exécutable à lancer. On
+pourrait donc écrire simplement:
+
+\extrait
+\begin{lstlisting}
+  execlp("gcc", "gcc", fichier, "-o", prefixe, NULL);
+
+  // avec execvp
+  char * args[] = { "gcc", fichier, "-o", prefixe, NULL };
+  execlp("gcc", args);
+\end{lstlisting}
+\end{itemize}
+
+\subsection{Numéros de processus : \texttt{getpid()}, \texttt{getppid()}}
+
+
+\index{getpid}
+\index{getppid}
+\index{processus!getpid}
+\index{processus!getppid}
+
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+
+pid_t getpid(void);
+pid_t getppid(void);
+\end{lstlisting}
+
+
+\texttt{getpid()} permet à un processus de connaître son propre numéro, et 
+\texttt{getppid()} celui de son père.
+
+
+\subsection{Programmation d'un démon}
+
+Les \emph{démons}\footnote{Traduction de l'anglais \emph{daemon}, 
+acronyme de  Disk And Extension MONitor'', qui désignait une
+des parties résidentes d'un des premiers systèmes d'exploitation}
+ sont des processus qui tournent normalement en
+arrière-plan pour assurer un service. Pour programmer correctement un
+démon, il ne suffit pas de faire un \texttt{fork()}, il faut aussi
+s'assurer que le processus restant ne bloque pas de ressources. Par
+exemple il doit libérer le terminal de contrôle du processus, revenir
+à la racine, faute de quoi il empêchera le démontage éventuel du système de
+fichiers à partir duquel il a été lancé.
+
+\index{demon@démon}
+\index{processus!démon}
+
+
+\source
+\lstinputlisting{../PROGS/Divers/demon.c}
+
+
+Voir FAQ Unix : \emph{1.7 How do I get my program to act like a daemon}
+
+
+\section{Les processus légers (Posix 1003.1c)}
+
+\index{processus!légers}
+\index{processus!thread}
+
+Les processus classiques d'UNIX possèdent des ressources
+séparées (espace mémoire, table des fichiers ouverts...).
+Lorsqu'un nouveau \emph{fil d'exécution} (processus fils) 
+est créé par \texttt{fork()}, il se voit attribuer une 
+\emph{copie} des ressources du
+processus père. 
+
+
+Il s'ensuit deux problèmes : 
+\begin{itemize}
+\item  problème de  performances, puisque la 
+duplication est un mécanisme coûteux
+\item  problème de communication entre les processus, qui ont 
+des variables séparées.
+\end{itemize}
+
+Il existe des moyens d'atténuer ces problèmes : technique du 
+\emph{copy-on-write} dans le noyau pour ne dupliquer les
+pages mémoires que lorsque
+      c'est strictement nécessaire), utilisation
+de segments de mémoire partagée (IPC) pour mettre des données en commun.
+Il est cependant apparu utile de définir un mécanisme permettant
+d'avoir plusieurs \emph{fils d'exécution} (threads) dans un même espace de
+ressources non dupliqué : c'est ce qu'on appelle les 
+\emph{processus légers}. Ces processus légers peuvent se voir affecter 
+des priorités.
+
+
+On remarquera que la commutation entre deux threads d'un même groupe est
+une opération économique, puisqu'il n'est pas utile de recharger 
+entièrement la table des pages de la MMU.
+
+
+Ces processus légers ayant vocation à communiquer entre eux, la norme
+POSIX 1003.1c définit également des mécanismes de synchronisation :
+exclusion mutuelle (\emph{mutex}), \emph{sémaphores}, et \emph{conditions}.
+
+\textbf{Remarque :} les sémaphores ne sont pas définis dans les
+bibliothèques de AIX 4.2 et SVR4 d'ATT/Motorola. Ils existent dans
+Solaris et les bibliothèques pour Linux.
+
+
+\subsection{Threads}
+
+\index{processus léger!pthread\_create()}
+\index{processus léger!pthread\_exit()}
+\index{pthread\_join()}
+\index{pthread\_create()}
+\index{pthread\_exit()}
+\index{pthread\_join()}
+\extrait
+\begin{lstlisting}
+#include <pthread.h>
+
+int pthread_create(pthread_t      *thread, 
+                   pthread_attr_t *attr, 
+                   void           *(*start_routine)(void *), 
+                   void           *arg);
+void pthread_exit(void *retval);
+int pthread_join(pthread_t th, void **thread_return);
+\end{lstlisting}
+
+
+La fonction \texttt{pthread\_create} demande le lancement d'un nouveau
+processus léger, avec les attributs indiqués par la structure
+pointée par \texttt{attr} (\texttt{NULL} = attributs par défaut).
+Ce processus exécutera la fonction \texttt{start\_routine}, en lui donnant le
+pointeur \texttt{arg} en paramètre.  L'identifiant du processus léger est
+rangé à l'endoit pointé par \texttt{thread}.
+
+
+Ce processus léger se termine (avec un code de retour) 
+lorsque la fonction qui lui est
+associée se termine par \texttt{return} \emph{retcode}, ou lorsque 
+le processus léger exécute un
+\texttt{pthread\_exit} \emph{(retcode)}.
+
+
+La fonction \texttt{pthread\_join} permet au processus père d'attendre 
+la fin d'un processus léger, et de récupérer éventuellement
+son code de retour.
+
+
+
+\textbf{Priorités :} Le fonctionnement des processus légers peut être
+modifié (priorités, algorithme d'ordonnancement, etc.) en manipulant
+les \emph{attributs} qui lui sont associés. Voir les fonctions
+\texttt{pthread\_attr\_init}, \texttt{pthread\_attr\_destroy},
+\texttt{pthread\_attr\_set-detachstate},
+\texttt{pthread\_attr\_getdetachstate},
+\texttt{pthread\_attr\_setschedparam},
+\texttt{pthread\_attr\_getschedparam},
+\texttt{pthread\_attr\_setschedpolicy},
+\texttt{pthread\_attr\_getschedpolicy},
+\texttt{pthread\_attr\_setinheritsched},
+\texttt{pthread\_attr\_getinheritsched}, \texttt{pthread\_attr\_setscope},
+\texttt{pthread\_attr\_getscope}.
+
+\subsection{Verrous d'exclusion mutuelle (mutex)}
+
+\index{mutex}
+\index{processus léger!pthread\_mutex\_init()}
+\index{processus léger!pthread\_mutex\_destroy()}
+\index{processus léger!pthread\_mutex\_lock()}
+\index{processus léger!pthread\_mutex\_unlock()}
+\index{processus léger!pthread\_mutex\_trylock()}
+\index{pthread\_mutex\_init()}
+\index{pthread\_mutex\_destroy()}
+\index{pthread\_mutex\_lock()}
+\index{pthread\_mutex\_unlock()}
+\index{pthread\_mutex\_trylock()}
+
+
+
+\extrait
+\begin{lstlisting}
+#include <pthread.h>
+
+int pthread_mutex_init(pthread_mutex_t   *mutex,   
+                       const pthread_mutexattr_t *mutexattr);
+int pthread_mutex_destroy(pthread_mutex_t *mutex);
+
+int pthread_mutex_lock(pthread_mutex_t *mutex));
+int pthread_mutex_unlock(pthread_mutex_t *mutex);
+
+int pthread_mutex_trylock(pthread_mutex_t *mutex);
+\end{lstlisting}
+
+
+Les verrous d'exclusion mutuelle (\texttt{mutex}) sont  créés
+par \texttt{pthread\_mutex\_init}. Il en est de différents types
+(rapides, récursifs, etc.), selon les attributs pointés par
+le paramètre \texttt{mutexattr}. La valeur par défaut (\texttt{mutexattr=NULL})
+fait généralement l'affaire. L'identificateur du verrou est placé
+dans la variable pointée par \texttt{mutex}.
+
+
+\texttt{pthread\_mutex\_destroy} détruit le verrou. 
+\texttt{pthread\_mutex\_lock} tente de le bloquer (et met le thread en attente
+si le verrou est déjà bloqué), \texttt{pthread\_mutex\_unlock} le débloque.
+\texttt{pthread\_mutex\_trylock} tente de bloquer le verrou, et échoue si
+le verrou est déjà bloqué.
+
+
+\subsection{Exemple}
+
+\textbf{Source :}
+
+\source
+\lstinputlisting{../PROGS/Threads/leger_mutex.c}
+
+
+\textbf{Compilation}:
+
+Sous Linux, les programmes doivent être compilés avec 
+l'option  \texttt{-pthread}:
+
+\index{Options de compilation!bibliothèque des threads}
+
+
+
+\extrait
+\begin{lstlisting}
+gcc -std=c18 -g -Wall -pedantic  leger_mutex.c -o leger_mutex -pthread
+\end{lstlisting}
+
+
+\textbf{Exécution}:
+
+\extrait
+\begin{lstlisting}
+% leger_mutex 
+[1] Hello
+[2] World
+[3] Hello
+[4] Hello
+[5] World
+ 5 lignes.
+%
+\end{lstlisting}
+
+
+
+\subsection{Sémaphores}
+
+
+Les sémaphores, qui font partie de la norme POSIX,
+ne sont pas implémentés 
+dans toutes les bibliothèques de threads.
+
+\index{semaphore POSIX@sémaphore POSIX!sem\_init}
+\index{semaphore POSIX@sémaphore POSIX!sem\_destroy}
+\index{semaphore POSIX@sémaphore POSIX!sem\_wait}
+\index{semaphore POSIX@sémaphore POSIX!sem\_post}
+\index{semaphore POSIX@sémaphore POSIX!sem\_trywait}
+\index{semaphore POSIX@sémaphore POSIX!sem\_getvalue}
+
+
+\extrait
+\begin{lstlisting}
+#include <semaphore.h>
+
+int sem_init(sem_t *sem, int pshared, unsigned int value);
+int sem_destroy(sem_t * sem);
+
+int sem_wait(sem_t * sem);
+int sem_post(sem_t * sem);
+
+int sem_trywait(sem_t * sem);
+int sem_getvalue(sem_t * sem, int * sval);
+\end{lstlisting}
+
+
+Les sémaphores sont créés par \texttt{sem\_init}, qui place
+l'identificateur du sémaphore à l'endroit pointé par \texttt{sem}. La
+valeur initiale du sémaphore est dans \texttt{value}. Si
+\texttt{pshared} est nul, le sémaphore est local au processus lourd
+(le partage de sémaphores entre plusieurs processus lourds n'est pas
+implémenté dans la version courante de \texttt{linuxthreads}.).
+
+
+
+\texttt{sem\_wait} et \texttt{sem\_post} sont les équivalents respectifs
+des primitives \texttt{P} et \texttt{V} de Dijkstra. La fonction
+\texttt{sem\_trywait} échoue (au lieu de bloquer) si la valeur du
+sémaphore est nulle. Enfin, \texttt{sem\_getvalue} consulte la valeur
+courante du sémaphore.
+
+
+
+
+\textbf{Exercice}: Utiliser un sémaphore au lieu d'un \texttt{mutex} 
+pour sécuriser l'exemple.
+
+\subsection{Conditions}
+
+Les \emph{conditions}  servent à mettre en attente 
+des processus légers derrière un \texttt{mutex}. 
+Une primitive permet de débloquer d'un seul
+coup tous les threads bloqués par une même condition.
+
+\index{condition!pthread\_cond\_init}
+\index{condition!pthread\_cond\_destroy}
+\index{condition!pthread\_cond\_wait}
+\index{condition!pthread\_cond\_signal}
+\index{condition!pthread\_cond\_broadcast}
+
+\extrait
+\begin{lstlisting}
+#include <pthread.h>
+
+int pthread_cond_init(pthread_cond_t  *cond, 
+                      pthread_condattr_t *cond_attr);
+int pthread_cond_destroy(pthread_cond_t *cond);
+
+int pthread_cond_wait(pthread_cond_t *cond,
+                      pthread_mutex_t *mutex);
+
+int pthread_cond_signal(pthread_cond_t *cond);
+int pthread_cond_broadcast(pthread_cond_t *cond);
+\end{lstlisting}
+
+
+
+
+Les conditions sont créées par
+\texttt{phtread\_cond\_init}, et  détruites par \texttt{phtread\_cond\_destroy}.
+
+ 
+Un processus se met en attente en effectuant un 
+\texttt{phtread\_cond\_wait} (ce qui bloque au passage un \texttt{mutex}).
+La primitive 
+\texttt{phtread\_cond\_broadcast} débloque tous les processus qui attendent
+sur une condition, \texttt{phtread\_cond\_signal} en débloque un seul.
+
+
+

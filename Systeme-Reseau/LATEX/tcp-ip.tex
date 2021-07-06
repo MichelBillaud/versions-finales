@@ -1,0 +1,678 @@
+
+\section{Communication par TCP-IP, spécificités}
+
+Les concepts fondamentaux de la transmission d'informations par le
+réseau Internet (sockets, adresses, communication par datagrammes et flots,
+client-serveur etc.) sont les mêmes que pour les sockets locaux (voir
+\ref{sockets}).
+
+Les spécificités concernent essentiellement l'adressage : comment
+\textbf{fabriquer une adresse} de socket à partir d'un nom de machine
+(résolution) et d'un numéro de port, comment retrouver le nom d'une
+machine à partir d'une adresse (résolution inverse) etc.
+
+
+\section{Sockets, addresses}
+
+\index{socket!TCP-IP}
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int socket(int domain, int type, int protocol);
+\end{lstlisting}
+
+
+Pour communiquer, les applications doivent créer des \emph{sockets}
+(prises bidirectionnelles) par la fonction \texttt{socket()} et les
+relier entre elles.  On peut ensuite utiliser ces sockets comme des
+fichiers ordinaires (par \texttt{read}, \texttt{write}, ...) ou par
+des opérations spécifiques ( \texttt{send}, \texttt{sendto},
+\texttt{recv}, \texttt{recvfrom}, ...).
+
+
+\subsection{ \texttt{struct sockaddr} : adresses de sockets}
+
+Pour désigner un socket sur une machine il faut une \emph{adresse de
+socket}. Les fonctions réseau comme \texttt{bind}
+
+
+\begin{lstlisting}
+int bind(int socket,
+         const struct sockaddr *address,
+         socklen_t address_len);
+\end{lstlisting}
+
+prennent commme paramètre une \textbf{adresse de socket} désignée par
+un pointeur.
+
+\paragraph{Terminologie :} pour éviter les confusions, dans ce texte
+\begin{itemize}
+\item le terme \textbf{adresse} se réfère toujours une \textbf{adresse de socket} (concept réseau)
+  \item on parle de \textbf{numéro IP} pour une adresse d'une machine (\textbf{hôte}), indépendamment du port (\textbf{service}),
+\item on utilise systématiquement le mot \textbf{pointeur} pour parler des
+  adresses de données en mémoire (concept du langage C)
+\end{itemize}
+
+Ce pointeur est obtenu par transtypage (cast) d'un
+pointeur sur une structure contenant une adresse de socket. Le type de
+la structure peut être différent pour ipv4 ou ipv6.
+
+Les adresses de sockets ont un premier champ
+\footnote{qui s'appelle  \texttt{sa\_family} pour \texttt{struct sockaddr}}
+de type
+\texttt{sa\_family\_t}, qui comme son nom l'indique est
+une indication de la famille d'adresses : constantes
+\texttt{AF\_INET} pour ipv4, \texttt{AF\_INET6} pour ipv6.
+
+On utilisera 3 types de structures pour contenir des adresses
+
+\begin{itemize}
+\item \texttt{struct sockaddr\_in},  spécifiquement pour les adresses IPv4 ;
+\item \texttt{struct sockaddr\_in6}, pour IPv6 ;
+\item \texttt{struct sockaddr\_storage}, assez grande pour contenir
+  n'importe quel type d'adresse ;
+\end{itemize}
+
+et les pointeurs de type \texttt{struct sockaddr *} serviront à
+désigner ces structures de façon générique.\footnote{C'est une façon
+courante de réaliser un genre de polymorphisme en C}
+
+
+\subsection{\texttt{struct sockaddr\_in} : adresses de sockets IPv4}
+
+\index{socket!TCP-IP!adresses IPv4}
+
+
+Pour la communication par IP en général, l'adresse d'un socket est
+formée à partir d'un numéro IP, et un numéro de port (service).
+
+Les \texttt{struct sockaddr\_in} sont destinées spécifiquement
+aux adresses IPv4, elles ont 3 champs importants :
+\begin{itemize}
+\item \texttt{sin\_family}, la famille d'adresses, valant \texttt{AF\_INET}
+\item \texttt{sin\_addr}, pour le numéro IP,
+\item \texttt{sin\_port}, pour le numéro de port
+\end{itemize}
+
+Attention, les octets du numéro IP et du numéro de port sont
+stockés dans \emph{l'ordre réseau} (big-endian), qui n'est pas forcément
+celui de la machine hôte sur laquelle s'exécute le programme. 
+
+Pour renseigner correctement cette structure, il existe des fonctions
+de conversion, en particulier \texttt{getaddrinfo()} que nous verrons
+plus loin, et qui assure la \emph{résolution d'adresse}, c'est-à-dire
+la traduction\footnote{sn consultant éventuellement des serveurs de
+  noms (DNS)} d'un nom de machine (exemple \texttt{www.u-bordeaux.fr})
+en numéro IP.
+
+\subsection{\texttt{struct sockaddr\_in6} : adresses de socket IPv6}
+
+\index{socket!TCP-IP!adresses IPv6}
+
+Pour IPv6, on utilise
+des \texttt{struct sockaddr\_in6}, avec
+\begin{itemize}
+\item \texttt{sin6\_family}, valant \texttt{AF\_INET6}
+\item \texttt{sin6\_addr}, le numéro IP sur 6 octets
+\item \texttt{sin6\_port}, pour le numéro de port.
+\end{itemize}
+
+Même remarque : on utilisera \texttt{getaddrinfo()} pour fabriquer ces
+adresses de socket.
+
+
+\subsection{\texttt{struct sockaddr\_storage} : conteneur d'adresse}
+
+Cette structure est destinée à contenir une adresse de socket réseau de
+n'importe quel type. Son premier champ \texttt{ss\_family} contient la
+famille de l'adresse.
+
+\section{Remplissage d'une adresse de socket : \texttt{getaddrinfo()}}
+
+Comme pour les sockets locaux, on crée les sockets par \texttt{socket()}
+et on  ``nomme la prise'' par \texttt{bind()}, à partir d'une
+\emph{adresse de socket} que l'on a renseignée préalablement.
+
+Pour constituer cette adresse, on utilise \texttt{getaddrinfo()} !
+
+\index{getaddrinfo()}
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
+
+int getaddrinfo(const char *node, const char *service,
+                const struct addrinfo *hints,
+                struct addrinfo **res);
+\end{lstlisting}
+
+qui retourne une liste d'adresses de sockets IPv4 et/ou IPv6, selon
+les arguments qui lui sont données :
+
+\begin{itemize}
+\item \texttt{node} et \texttt{service} : chaines contenant le
+nom de la machine et du port,
+\item un pointeur sur une structure \texttt{hints} contenant des
+  indications diverses.
+\end{itemize}
+
+Le résultat est une liste chainée de structures \texttt{addrinfo}
+contenant des adresses de sockets :
+
+\begin{lstlisting}
+struct addrinfo {
+      int              ai_flags;
+      int              ai_family;
+      int              ai_socktype;
+      int              ai_protocol;
+      socklen_t        ai_addrlen;
+      struct sockaddr *ai_addr;
+      char            *ai_canonname;
+      struct addrinfo *ai_next;
+};
+\end{lstlisting}
+
+ce type de structure sert aussi pour les indications complémentaires
+pour la requête (voir plus loin)
+
+Les champs qui nous intéressent, dans les résultats, sont
+
+\begin{itemize}
+\item \texttt{ai\_family} qui indique la famille d'adresses : 
+constante \texttt{AF\_INET}  pour ipv4, \texttt{AF\_INET6}  pour ipv6 ; 
+\item \texttt{ai\_addr}  qui est un pointeur sur une adresse de socket
+\item \texttt{ai\_addrlen}, la longueur de cette adresse ;
+\item \texttt{ai\_next}, un pointeur sur le résultat suivant.
+\end{itemize}
+Attention, il faudra libérer la liste de résultats après usage, 
+en appelant \texttt{freeaddrinfo()}.
+
+\begin{lstlisting}
+  void freeaddrinfo(struct addrinfo *res);
+\end{lstlisting}
+
+
+\subsection{Préparation d'une adresse distante}
+
+Dans le cas le plus fréquent, on cherche à joindre une machine
+
+\begin{itemize}
+\item dont on connait le nom  \texttt{"www.elysee.fr"} ou le numéro
+  \texttt{"8.253.7.126"};
+\item  du \emph{service} que l'on veut joindre, que ce soit par un nom
+  (exemple \texttt{"http"}) ou un numéro de port \texttt{"80"}.\footnote{
+  le fichier \texttt{/etc/services} des machines Unix
+  contient une table de correspondance entre les noms de services et les
+  numéros de port}
+%  \item avec un protocole de type ``flot de données'' ou ``datagrammes''.
+\end{itemize}
+
+
+\paragraph{Un exemple simple : } ouverture d'un socket ``flot de données''
+vers le port 80 de la machine \texttt{www.elysee.fr}
+
+\begin{lstlisting}
+  struct addrinfo * adr_premier;
+
+  // récupérer dans adr_premier la première adresse
+  // qui correspond
+  getaddrinfo("www.elysee.fr", "http", NULL, & adr_premier);
+
+  // utilisation de l'adresse
+  int fd = socket(adr_premier->ai_family, SOCK_STREAM, 0);
+  bind(fd, adr_premier->ai_addr, adr_premier_>ai_addrlen);
+
+  freeaddrinfo(adr_premier);
+\end{lstlisting}
+
+Il faudrait y ajouter des vérifications : échec des fonctions, absece
+de résultats, etc.
+
+%% \index{gethostbyname(nom)}
+
+%% \extrait
+%% \begin{lstlisting}
+%%        #include <netdb.h>
+%%        struct hostent *gethostbyname(const char *name);
+%%        \end{lstlisting}
+
+%% \texttt{gethostbyname()} retourne un pointeur vers une structure
+%% \texttt{hostent} qui contient diverses informations sur la machine en
+%% question, en particulier une adresse \texttt{h\_addr} \footnote{Une
+%% machine peut avoir plusieurs adresses} que l'on mettra dans
+%% \texttt{sin\_addr}.
+
+
+%% Le champ \texttt{sin\_port} est un entier court \emph{en ordre réseau}, pour
+%% y mettre un entier ordinaire il faut le convertir par \texttt{htons()}
+%% 		    \footnote{Host TO Network Short}.
+
+
+On trouvera une utilisation plus détaillée dans l'exemple
+\texttt{client-echo.c}.
+
+\subsection{Préparation d'une adresse locale}
+
+%% Pour une adresse sur la machine locale\footnote{ne pas confondre avec
+%%   la notion de \emph{socket du domaine local} vue en \ref{sockets}},
+%% on utilise
+%% \begin{itemize}
+%% \item  dans le cas le plus fréquent, l'adresse \texttt{INADDR\_ANY}
+%% (\texttt{0.0.0.0}). Le
+%% socket est alors ouvert (avec le même numéro de port) sur toutes les
+%% adresses IP de toutes les interfaces de la machine.  
+%% \item  l'adresse
+%% \texttt{INADDR\_LOOPBACK} correspondant à l'adresse locale
+%% \texttt{127.0.0.1} (alias \texttt{localhost}). Le socket n'est alors
+%% accessible que depuis la machine elle-même.  
+%% \item  une des adresses IP de la la machine.
+%% \item  l'adresse de diffusion générale (\emph{broadcast}) 
+%% \texttt{INADDR\_BROADCAST} 
+%% (\texttt{255.255.255.255})\footnote{L'utilisation de l'adresse de diffusion est
+%% soumise à restrictions, voir manuel}
+%% \end{itemize}
+
+
+%% Voir exemple \texttt{serveur-echo.c}.
+
+%% Pour IPV6
+%% \begin{itemize}
+%% \item Famille d'adresses \texttt{AF\_INET6}, famille de protocoles
+%% \texttt{PF\_INET6}
+%% \item adresses prédéfinies 
+%% \texttt{IN6ADD\_LOOPBACK\_INIT} (\texttt{::1})
+%% \texttt{IN6ADD\_ANY\_INIT}
+%% \end{itemize}
+
+
+
+Dans l'exemple ci-dessus, le troisième paramètre de \texttt{getaddrinfo()}
+est un pointeur nul, mais on peut s'en servir pour transmettre
+l'adresse d'une structure \texttt{addrinfo} qui sert à préciser ce que l'on
+veut.
+
+Les champs pertinents (les plus intéressants) :
+
+\begin{itemize}
+\item \texttt{ai\_family} qui indique la ou les familles d'adresses
+  voulues : constante \texttt{AF\_INET} pour ipv4, \texttt{AF\_INET6}
+  pour ipv6, \texttt{AF\_UNSPEC} (par défaut) pour l'un ou l'autre.
+
+\item \texttt{ai\_socktype} indique si on ne doit rechercher que certains
+types de sockets (\texttt{SOCK\_STREAM}, \texttt{SOCK\_DGRAM}) ou tous (O).
+
+\item \texttt{ai\_flags} : combinaison d'indicateurs divers. Y mettre
+  \texttt{AI\_PASSIVE} pour un serveur qui doit accepter des
+  connexions sur ses différentes adresses réseau.
+\end{itemize}
+
+Les autres doivent être initialisés, 0 est une valeur par défaut
+raisonnable.
+
+L'initialisation se fait élégamment grâce aux ``Designated
+Initializers'' introduits par la norme C99. Exemple\footnote{
+  Avec ce type d'initialisation des structures, les champs
+  non spécifiés sont initialisés à 0.}
+
+\begin{lstlisting}
+struct addrinfo indications_client = {    // ipv4 ou ipv6
+   .ai_family   = AF_UNSPEC,
+   .ai_socktype = SOCK_STREAM
+};
+   
+struct addrinfo indications_serveur = {   // pour un serveur IPv6
+   .ai_family = AF_INET6,
+   .ai_flags  = AI_PASSIVE
+};
+\end{lstlisting}
+
+
+
+\subsection{Examen d'une adresse : \texttt{getnameinfo()}}
+  
+\index{getaddrinfo()}
+La fonction `getnameinfo()` réalise la conversion dans l'autre sens :
+à partir d'une adresse de socket réseau, obtenir une description du
+numéro IP de la machine et du numéro de service/port.
+
+\extrait
+\begin{lstlisting}
+int getnameinfo(const struct sockaddr *addr, socklen_t addrlen,
+                char *host, socklen_t hostlen,
+                char *serv, socklen_t servlen, 
+		int flags);
+\end{lstlisting}
+
+
+Les paramètres sont
+
+\begin{itemize}
+\item un pointeur sur la structure contenant l'adresse, et sa taille
+\item l'adresse d'un tampon pour y ranger le nom de la machine, et sa longueur
+\item l'adresse d'un tampon pour le port, et sa longueur.
+\item une combinaison d'indicateurs : \texttt{NI\_NUMERICHOST} et
+  \texttt{NI\_NUMERICSERV}, pour avoir les indications sous forme
+  numérique.
+\end{itemize}
+
+\paragraph{Un exemple :} programme de résolution d'adresses.
+
+Le programme qui suit s'exécute en ligne de commande.
+Il prend en paramètre une série de noms de machines ou d'adresses
+
+Pour chaque machine il affiche les adresses IP numériques
+sous forme numérique IPv4 (décimal pointé) ou IPv6 (hexadécimal).
+
+
+\source
+\lstinputlisting{../PROGS/Resolution/resolution.c}
+
+
+
+\subsection{Adresse associée à un socket}
+
+\index{getsockname()}
+\index{getpeername()}
+
+A partir d'un ``field descriptor'' ouvert, ces deux fonctions
+permettent de retrouver l'adresse
+
+\begin{itemize}
+\item du socket auquel il est lié (local)
+\item du socket ``pair'' auquel il est connecté (distant)
+\end{itemize}
+
+
+
+
+\extrait
+\begin{lstlisting}
+#include <sys/socket.h>
+
+int   getsockname(int sockfd,  
+                  struct sockaddr  * name,
+                  socklen_t        * namelen )
+int   getpeername(int sockfd,
+                  struct sockaddr  * addr,
+                  socklen_t        * addrlen);
+\end{lstlisting}
+
+Paramètres :
+\begin{itemize}
+
+\item le descripteur,
+  \item un pointeur sur un ``conteneur d'adresse
+de socket'' (de préférence une structure \texttt{sockaddr\_storage}
+pour avoir la compatibilité ipv4/ipv6),
+\item
+  un pointeur sur un entier
+qui recevra la longueur de l'adresse.
+\end{itemize}
+
+ 
+
+%% On peut également tenter une \emph{résolution inverse}, c'est-à-dire
+%% de retrouver le nom à partir de l'adresse de socket, en passant par 
+%% \texttt{gethostbyaddr}, qui retourne un pointeur vers une structure \texttt{hostent},
+%% dont le champ \texttt{h\_name} désigne le nom officiel de la machine.
+
+
+%% Cette résolution n'aboutit pas toujours, parce que tous les numéros IP
+%% ne correspondent pas à des machines  déclarées. 
+
+
+%% \extrait
+%% \begin{lstlisting}
+%% #include <netdb.h>
+%% extern int h_errno;
+
+%% struct hostent *gethostbyaddr(const char *addr, int len, int type);
+
+%% struct hostent {
+%%   char    *h_name;        /* official name of host */
+%%   char    **h_aliases;    /* alias list */
+%%   int     h_addrtype;     /* host address type */
+%%   int     h_length;       /* length of address */
+%%   char    **h_addr_list;  /* list of addresses */
+%% }
+%% #define h_addr  h_addr_list[0]  /* for backward compatibility */
+%% \end{lstlisting}
+
+
+\section{Fermeture d'un socket}
+
+\index{close(socket)}
+\index{shutdown(socket,indic)}
+
+Un socket peut être fermé par \texttt{close()} ou par \texttt{shutdown()}.
+
+
+\extrait
+\begin{lstlisting}
+int shutdown(int fd, int how);
+\end{lstlisting}
+
+
+Un socket est bidirectionnel, le paramètre \texttt{how} indique quelle(s) 
+moitié(s) on ferme :
+\texttt{SHUT\_RD} pour l'entrée,
+\texttt{SHUT\_WR} pour la sortie,
+\texttt{SHUT\_RDWR} pour les deux (équivaut à \texttt{close()}).
+
+
+\section{Communication par datagrammes (UDP)}
+
+\subsection{Création d'un socket}       
+
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int socket(int domain, int type, int protocol);
+\end{lstlisting}
+
+
+
+Cette fonction construit un socket et retourne un numéro de
+descripteur.
+
+Pour une liaison par datagrammes via Internet, indiquez
+famille d'adresses, le type \texttt{SOCK\_DGRAM} et le protocole
+par défaut \texttt{0}.
+
+
+
+Retourne \texttt{-1} en cas d'échec.
+
+
+\subsection{Connexion de sockets}
+
+\index{socket!connect(socket,adresse,longueur)!réseau}
+
+La fonction \texttt{connect} met en relation un socket (de cette
+machine) avec un autre socket désigné, qui sera le correspondant par
+défaut'' pour la suite des opérations.
+
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int  connect(int sockfd, 
+             const struct sockaddr *serv_addr,
+             socklen_t addrlen);
+             \end{lstlisting}
+
+
+\subsection{Envoi de datagrammes}
+
+Sur un socket connecté (voir ci-dessus), on peut expédier
+des datagrammes (contenus dans un tampon
+\texttt{t} de longueur \texttt{n}) par \texttt{write(sockfd,t,n)}.
+
+
+La fonction \texttt{send()} 
+
+\extrait
+\begin{lstlisting}
+int send(int s, const void *msg, size_t len, int flags);
+\end{lstlisting}
+
+permet d'indiquer des \emph{flags}, par exemple
+\texttt{MSG\_DONTWAIT} pour  une écriture non bloquante.
+
+
+Enfin, \texttt{sendto()} envoie un datagramme à une adresse
+spécifiée, sur un socket connecté ou non.
+
+
+
+\extrait
+\begin{lstlisting}
+int sendto(int s, const void *msg, size_t len, int flags,
+           const struct sockaddr *to, socklen_t tolen);
+           \end{lstlisting}
+
+
+\subsection{Réception de datagrammes}
+
+Inversement, la réception peut se faire par un simple 
+\texttt{read()}, par un \texttt{recv()} (avec des flags), ou
+par un \texttt{recvfrom}, qui permet de remplir une structure avec
+l'adresse
+\texttt{from}
+du socket émetteur.
+
+\extrait
+\begin{lstlisting}
+int recv(int s, void *buf, size_t len, int flags);
+int recvfrom(int  s,  void  *buf,  size_t len, int flags,
+             struct sockaddr *from, socklen_t *fromlen);
+             \end{lstlisting}
+
+
+\subsection{Exemple UDP : serveur d'écho}
+
+Principe:
+\begin{itemize}
+\item 
+Le client envoie une chaîne de caractères au serveur.
+\item 
+Le serveur l'affiche, la convertit en minuscules,
+et la réexpédie.
+\item 
+Le client affiche la réponse.
+\end{itemize}
+
+Usage:
+\begin{itemize}
+\item  sur le serveur : \texttt{serveur-echo} \emph{numéro-de-port} 
+\item 
+pour chaque client : \texttt{client-echo} \emph{nom-serveur}
+\emph{numéro-de-port} \emph{``message à expédier''}
+\end{itemize}
+
+\paragraph{Le client}.
+
+ 
+\source
+\lstinputlisting{../PROGS/Echo-Datagrammes/client-echo.c}
+
+
+\textbf{Exercice} : faire en sorte que le client réexpédie sa requête
+si il ne reçoit pas la réponse dans un délai fixé. Fixer une limite
+au nombre
+de tentatives. 
+
+\paragraph{Le serveur} :
+
+ 
+\source
+\lstinputlisting{../PROGS/Echo-Datagrammes/serveur-echo.c}
+
+
+\section{Communication par flots de données (TCP)}
+
+La création d'un socket pour TCP se fait ainsi
+
+\extrait
+\begin{lstlisting}
+  int fd;
+  ..
+  fd = socket(AF_INET,SOCK_STREAM,0);
+  \end{lstlisting}
+
+
+\subsection{Programmation des clients TCP}
+
+Le socket d'un client TCP doit être relié (par \texttt{connect()}) à celui
+du serveur, et il est utilisé ensuite par des \texttt{read()} et des
+\texttt{write()}, ou des entrées-sorties de haut niveau \texttt{fprintf()},
+\texttt{fscanf()}, etc. si on a défini des flots par \texttt{fdopen()}.
+
+
+
+\subsection{Exemple : client web}
+
+ 
+\source
+\lstinputlisting{../PROGS/TCP-Flots/client-web.c}
+
+
+Remarque: souvent il est plus commode de créer des flots de haut
+niveau au dessus du socket (voir \texttt{fdopen()}) que de manipuler
+des \texttt{read} et des \texttt{write}. Voir dans l'exemple suivant.
+
+\subsection{Réaliser un serveur TCP}
+
+Un serveur TCP doit traiter des connexions venant de plusieurs clients.
+
+
+Après avoir créé et nommé le socket,  
+le serveur spécifie qu'il
+accepte les communications entrantes par \texttt{listen()}, et se met 
+effectivement en attente
+d'une connexion de client par \texttt{accept()}.
+
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h> 
+
+int listen(int s, int backlog);
+int accept(int s,  struct  sockaddr  *addr,  
+                   socklen_t  *addrlen);
+\end{lstlisting}
+
+
+Le paramètre \texttt{backlog} indique la taille maximale de la file des
+ connexions en attente. Sous Linux la limite est donnée par
+la constante \texttt{SOMAXCONN} (qui vaut 128), sur d'autres systèmes elle
+est limitée à 5.
+
+
+La fonction \texttt{accept()} retourne un autre socket, qui sert
+à la communication avec le client.
+L'adresse du client peut être obtenue par les paramètres
+\texttt{addr} et \texttt{addrlen}.
+
+
+
+En général, les serveurs TCP doivent traiter simultanément des
+connexions venant de plusieurs clients. La solution habituelle est de
+lancer, après l'appel à \texttt{accept()} un processus fils (par
+\texttt{fork()})qui traite la communication avec un seul client.
+
+Ceci
+induit une gestion des processus, donc des signaux liés à la
+terminaison des processus fils.
+
+

@@ -1,0 +1,12 @@
+parts += resume.md
+#parts += avant-propos.md
+#parts += bases-c.md
+#parts += fichiers-tuyaux.md
+#parts += sockets-locaux.md
+#parts += signaux.md
+#parts += processus.md
+#parts += ipc.md
+#parts += {tcp-ip.md
+#parts += serveurs-web.md
+#parts += ../PROGS/Divers/passfd.c.md
+#parts += documentation.md

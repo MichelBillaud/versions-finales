@@ -1,0 +1,315 @@
+
+\section{Les mécanismes IPC System V}
+  
+\index{IPC,Inter Process Communication}
+  
+Les mécanismes de communication entre processus (\emph{InterProcess
+  Communication}, ou \emph{IPC}), issus d'Unix System V ont été repris
+dans de nombreuses variantes d'Unix. Il y a 3 mécanismes, permettant
+le partage d'informations entre processus tournant sur une même machine :
+
+\begin{itemize}
+\item  les segments, permettant de partager des zones de mémoire
+\item  les sémaphores, qui fournissent un moyen d'en contrôler l'accès,
+\item  les files de messages,
+\end{itemize}
+
+
+Ces  objets sont identifiés par des \emph{clés}.
+
+\index{Options de compilation!\_X\_OPEN\_SOURCE}
+
+Pour compiler ces programmes, ajoutez l'option
+\verb+-D_XOPEN_SOURCE=700+ à la compilation
+
+\section{\texttt{ftok()} constitution d'une clé }
+
+\extrait
+\begin{lstlisting}
+# include <sys/types.h>
+# include <sys/ipc.h>
+
+key_t ftok ( char *pathname, char project )
+\end{lstlisting}
+
+
+La fonction \texttt{ftok()} constitue une clé à partir d'un chemin d'accès
+polet d'un caractère indiquant un projet''. Plutôt que de risquer une
+explication abstraite, étudions deux cas fréquents :
+\begin{itemize}
+\item On dispose d'un logiciel commun dans \texttt{/opt/jeux/OuiOui}. 
+Ce logiciel utilise deux objets partagés. On pourra utiliser les clés
+\texttt{ftok("/opt/jeux/OuiOui",'A')} et
+\texttt{ftok("/opt/jeux/OuiOui",'B')}.
+Ainsi tous les processus de ce logiciel se réfèreront aux mêmes objets
+qui seront partagés entre tous les utilisateurs.
+\item On distribue un exemple aux étudiants, qui le recopient chez eux
+et le font tourner.
+On souhaite que les processus d'un même étudiant communiquent entre eux,
+mais qu'ils n'interfèrent pas avec d'autres. On basera donc la clé
+sur une donnée personnelle, par exemple le répertoire d'accueil, avec les
+clés
+\texttt{ftok(getenv("HOME"),'A')} et
+\texttt{ftok(getenv("HOME"),'B')}.
+
+\end{itemize}
+
+
+\section{Mémoires partagées}
+
+Ce mécanisme permet à plusieurs programmes de partager des \emph{segments
+mémoire}. Chaque segment mémoire est identifié, au niveau du système,
+par une \texttt{clé} à laquelle correspond un \emph{identifiant}. Lorsqu'un
+segment est \emph{attaché} à un programme, les données qu'il contient
+sont accessibles en mémoire par l'intermédiaire d'un pointeur.
+
+\index{memoire partagee@mémoire partagée!shmget()}
+\index{memoire partagee@mémoire partagée!shmat()}
+\index{memoire partagee@mémoire partagée!shmdt()}
+\index{memoire partagee@mémoire partagée!shmctl()}
+
+
+\extrait
+\begin{lstlisting}
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+int shmget(key_t key, int size, int shmflg);
+char *shmat (int shmid, char *shmaddr, int shmflg )
+int shmdt (char *shmaddr)
+int shmctl(int shmid, int cmd, struct shmid_ds *buf);
+\end{lstlisting}
+
+
+
+La fonction \texttt{shmget()} donne l'identifiant du segment ayant la
+clé \texttt{key}. Un nouveau segment (de taille \texttt{size}) est
+créé si \texttt{key} est \texttt{IPC\_PRIVATE}, ou bien si les
+indicateurs de \texttt{shmflg} contiennent \texttt{IPC\_CREAT}.
+Combinées, les options \texttt{IPC\_EXCL | IPC\_CREAT} indiquent que
+le segment ne doit pas exister préalablement.  Les bits de poids
+faible de \texttt{shmflg} indiquent les droits d'accès.
+
+
+
+
+\texttt{shmat()} attache le segment \texttt{shmid} en mémoire, avec les droits
+spécifiés dans \texttt{shmflag} (\texttt{SHM\_R, SHM\_W, SHM\_RDONLY}). 
+\texttt{shmaddr}
+précise où ce segment doit être situé dans l'espace mémoire
+(la valeur \texttt{NULL} demande un placement automatique). 
+\texttt{shmat()} renvoie
+l'adresse où le segment a été placé.
+
+
+\texttt{shmdt()} ``libère'' le segment. \texttt{shmctl()} permet diverses 
+opérations, dont la destruction d'une mémoire partagée (voir exemple).
+
+\textbf{Exemple} (deux programmes):
+
+Le producteur :
+
+\source
+\lstinputlisting{../PROGS/IPC/prod.c}
+
+
+Le consommateur :
+
+
+\source
+\lstinputlisting{../PROGS/IPC/cons.c}
+
+
+
+\textbf{Question} : le second programme n'affiche pas forcément des
+informations cohérentes. Pourquoi ? Qu'y faire ? 
+
+
+
+\textbf{Problème} : écrire deux programmes qui partagent deux variables
+\texttt{i, j}. Voici le pseudo-code:
+
+\extrait
+\begin{lstlisting}
+processus P1                 	processus P2
+| i=0 j=0			| tant que i==j 
+| repeter indefiniment		|   faire rien
+|   i++	j++			| ecrire i
+fin				fin
+\end{lstlisting}
+
+Au bout de combien de temps le processus P2 s'arrête-t-il ?
+Faire plusieurs essais. 
+
+
+\textbf{Exercice} : la commande \texttt{ipcs} affiche des informations sur les
+segments qui existent. Ecrire une commande qui permet d'afficher le contenu 
+d'un segment (on donne le \emph{shmid} et la longueur en paramètres).
+ 
+\section{Sémaphores}
+
+\index{IPC!sémaphores}
+
+\index{semaphore IPC@sémaphore IPC!semget}
+\index{semaphore IPC@sémaphore IPC!semop}
+\index{semaphore IPC@sémaphore IPC!semctl}
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/sem.h>   
+
+int semget(key_t key, int nsems, int semflg )
+int semop(int semid, struct sembuf *sops, unsigned nsops)
+int semctl(int semid, int semnum, int cmd, union semun arg )
+\end{lstlisting}
+
+
+Les opérations System V travaillent en fait sur des tableaux de sémaphores 
+généralisés (pouvant évoluer par une valeur entière quelconque). 
+
+
+La fonction \texttt{semget()} demande à travailler sur le 
+sémaphore généralisé qui est identifié par la clé \texttt{key} (même notion que pour les clés
+des segments partagés) et qui contient \texttt{nsems} sémaphores individuels.
+Un nouveau sémaphore est créé, avec les droits donnés par les 9 bits de 
+poids faible de \texttt{semflg}, si
+\texttt{key} est \texttt{IPC\_PRIVATE}, ou si
+\texttt{semflg} contient \texttt{IPC\_CREAT}. 
+
+
+
+\texttt{semop()} agit sur le sémaphore \texttt{semid} en appliquant
+simultanément à plusieurs sémaphores individuels les actions décrites
+dans les \texttt{nsops} premiers éléments du tableau
+\texttt{sops}. Chaque \texttt{sembuf} est une structure de la forme:
+
+
+\extrait
+\begin{lstlisting}
+struct sembuf
+{ 
+  ...
+  short sem_num;  /* semaphore number: 0 = first */
+  short sem_op;   /* semaphore operation */
+  short sem_flg;  /* operation flags */
+  ...
+}
+\end{lstlisting}
+
+\texttt{sem\_flg} est une combinaison d'indicateurs qui peut contenir
+\texttt{IPC\_NOWAIT} et  \texttt{SEM\_UNDO} (voir manuel). Ici nous supposons
+que \texttt{sem\_flg} est 0. 
+
+
+\texttt{sem\_num} indique le numéro du sémaphore individuel sur lequel 
+porte l'opération. \texttt{sem\_op} est un entier destiné (sauf si il est nul) 
+à être ajouté à la valeur courante \emph{semval} du sémaphore. 
+L'opération se bloque si \verb/sem_op + semval < 0/.
+
+ 
+\textbf{Cas particulier : } si  \emph{sem\_op} est 0, l'opération est bloquée 
+tant que  \texttt{semval}
+est non nul.
+
+
+Les valeurs des sémaphores ne sont  mises à jour que lorsque
+aucun d'eux n'est bloqué. 
+
+
+\texttt{semctl} permet de réaliser diverses opérations sur les sémaphores,
+selon la commande demandée. En particulier, on peut fixer le
+\texttt{n}-ième sémaphore à la valeur \texttt{val} en faisant :
+
+\extrait
+\begin{lstlisting}
+semctl(sem,n,SETVAL,val);
+\end{lstlisting}
+
+
+\textbf{Exemple: } primitives sur les sémaphores traditionnels.
+
+
+
+\source
+\lstinputlisting{../PROGS/IPC/sem.c}
+
+
+
+\textbf{Exercice : } que se passe-t-il si on essaie d'interrompre \texttt{semop()} ?
+
+\textbf{Exercice : } utilisez les sémaphores pour ``sécuriser'' l'exemple
+présenté sur les mémoires partagées.
+ 
+\section{Files de messages}
+
+\index{IPC!files de messages}
+
+Ce mécanisme permet l'échange de messages par des processus. Chaque message
+possède un \emph{corps} de longueur variable, et un \emph{type} (entier 
+strictement positif) qui peut servir à préciser la nature des informations
+contenues dans le corps. 
+
+Au moment de la réception, on peut choisir de sélectionner les messages
+d'un type donné. 
+
+\index{file de messages IPC!msgget()}
+\index{file de messages IPC!msgsnd()}
+\index{file de messages IPC!msgrcv()}
+\index{file de messages IPC!msgctl()}
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+
+int msgget (key_t key, int msgflg)
+int msgsnd (int msqid, struct msgbuf *msgp, int msgsz, int msgflg)
+int msgrcv (int msqid, struct msgbuf *msgp, int msgsz, 
+                       long msgtyp, int msgflg)
+int msgctl ( int msqid, int  cmd, struct msqid_ds *buf )
+\end{lstlisting}
+
+
+\texttt{msgget()} demande l'accès à (ou la création de) la file de
+message avec la clé \texttt{key}. \texttt{msgget()} retourne la valeur
+de l'\emph{identificateur de file}. 
+ \texttt{msgsnd()} envoie un
+message dans la file \texttt{msqid}. Le \emph{corps} de ce message
+contient \texttt{msgsz} octets, il est placé, précédé par le
+\emph{type} dans le tampon pointé par \texttt{msgp}. Ce tampon de la
+forme:
+
+\extrait
+\begin{lstlisting}
+struct msgbuf {
+     long mtype;     /* message type, must be > 0 */
+     char mtext[...] /* message data */
+};
+\end{lstlisting}
+
+
+\texttt{msgrcv()} lit dans la file un message d'un type donné (si
+\verb/type < 0/) ou indifférent (si \texttt{type==0}), et le
+place dans le tampon pointé par \texttt{msgp}. La taille du corps ne
+pourra excéder \texttt{msgsz} octets, sinon il sera
+tronqué. \texttt{msgrcv()} renvoie la taille du corps du message. 
+
+
+\textbf{Exemple.} Deux programmes, l'un pour envoyer des messages (lignes
+de texte) sur une file avec un type donné, l'autre pour afficher les
+messages reçus.
+
+
+ 
+\source
+\lstinputlisting{../PROGS/IPC/snd.c}
+
+
+
+ 
+\source
+\lstinputlisting{../PROGS/IPC/rcv.c}
+

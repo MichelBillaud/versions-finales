@@ -1,0 +1,789 @@
+\section{Manipulation des fichiers, opérations de haut niveau}
+
+
+\subsection{Flots standards, entrées et sorties sur la console}
+
+\index{flots d'entree-sortie@flots d'entrée-sortie}
+\index{stdin, entrée standard}
+\index{stdout, sortie standard}
+\index{stderr, sortie d'erreur}
+\index{FILE*}
+
+Quand un programme est lancé, il y a trois \emph{flots} pré-déclarés et
+ouverts, qui correspondent à l'entrée et la sortie standards, ainsi
+qu'à la sortie d'erreur :
+
+\extrait
+\begin{lstlisting}
+#include <stdio.h>
+
+FILE *stdin;
+FILE *stdout;
+FILE *stderr;
+\end{lstlisting}
+
+
+Vous avez déjà rencontré quelques fonctions qui agissent sur ces
+flots, implicitement, sans les nommer en paramètre\footnote{Elles
+  correspondent à des de fonctions plus générales \texttt{fprintf()},
+  \texttt{fscanf()}, etc.  que nous verrons plus loin.}
+
+\index{getchar()}
+\index{printf()}
+\index{scanf()}
+\extrait
+\begin{lstlisting}
+int  printf(const char *format, ...);     
+int  scanf(const char *format, ...);      
+int  getchar(void);                       
+\end{lstlisting}
+
+\begin{itemize}
+\item \texttt{printf()} écrit sur \texttt{stdout} la valeur d'expressions
+  selon un format donné.
+  \item \texttt{scanf()} lit sur \texttt{stdin} la
+    valeur de variables.
+  \item pour lire une ligne complète, on fait appel à \texttt{fgets()} en
+    utilisant le flot \texttt{stdin}, voir plus loin. 
+\end{itemize}
+
+
+\source
+\lstinputlisting{../PROGS/Divers/facture.c}
+
+
+\begin{itemize}
+  \item
+\texttt{scanf()} renvoie le nombre d'objets qui ont pu être effectivement
+lus sans erreur. 
+
+%% \texttt{gets()} lit des caractères jusqu'à une marque de fin de ligne ou de 
+%% fin de fichier, et les place (marque non comprise) dans le tampon
+%% donné en paramètre, suivis par un caractère NUL. \texttt{gets()} renvoie
+%% finalement l'adresse du tampon. Attention, prévoir un tampon assez grand,
+%% ou (beaucoup mieux) utilisez \texttt{fgets()}. 
+
+\item
+\texttt{getchar()} lit un caractère sur l'entrée standard et retourne sa 
+valeur sous forme d'entier positif, ou la constante \texttt{EOF} (= -1) 
+en fin de fichier.
+\end{itemize}
+
+\subsection{Opérations sur les flots}
+
+\index{fopen(chemin,mode)}
+\index{fclose(fichier)}
+\index{fprintf(fichier,format,valeurs...)}
+\index{fscanf(fichier,format,adresses...)}
+\index{fgetc(fichier)}
+
+
+\extrait
+\begin{lstlisting}
+#include <stdio.h>
+  
+FILE *fopen (char *path, char *mode);
+int   fclose  (FILE *stream);
+\end{lstlisting}
+
+\begin{itemize}
+  \item 
+\texttt{fopen()} tente d'ouvrir le fichier désigné par la chaîne \texttt{path}
+selon le mode indiqué, qui peut être 
+\begin{itemize}
+\item \texttt{"r"} (lecture seulement),
+\item \texttt{"r+"} (lecture et écriture),
+\item \texttt{"w"} (écriture seulement),
+\item \texttt{"w+"} (lecture et écriture, effacement si le fichier existe déjà),
+\item \texttt{"a"} (écriture à partir de la fin du fichier si il existe déjà),
+\item \texttt{"a+"} (lecture et écriture, positionnement à la fin du fichier
+si il existe déjà).
+\end{itemize}
+
+Si l'ouverture échoue, \texttt{fopen()} retourne le pointeur \texttt{NULL}.
+\end{itemize}
+
+\extrait
+\begin{lstlisting}
+int fprintf(FILE *stream, const char *format, ...);
+int fscanf (FILE *stream, const char *format, ...);
+int fgetc  (FILE *stream);
+\end{lstlisting}
+
+Ces fonctions ne diffèrent de \texttt{printf()},
+\texttt{scanf()} et \texttt{getchar()} que par le premier paramètre,
+qui précise sur quel flot porte l'opération.
+
+
+\subsection{Lecture d'une ligne : \texttt{fgets} et \texttt{getline}}
+
+
+\subsubsection{À l'ancienne : \texttt{fgets}}
+
+La fermeture par \texttt{fclose(flot)} provoquera la fermeture de \texttt{fd}
+à la fois en entrée et en sortie.
+
+Quand on fait de la programmation réseau, on a parfois besoin de ne
+fermer la communication que dans un sens. Dans ce cas, on duplique le
+descripteur, et on crée un flot pour chacun :
+
+\index{dup()!utilisation avec fopen()}
+\extrait
+\begin{lstlisting}]
+    int fd = fopen(.....);
+    ...
+    FILE *entree = fdopen(    fd,  "r");
+    FILE *sortie = fdopen(dup(fd), "w");
+\end{lstlisting}
+
+La fermeture d'un des deux flots ne clôt qu'un sens de communication.
+
+
+
+\subsection{Positionnement}
+
+\index{feof(fichier)}
+\index{ftell(fichier)}
+\index{fseek(fichier,offset,repere)}
+
+\extrait
+\begin{lstlisting}
+int  feof (FILE *stream);
+long ftell(FILE *stream);
+int  fseek(FILE *stream, long offset, int whence);
+\end{lstlisting}
+
+\begin{itemize}
+  \item 
+\texttt{feof()} indique si la fin de fichier est atteinte.
+\item \texttt{ftell()} indique la \emph{position courante} dans le fichier
+  (0 = début).
+  \item \texttt{fseek()} déplace la position courante : si
+    \texttt{whence} contient
+    \begin{itemize}
+      \item \texttt{SEEK\_SET} la position est donnée par
+        rapport au début du fichier,
+        \item \texttt{SEEK\_CUR} : déplacement
+          par rapport à la position courante,
+          \item \texttt{SEEK\_END} : déplacement
+            par rapport à la fin.
+    \end{itemize}
+\end{itemize}
+
+
+
+\subsection{Divers}
+
+\extrait
+\begin{lstlisting}
+int   ferror   (FILE *stream);
+void  clearerr (FILE *stream);
+\end{lstlisting}
+
+\index{ferror(dichier)}
+\index{clearerr(fichier)}
+
+\begin{itemize}
+\item La fonction \texttt{ferror()} indique si une erreur a eu lieu
+  sur un flot,
+  \item
+    \texttt{clearerr()} efface l'indicateur d'erreur
+\end{itemize}
+
+
+\section{Manipulation des fichiers, opérations de bas niveau}
+
+Pendant l'exécution d'un programme, un certain nombre de fichiers sont
+\emph{ouverts} (en cours d'utilisation).  I
+
+Il existe dans le système
+une table des fichiers actuellement ouverts par le programme,
+les opérations de bas niveau désignent les fichiers par leur indice
+dans cette table. On appelle aussi  ce numéro de fichier (\texttt{fileno})
+un ``descripteur de fichier'' (\texttt{fd} = file descriptor).
+
+Les numéros 0, 1 et 2 correspondent respectivement à l'entrée standard,
+la sortie standard, et la sortie d'erreur. Dans la programmation,
+utilisez plutôt les constantes \texttt{STDIN\_FILENO}
+\texttt{STDOUT\_FILENO},
+\texttt{STDERR\_FILENO} définies dans \texttt{unistd.h}.
+
+
+Les opérations de bas niveau communiquent en général avec les fichiers
+par l'intermédiaire d'un tampon, un tableau d'octets, en indiquant le
+nombre d'octets à transmettre. Exemple :
+
+\source
+\begin{lstlisting}
+char * message = "Hello, world";
+
+write(STDOUT_FILENO, message, 5);
+\end{lstlisting}
+
+envoie les 5 premiers caractères du message sur la sortie standard.
+
+
+
+\subsection{Ouverture, fermeture, lecture, écriture}
+
+\index{open(chemin,flags,mode)}
+  
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+  
+int open(const char *pathname, int flags, mode_t mode);
+\end{lstlisting}
+
+
+Ouverture d'un fichier nommé \texttt{pathname}. Les \texttt{flags}
+peuvent prendre l'une des valeurs suivantes :
+\begin{itemize}
+  \item \texttt{O\_RDONLY}
+    (lecture seulement),
+    \item \texttt{O\_WRONLY} (écriture seulement),
+    \item \texttt{O\_RDWR} (lecture et écriture).
+\end{itemize}
+  Cette valeur peut être
+  combinée éventuellement (par un ``ou logique'') avec des options:
+  \begin{itemize}
+\item \texttt{O\_CREAT} (création du fichier si il n'existe pas déjà),
+\item \texttt{O\_TRUNC} (si le fichier existe il sera tronqué),
+\item \texttt{O\_APPEND} (chaque écriture se fera à la fin du fichier),
+  \item etc. 
+  \end{itemize}
+
+En cas de création d'un nouveau fichier, le \texttt{mode} sert à
+préciser les droits d'accès.  Lorsqu'un nouveau fichier est créé,
+\texttt{mode} est combiné avec le \texttt{umask} du processus pour
+former les droits d'accès du fichier. Les permissions effectives sont
+alors \verb/(mode & ~umask)/ 
+
+Le paramètre \texttt{mode}
+doit être présent quand les \texttt{flags} contiennent
+\texttt{O\_CREAT}.
+
+La fonction \texttt{open()}
+retourne  le numéro de \emph{descripteur de fichier} (-1 en cas d'erreur),
+un nombre entier qui sert à référencer le fichier par la suite. 
+
+%% Les descripteurs 0, 1 et 2 correspondent aux fichiers standards 
+%% \texttt{stdin}, \texttt{stdout} et \texttt{stderr} qui sont
+%% normalement déjà ouverts (0=entrée, 1=sortie, 2=erreurs).
+
+\index{close(descripteur)}
+\index{read!read(descripteur,tampon,taille)}
+\index{write!write(descripteur,tampon,taille)}
+
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+#include <sys/types.h>
+
+int close(int fd);
+int read(int fd, char *buf, size_t count);
+size_t write(int fd, const char *buf, size_t count);
+\end{lstlisting}
+
+
+\texttt{close()} ferme le fichier indiqué par le descripteur
+\texttt{fd}.  Retourne 0 en cas de succès, -1 en cas d'échec.
+
+\texttt{read()} demande à lire \emph{au plus} \texttt{count} octets
+sur \texttt{fd}, à placer dans le tampon \texttt{buf}. Retourne le
+nombre d'octets qui ont été effectivement lus, qui peut être inférieur
+à la limite donnée pour cause de non-disponibilité (-1 en cas
+d'erreur, 0 en fin de fichier).
+
+\texttt{write()} tente d'écrire sur
+le fichier les \texttt{count} premiers octets du tampon
+\texttt{buf}. Retourne le nombre d'octets qui ont été effectivement
+écrits, -1 en cas d'erreur.
+
+\paragraph*{Exemple} :
+
+\source
+\lstinputlisting{../PROGS/Divers/copie.c}
+
+
+\paragraph*{Problème.} Montrez que la taille du tampon influe sur les
+performances des opérations d'entrée-sortie.  Pour cela, modifiez le
+programme précédent pour qu'il accepte 3 paramètres : les noms des
+fichiers source et destination, et la taille du tampon (ce tampon sera
+alloué dynamiquement).
+
+
+\subsection{Duplication de descripteurs}
+
+\index{descripteur!duplication}
+\index{dup(descripteur)}
+\index{dup2(existant,nouveau)}
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+
+int dup  (int oldfd);
+int dup2 (int oldfd, int newfd);
+\end{lstlisting}
+
+
+Ces deux fonctions créent une copie du descripteur \texttt{oldfd}.
+\texttt{dup()} utilise le plus petit numéro de descripteur libre.
+\texttt{dup2()} réutilise le descripteur \texttt{newfd}, en fermant
+éventuellement le fichier qui lui était antérieurement associé.
+
+La valeur retournée est celle du descripteur, ou \texttt{-1} en cas d'erreur. 
+
+L'effet sera que le nouveau descripteur désignera la même
+fichier que l'ancien.
+
+\paragraph*{Exemple} :
+
+\source
+\lstinputlisting{../PROGS/Divers/redirection.c}
+
+
+\paragraph*{Exercice} : que se produit-il si on essaie de rediriger la 
+\emph{sortie} standard d'une commande à la manière de l'exemple précédent ?
+(essayer avec ``\texttt{ls}'', ``\texttt{ls -l}'').
+
+
+\subsection{Positionnement}
+
+\index{lseek(descripteur,position,repère)}
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+#include <sys/types.h>
+
+off_t lseek(int fildes, off_t offset, int whence);
+\end{lstlisting}
+
+
+\texttt{lseek()} repositionne le pointeur de lecture. Similaire à
+\texttt{fseek()}. Pour connaître la position courante, faire un appel
+à \texttt{stat()}. 
+
+\paragraph*{Exercice. } Écrire un programme pour manipuler un fichier relatif 
+d'enregistrements de taille fixe.
+
+\subsection{Verrouillage}
+
+\index{flock(descripteur,opération)}
+\extrait
+\begin{lstlisting}
+#include <sys/file.h>
+
+int flock(int fd, int operation)
+\end{lstlisting}
+
+
+Lorsque \texttt{operation} est \texttt{LOCK\_EX}, il y a verrouillage
+du fichier désigné par le descripteur \texttt{fd}. Le fichier est
+déverrouillé par l'option \texttt{LOCK\_UN}.
+
+\paragraph*{Problème. } Écrire une fonction \texttt{mutex()}
+qui permettra de 
+délimiter une section critique dans un programme C. Exemple
+d'utilisation :
+
+\extrait
+\begin{lstlisting}
+#include "mutex.h"
+...
+mutex("/tmp/foobar",MUTEX_BEGIN);
+...
+mutex("/tmp/foobar",MUTEX_END);
+
+\end{lstlisting}
+
+Le premier paramètre indique le nom du fichier utilisé comme
+verrou. Le second précise si il s'agit de verrouiller ou
+déverrouiller. Faut-il prévoir des options \texttt{MUTEX\_CREATE},
+\texttt{MUTEX\_DELETE} ? Qu'arrive-t'il si un programme se termine en
+``oubliant'' de fermer des sections critiques ? 
+
+Fournir le fichier
+d'interface \texttt{mutex.h}, l'implémentation \texttt{mutex.c}, et
+des programmes illustrant l'utilisation de cette fonction.
+
+ 
+\subsection{\texttt{mmap()} : fichiers "mappés" en mémoire}
+
+Un fichier "mappé en mémoire" apparaît comme un tableau d'octets, ce
+qui permet de le parcourir en tous sens plus commodément qu'avec des
+\texttt{seek()}, \texttt{read()} et \texttt{write()}. 
+
+C'est beaucoup plus économique que de copier le fichier dans
+une zone allouée en mémoire : c'est le système
+de mémoire virtuelle qui s'occupe de lire et écrire physiquement les
+pages du fichier au moment où on tente d'y accéder, et gère tous les
+tampons.
+
+
+\index{mmap()}
+\index{munmap()}  
+  
+
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+#include <sys/mman.h>
+
+void * mmap (void  *start,  size_t length, 
+             int prot , int flags, 
+             int fd, off_t offset);
+int munmap  (void *start, size_t length);
+\end{lstlisting}
+
+
+La fonction \texttt{mmap()} "mappe" en mémoire un morceau (de longueur
+\texttt{length}, en partant du \texttt{offset}-ième octet) du
+fichier désigné par le descripteur \texttt{fd} , et retourne
+un pointeur sur la zone de mémoire correspondante.
+
+On peut définir quelques options  (protection en lecture seule, 
+partage, etc)
+grâce à \texttt{prot} et \texttt{flags}. Voir pages de manuel.
+\texttt{munmap()} "libère" la mémoire.
+
+
+
+\source
+\lstinputlisting{../PROGS/Divers/inverse.c}
+
+
+\section{Fichiers, répertoires etc.}
+
+Ici ``fichier'' est compris dans son sens large (élément d'un système
+de fichiers), qui inclue aussi les répertoires, les périphériques, les
+tuyaux et sockets etc. (voir plus loin).
+
+
+\subsection{Suppression}
+
+\index{remove(chemin)}
+  
+\extrait
+\begin{lstlisting}
+#include <stdio.h>
+
+int remove(const char *pathname);
+\end{lstlisting}
+
+
+Cette fonction supprime le fichier \texttt{pathname}, et retourne 0 en
+cas de succès (-1 sinon).
+
+\paragraph*{Exercice: } écrire un substitut pour la commande \emph{rm}.
+
+\index{stat(chemin,adressetampon)}
+\index{fstat(descripteur,adressetampon)}
+\extrait
+\begin{lstlisting}
+#include <sys/stat.h>
+#include <unistd.h>
+
+int stat(const char *file_name, struct stat *buf);
+int fstat(int filedes, struct stat *buf);
+\end{lstlisting}
+
+\subsection{Informations sur les fichiers/répertoires/...}
+
+
+Ces fonctions retournent diverses informations sur un
+fichier désigné par un chemin d'accès (\texttt{stat()}) ou par un 
+descripteur (\texttt{fstat()}). 
+
+\paragraph*{Exemple} :
+
+\source
+\lstinputlisting{../PROGS/Divers/taille.c}
+
+
+\subsection{Parcours de répertoires}
+
+Le parcours d'un répertoire, pour obtenir la liste des fichiers et
+répertoires qu'il contient, se fait grâce aux fonctions:
+
+\index{repertoire@répertoire!parcours}
+\index{opendir(chemin)}
+\index{closedir(DIR *dir)}
+\index{rewinddir(DIR *dir)}
+\index{seekdir(DIR *dir, position)}
+\index{telldir(DIR *dir)}
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <dirent.h>
+  
+DIR *opendir   (const char *name);
+int  closedir  (DIR *dir);
+void rewinddir (DIR *dir);
+void seekdir   (DIR *dir, off_t offset);
+off_t telldir  (DIR *dir);
+\end{lstlisting}
+
+
+Voir la documentation pour des exemples. 
+
+\paragraph*{Exercice : } écrire une version  simplifiée de la
+commande \texttt{ls}.
+
+\paragraph*{Exercice : } écrire une commande qui fasse apparaître la 
+structure d'une arborescence. Exemple d'affichage :
+
+\extrait
+\begin{lstlisting}
+C++
+| CompiSep
+| Fichiers
+Systeme
+| Semaphores
+| Pipes
+| Poly
+  | SVGD
+  | Essais
+| Fifos
+\end{lstlisting}
+
+Conseil: écrire une fonction à deux paramètres: le chemin d'accès du 
+répertoire et le niveau de récursion.
+
+
+\section{Tuyaux de communication }
+
+\index{tuyau} Les \emph{tuyaux de communication} (\emph{pipes})
+permettent de faire communiquer des processus qui s'exécutent d'une
+même machine. Une fois ouverts, ils sont accessibles comme les fichiers
+à travers un ``file descriptor''. Ce que les processus y écrivent peut
+être lu immédiatement par d'autres processus.
+
+Nous en présentons deux variétés :
+
+\begin{itemize}
+\item les tuyaux ``simples'' qui sont créés par un processus
+  et servent à  la communication entre ses descendants et lui.
+\item \emph{tuyaux nommés},
+  qui sont visibles (comme les fichiers et répertoires),
+  dans le système de fichiers. Ils  peuvent donc être partagés
+par des programmes indépendants.
+\end{itemize}
+
+Nous verrons plus loin (\ref{sockets}) une forme de communication plus
+générale, les sockets.
+
+
+Nous commençons par les tuyaux nommés, dont l'usage est proche des fichiers
+ordinaires.
+  
+
+\subsection{Tuyaux nommés (FIFO)}
+
+\index{tuyau!nommé}
+\index{FIFO!tuyau nommé}
+
+Les ``tuyaux nommés'' visibles dans l'arborescence des fichiers et
+répertoires. Ils sont créés par \texttt{mkfifo()}, et utilisés ensuite
+par
+\texttt{open()},
+\texttt{read()},
+\texttt{write()},
+\texttt{close()},
+\texttt{fdopen()}, etc.
+
+
+\index{mkfifo(chemin,mode)}
+
+\extrait
+\begin{lstlisting}
+#include <stdio.h>
+
+int mkfifo (const char *path, mode_t mode);
+\end{lstlisting}
+
+
+La fonction \texttt{mkfifo()} crée un FIFO ayant le chemin indiqué par
+\texttt{path} et les droits d'accès donnés par \texttt{mode}. Si la
+création réussit, la fonction renvoie 0, sinon -1. Exemple:
+
+\extrait
+\begin{lstlisting}
+if (mkfifo("/tmp/fifo.courrier", 0644) != 0) {
+  perror("mkfifo");
+}
+\end{lstlisting}
+
+
+\paragraph*{Exercice.} Regarder ce qui se passe quand
+\begin{itemize}
+\item plusieurs processus écrivent dans une même FIFO (faire une boucle
+\texttt{sleep-write}).
+\item plusieurs processus lisent la même FIFO.
+\end{itemize}
+
+\paragraph*{Exercice. } Écrire une commande \emph{mutex} qui permettra de 
+délimiter une section critique dans des shell-scripts. Exemple
+d'utilisation :
+
+\extrait
+\begin{lstlisting}
+mutex -b /tmp/foobar
+...
+mutex -e /tmp/foobar
+\end{lstlisting}
+
+Le premier paramètre indique si il s'agit de verrouiller (\texttt{-b}
+= begin) ou de déverrouiller (\texttt{-e} = end). Le second paramètre
+est le nom du verrou.
+
+\emph{Conseil} : la première option peut s'obtenir en tentant de lire
+une information quelconque (\emph{jeton}) dans une FIFO. C'est la
+seconde option qui dépose le jeton, ce qui débloquera le processus
+lecteur.  Prévoir une option pour créer une FIFO ?
+
+
+\subsection{Tuyaux (pipe)}
+
+On utilise un \emph{pipe} (tuyau) pour faire communiquer un processus
+et un de ses descendants\footnote{ou des descendants - au sens large -
+du processus qui a créé le tuyau}.
+
+\index{tuyau!pipe(fd[2])}
+\index{pipe(fd[2])}
+
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+
+int pipe(int filedes[2]);
+\end{lstlisting}
+
+
+L'appel \texttt{pipe()} fabrique un tuyau de communication et renvoie dans
+un tableau une paire de descripteurs.  On lit à un bout du tuyau (sur
+le descripteur de sortie \texttt{fildes[0]})
+ ce qu'on a écrit dans l'autre (\texttt{filedes[1]}). 
+ Voir exemple dans \ref{fork}.
+
+
+Les \emph{pipes} ne sont pas visibles dans l'arborescence des fichiers et
+répertoires, par contre ils sont hérités lors de la création d'un 
+processus.
+
+\index{socketpair}
+La fonction \texttt{socketpair()} (voir
+\ref{socketpair}) généralise la fonction
+\texttt{pipe}.
+
+\subsection{Pipes depuis/vers une commande}
+
+\index{tuyau!de/vers commande}
+\index{popen(commande,type)}
+\index{pclose(fichier)}
+
+\extrait
+\begin{lstlisting}
+#include <stdio.h>
+  
+FILE *popen(const char *command, const char *type);
+int pclose(FILE *stream);
+\end{lstlisting}
+
+
+\texttt{popen()} lance la commande décrite par la chaîne \texttt{command}
+et retourne un flot.
+
+
+Si \texttt{type} est \texttt{"r"} le flot retourné est celui 
+de la sortie standard de la commande (on peut y lire). 
+Si \texttt{type} est \texttt{"w"} 
+c'est son entrée standard.
+
+\texttt{pclose()} referme ce flot.
+
+
+
+\paragraph*{Exemple} :    envoi d'un  ``\texttt{ls -l }'' par courrier 
+
+\source
+\lstinputlisting{../PROGS/Divers/avis.c}
+
+
+
+
+\section{\texttt{select()} : attente de données }
+
+Il est assez courant de devoir attendre des données en provenance
+de plusieurs sources. On utilise pour cela la fonction \texttt{select()} qui
+permet de surveiller plusieurs descripteurs simultanément.
+
+\index{select(...)}
+
+\extrait
+\begin{lstlisting}
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+int  select(int n, fd_set *readfds, 
+                   fd_set *writefds, 
+                   fd_set *exceptfds, 
+                   struct timeval *timeout);
+
+FD_CLR   (int fd, fd_set *set);
+FD_ISSET (int fd, fd_set *set);
+FD_SET   (int fd, fd_set *set);
+FD_ZERO  (fd_set *set);      
+\end{lstlisting}
+
+
+Cette fonction attend que des données soient prêtes à être lues sur un
+des descripteurs de l'ensemble \texttt{readfs}, ou que l'un des
+descripteurs de \texttt{writefds} soit prêt à recevoir des écritures,
+que des exceptions se produisent (\texttt{exceptfds}), ou encore que
+le temps d'attente \texttt{timeout} soit épuisé.  
+
+ 
+Lorsque
+\texttt{select()} se termine, \texttt{readfds}, \texttt{writefds} et
+\texttt{exceptfds} contiennent les descripteurs qui ont changé d'état.
+\texttt{select()} retourne le nombre de descripteurs qui ont changé
+d'état, ou \texttt{-1} en cas de problème.
+ 
+L'entier \texttt{n} doit être
+supérieur (strictement) au plus grand des descripteurs contenus dans
+les 3 ensembles (c'est en fait le nombre de bits significatifs du
+masque binaire qui représente les ensembles). On peut utiliser la
+constante \texttt{FD\_SETSIZE}.
+ 
+Les pointeurs sur les ensembles (ou
+le délai) peuvent être \texttt{NULL}, ils représentent alors des
+ensembles vides (ou une absence de limite de temps).
+
+
+
+Les macros \texttt{FD\_CLR, FD\_ISSET, FD\_SET, FD\_ZERO} permettent de 
+manipuler les ensembles de descripteurs. 
+
+
+\subsection{Attente de données provenant de plusieurs sources}
+
+\paragraph*{Exemple} :
+
+\source
+\lstinputlisting{../PROGS/Divers/mix.c}
+
+
+\subsection{Attente de données avec limite de temps}
+
+L'exemple suivant montre comment utiliser la limite de temps dans le
+cas (fréquent) d'attente sur un seul descripteur.
+
+\source
+\lstinputlisting{../PROGS/SelectFifo/lecteur.c}
+
+

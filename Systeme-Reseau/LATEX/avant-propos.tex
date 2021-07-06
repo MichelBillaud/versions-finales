@@ -1,0 +1,63 @@
+
+
+\subsection*{Objectifs}
+
+Ce document présente quelques appels système utiles à la réalisation
+d'application communicantes sous UNIX.
+
+Pour écrire de telles applications il faut savoir faire communiquer de
+processus entre eux, que ce soit sur la même machine ou sur des
+machines reliées en réseau (Internet par exemple).
+
+
+Pour cela, on passe par des \emph{appels systèmes} pour demander au
+système d'exploitation d'effecter des actions : ouvrir des voies de
+communication, expédier des données, créer des processus etc.  On
+parle de \emph{programmation système} lorsqu'on utilise explicitement
+ces appels sans passer par des bibliothèques ou des modules de haut
+niveau qui les encapsulent pour en cacher la complexité (supposée).
+
+
+Les principaux appels systèmes sont présentés ici, avec des exemples
+d'utilisation.\footnote{Attention, ce sont des illustrations des
+appels, pas des recommandations sur la bonne manière de les
+employer. En particulier, les contrôles de sécurité sur les données
+sont très sommaires.}
+
+
+
+\subsection*{Copyright, versions}
+
+(c) 1998-2021 Michel Billaud
+
+Ce document peut être reproduit en totalité ou en partie, sans frais,
+sous réserve des restrictions suivantes :
+\begin{itemize}
+\item  cette note de copyright et de permission doit être préservée
+dans toutes copies partielles ou totales 
+\item  toutes traductions ou
+travaux dérivés doivent être approuvés par l'auteur en le prévenant
+avant leur distribution 
+\item  si vous distribuez une partie de ce
+travail, des instructions pour obtenir la version complète doivent
+également être fournies
+\item de courts extraits peuvent être reproduits sans ces notes de
+  permissions.
+\end{itemize}
+
+L'auteur décline toute responsabilité vis-à-vis des dommages résultant
+de l'utilisation des informations et des programmes qui figurent dans
+ce document.
+
+
+\begin{itemize}
+\item Version initiale 1998
+\item Révision 2002
+\item Révision 2014
+\item Révision 2016 (Conformité 11)
+\item Révision 2018 (POSIX 2017)
+\item Révision 2021 (conformité C17)
+\end{itemize}
+
+La dernière version de ce document peut être obtenue depuis la page Web
+\url{http://www.mbillaud.fr/}

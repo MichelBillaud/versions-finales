@@ -1,0 +1,188 @@
+%rubber: module xelatex
+\documentclass[10pt,twoside,a4paper,openright]{extreport}
+
+\usepackage[ %  showframe,
+  total={17cm,25cm},
+  includehead,includefoot,
+  centering]{geometry}
+
+\usepackage{fontspec}
+\usepackage[french]{babel}
+
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{makeidx}
+
+\usepackage{titling}
+\usepackage{textpos}
+\usepackage{rotating}
+
+\usepackage{xcolor}
+\definecolor{msdarkblue}{RGB}{54,95,145}
+\definecolor{msblue}{RGB}{79,129,189}
+ 
+\usepackage{titlesec}
+
+\titleformat{\chapter}[frame]{\normalfont\huge\bfseries}
+{\chaptertitlename\ \thechapter}{16pt}{\Huge}
+
+\titleformat*{\section}{\color{msdarkblue}\Large\sffamily\bfseries}
+\titleformat*{\subsection}{\color{msblue}\large\sffamily\bfseries}
+\titleformat*{\subsubsection}{\color{msblue}\normalsize\sffamily\bfseries}
+
+\titlespacing{\section}{0pt}{*6}{*1.5}
+\titlespacing{\subsection}{0pt}{*8}{*1.5}
+\titlespacing{\subsubsection}{0pt}{*8}{*1.5}
+
+\usepackage{bera}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{graphicx}
+
+% \usepackage{picins}
+
+% \usepackage{fancyhdr}
+
+
+\renewcommand{\maketitle}{
+
+\begin{titlepage}
+% les dimensions pour les coordonnées de textblock
+\setlength{\TPHorizModule}{1mm}
+\setlength{\TPVertModule}{1mm}
+ 
+% barre bleue 
+ \begin{textblock}{50}(-20,-20)
+  \begin{color}{msdarkblue}
+    \rule{3cm}{25.5cm}    
+  \end{color}
+\end{textblock}
+
+% serie
+\begin{textblock}{20}(-2,220)
+\begin{rotate}{90}
+{\huge\bfseries\textcolor{white}{Architecture - Système - Réseaux}}
+\end{rotate}
+\end{textblock}
+ 
+ \begin{textblock}{130}(20,30)
+ {\noindent\rule{2cm}{2cm}}
+ \\[5em]
+
+{
+\noindent\Huge\bf \noindent \thetitle } \\[5em]
+ 
+{\noindent\Large\bfseries\sf \thedate} \\[10em]
+
+{\noindent\Large\bfseries\sf Michel Billaud}
+
+ \end{textblock}
+\end{titlepage}
+\makeatother
+
+\clearpage
+}
+
+
+
+\title{
+  Programmation Système \\
+  et Réseau \\ en C sous Unix
+}
+\author{M. Billaud \url{michel.billaud@laposte.net}}
+\date{Juillet 2021}
+
+
+\newcommand{\extrait}[0]{\lstset{language=C,
+    frame=leftline,
+    numbers=none}}
+\newcommand{\extraitbash}[0]{\lstset{language=bash,
+    frame=leftline,
+    numbers=none}}
+\newcommand{\source}[0]{\lstset{language=C,
+    frame=single,
+    xleftmargin=1cm,
+    numbers=left,stepnumber=5,numberfirstline=true,firstnumber=1}}
+
+% \renewcommand{\familydefault}{\sfdefault}
+
+\makeindex
+\pagestyle{headings}
+\begin{document} 
+\sloppy
+\maketitle
+\begin{abstract}
+\input{resume}
+\end{abstract}
+
+\newpage 
+\tableofcontents
+
+\newpage
+
+\chapter*{Avant-propos}
+
+\input{avant-propos}
+
+\newpage
+
+
+\chapter{Bases de C}
+
+\input{bases-c}
+
+\chapter{Fichiers et tuyaux}
+
+\input{fichiers-tuyaux}
+
+
+
+\chapter{Communication interprocessus par sockets locaux}
+
+\input{sockets-locaux}
+
+
+\chapter{Communication par signaux}
+
+\input{signaux}
+
+\chapter{Processus lourds et légers}
+
+\input{processus}
+
+
+\chapter{IPC : Communication locale entre processus}
+
+\input{ipc}
+
+\chapter{TCP-IP : communication par le réseau}
+
+\input {tcp-ip}
+
+\chapter{Exemples TCP : serveurs Web}
+
+\input{serveurs-web}
+
+\appendix
+
+\chapter{Transmission d'un descripteur}
+
+L'exemple ci-dessous montre comment transmettre un descripteur
+d'un processus à un autre.
+
+\source
+\lstinputlisting{../PROGS/Divers/passfd.c}
+
+
+
+\chapter{Documentation}
+
+\input{documentation}
+
+\printindex
+
+\end{document}
+
+
+
+

@@ -1,0 +1,429 @@
+
+\section{Les sockets}
+
+\label{sockets}
+
+\index{socket!prise}
+\index{prise!socket}
+
+Les \emph{sockets} (\emph{prises}) sont une interface générique
+pour la communication entre processus, par divers moyens.
+
+
+On s'en sert pour la communication à travers les réseaux (Internet ou
+autres), mais ils sont utilisables également pour la communication
+locale entre processus qui s'exécutent sur une même machine (comme les
+tuyaux déjà vus, et les files de messages IPC que nous verrons plus
+loin).
+
+Dans ce chapitre, nous montrons comment s'en servir pour la
+communication locale, la communication sur le réseau sera vue plus
+loin.
+
+
+\subsection{Création d'un socket}
+
+\index{socket!création}
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int socket(int domain, int type, int protocol);
+\end{lstlisting}
+
+\index{socket!domaine}
+\index{socket!type}
+\index{socket!type!local}
+\index{socket!type!internet}
+
+\index{socket!protocole}
+
+La fonction \texttt{socket()} crée une nouvelle prise et retourne un
+descripteur qui servira ensuite aux lectures et écritures. Le
+paramètre \texttt{domain} indique le domaine de communication''
+utilisé, qui est \texttt{PF\_LOCAL} ou (synonyme) \texttt{PF\_UNIX} pour
+les communications locales.\footnote{ Le domaine définit une famille
+de protocoles (protocol family) utilisables. Autres familles
+disponibles : \texttt{PF\_INET} protocoles internet IPv4,
+\texttt{PF\_INET6} protocoles internet IPv6, \texttt{PF\_IPX} protocoles
+Novel IPX, \texttt{PF\_X25} protocoles X25 (ITU-T X.25 / ISO-8208),
+\texttt{PF\_APPLETALK}, etc.}
+
+\index{socket!protocole!communication par datagramme}
+\index{socket!protocole!communication par flot}
+
+Le \emph{type} indique le style de communication désiré
+entre les deux participants. Les deux styles principaux sont
+\begin{itemize}
+\item \texttt{SOCK\_DGRAM} : communication par messages (blocs contenant des
+octets) appelés \emph{datagrammes}
+\item \texttt{ SOCK\_STREAM} : la communication se fait par un flot 
+(bidirectionnel) d'octets une fois que la connexion est établie.
+\end{itemize}
+
+\textbf{Fiabilité}: la fiabilité des communication par datagrammes est
+garantie pour le domaine local, mais ce n'est pas le cas pour les
+``domaines réseau'' que nous verrons plus loin : les datagrammes
+peuvent être perdus, dupliqués, arriver dans le désordre etc. et c'est
+au programmeur d'application d'en tenir compte. Par contre la
+fiabilité des ``streams'' est assurée par les couches basses du
+système de communication, évidemment au prix d'un surcoût
+(numérotation des paquets, accusés de réception, temporisations,
+retransmissions, etc).
+
+
+Enfin, le paramètre \texttt{protocol} indique le protocole sélectionné.
+La valeur \texttt{0} correspond au protocole par défaut pour le domaine
+et le type indiqué.
+
+\subsection{Adresses}
+
+\index{socket!adresse!socket local}
+La fonction \texttt{socket()} crée un socket anonyme. Pour qu'un autre
+processus puisse le désigner, il faut lui associer un \emph{nom} par
+l'intermédiaire d'une \emph{adresse} contenue dans une structure
+\texttt{sockaddr\_un} :
+
+
+
+\extrait
+\begin{lstlisting}
+#include <sys/un.h>
+
+struct sockaddr_un {
+        sa_family_t  sun_family;              /* AF_UNIX */
+        char         sun_path[UNIX_PATH_MAX]; /* pathname */
+};
+\end{lstlisting}
+
+Ces adresses sont des chemins d'accès dans l'arborescence des fichiers et
+répertoires.
+
+
+Exemple :
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
+socklen_t longueur_adresse;
+
+struct sockaddr_un  adresse;
+
+adresse.sun_family      = AF_LOCAL;
+strcpy(adresse.sun_path, "/tmp/xyz");
+longueur_adresse = sizeof adresse;
+\end{lstlisting}
+
+\index{socket!bind()}
+
+L'association d'une adresse à un socket se fait par \texttt{bind()}
+(voir exemples plus loin).
+
+\section{Communication par datagrammes}
+
+Dans l'exemple développé ici, un serveur affiche les datagrammes
+émis par les clients.
+
+\subsection{La réception de datagrammes}
+
+\index{bind(socket,adresse,longueur)}
+\index{socket!bind()}
+\index{socket!recvfrom()}
+\index{recvfrom()}
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int  bind(int  sockfd, struct sockaddr *my_addr, 
+                       socklen_t addrlen);
+
+int  recvfrom(int  s,  void  *buf,  size_t len, int flags,
+              struct sockaddr *from, socklen_t *fromlen);
+
+\end{lstlisting}
+
+
+La fonction \texttt{bind()} permet de nommer le socket de réception.
+La fonction \texttt{recvfrom()} attend l'arrivée d'un datagramme qui
+est stocké dans les \texttt{len} premiers octets du tampon
+\texttt{buff}.  Si \texttt{from} n'est pas \texttt{NULL}, l'adresse du
+socket émetteur\footnote{qui peut servir à expédier une réponse} est
+placée dans la structure pointée par \texttt{from}, dont la longueur
+maximale est contenue dans l'entier pointé par \texttt{fromlen}.
+
+
+Si la lecture a réussi, la fonction retourne le nombre d'octets du
+message lu, et la longueur de l'adresse est mise à jour.
+
+
+Le paramètre \texttt{flags} permet de préciser des options.
+
+
+\source
+\lstinputlisting{../PROGS/LocalDatagrammes/serveur-dgram-local.c}
+
+
+\subsection{Émission de datagrammes}
+
+\index{socket!sendto()}
+\index{sendto()}
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int  sendto(int s, const void *msg, size_t len, int flags,
+            const struct sockaddr *to, socklen_t tolen);
+\end{lstlisting}
+
+
+\texttt{sendto} utilise le descripteur de socket \texttt{s} pour
+envoyer le message formé des \texttt{len} premiers octets de
+\texttt{msg} à l'adresse de longueur \texttt{tolen} pointée par
+\texttt{to}.
+
+
+Le même descripteur peut être utilisé pour des envois à des
+adresses différentes.
+
+
+\source
+\lstinputlisting{../PROGS/LocalDatagrammes/client-dgram-local.c}
+
+
+\textbf{Exercice} : modifier les programmes précédents pour que le
+serveur envoie une réponse qui sera affichée par le client\footnote{
+Pensez à attribuer un nom au socket du client pour que le serveur puisse lui
+répondre, par exemple avec l'aide de
+la fonction \texttt{tempnam()}.}. 
+
+
+\subsection{Émission et réception en mode connecté}
+
+\index{socket!mode connecté}
+\index{connect(socket,addresse,longueur)}
+\index{send(socket,tampon,longueur,flags)}
+\index{recv(socket,tampon,longueur,flags)}
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int  connect(int sockfd, 
+             const struct sockaddr *serv_addr,
+             socklen_t addrlen);
+
+int send(int s, const void *msg, size_t len, int flags);
+int recv(int s, void *buf, size_t len, int flags);
+\end{lstlisting}
+
+
+Un émetteur qui va envoyer une série de messages au même destinataire
+par le même socket peut faire préalablement un \texttt{connect()} pour
+indiquer une destination par défaut, et employer ensuite
+\texttt{send()} à la place de \texttt{sendto()}.
+
+
+Le récepteur qui ne s'intéresse pas à l'adresse de l'envoyeur peut
+utiliser \texttt{recv()}.  
+
+
+\textbf{Exercice} : modifier les programmes précédents pour utiliser 
+\texttt{recv()} et \texttt{send()}.
+
+\section{Communication par flots}
+
+Dans ce type de communication, c'est une suite d'octets qui est
+transmises (et non pas une suite de messages comme dans la
+communication par datagrammes). 
+
+
+Les sockets locaux de ce type sont créés par 
+
+\extrait
+\begin{lstlisting}
+int fd = socket(PF_LOCAL,SOCK_STREAM,0);
+\end{lstlisting}
+
+
+\section{Architecture client-serveur}
+
+La plupart des applications communicantes sont conçues selon
+une architecture client-serveur, asymétrique, 
+dans laquelle un processus serveur est contacté par plusieurs
+clients.
+
+
+\index{socket!read(socket,tampon,taille)}
+\index{socket!write(socket,tampon,taille)}
+\index{read!read(socket,tampon,taille)}
+\index{write!write(socket,tampon,taille)}
+
+Le client crée un socket (\texttt{socket()}), qu'il met en relation 
+(par \texttt{connect()}) avec celui du serveur. Les données sont
+échangées par \texttt{read()}, \texttt{write()} ... et le socket est
+fermé par \texttt{close()}. 
+
+
+\index{connect(socket,adresse,longueur)}
+\index{socket!connect(socket,adresse,longueur)}
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int  connect(int sockfd, 
+             const struct sockaddr *serv_addr,
+             socklen_t addrlen);
+\end{lstlisting}
+
+
+\index{listen(socket,nombre)}
+\index{socket!listen(socket,nombre)}
+Du côté serveur : un socket est créé, et une adresse lui est associée
+(\texttt{socket()} + \texttt{bind()}). Un \texttt{listen()} prévient
+le système que ce socket recevra des demandes de connexion, et précise
+le nombre de connexions que l'on peut mettre en file d'attente.
+
+\index{accept(socket)}
+\index{socket!accept(socket)}
+
+
+Le serveur attend les demandes de connexion par la fonction
+\texttt{accept()} qui retourne un descripteur, lequel permet la
+communication avec le client.
+
+
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int  bind(int             sockfd, 
+          struct sockaddr *my_addr, 
+          socklen_t       addrlen);
+
+int  listen(int s, int backlog);       
+
+int  accept(int s,  
+            struct  sockaddr  *addr,  
+            socklen_t         *addrlen);
+\end{lstlisting}
+
+
+Remarque : il est possible ne fermer qu'une ``moitié'' de socket :
+\texttt{shutdown(1)} met fin aux émissions (causant une ``fin de fichier''
+chez le correspondant), \texttt{shutdown(0)} met fin aux réceptions.
+
+\index{shutdown(socket,indic)}
+\index{socket!shutdown(socket,indic)}
+
+\extrait
+\begin{lstlisting}
+#include <sys/socket.h>
+
+int shutdown(int s, int how);
+\end{lstlisting}
+
+
+
+\textbf{Le client :}
+
+\source
+\lstinputlisting{../PROGS/LocalStream/client-stream.c}
+
+
+\textbf{Le serveur} est programmé ici de façon atypique, puisqu'il traite 
+ qu'il traîte une seule communication à la fois. Si le client fait traîner
+les choses, les autres clients en attente resteront bloqués longtemps.
+
+
+
+\source
+\lstinputlisting{../PROGS/LocalStream/serveur-stream.c}
+
+
+Dans une programmation plus classique, le serveur lance un processus
+(par \texttt{fork()}, voir plus loin) dès qu'une connexion est établie, et 
+délègue le traitement de la connexion
+à ce processus.
+
+
+Une autre technique est envisageable pour traiter plusieurs connexions par un 
+processus unique : le serveur maintient une liste de descripteurs 
+ouverts, et fait une boucle autour d'un 
+\texttt{select()}, en attente de données venant
+\begin{itemize}
+\item soit du descripteur ``principal'' ouvert par le serveur. Dans ce cas il
+effectue ensuite un \texttt{accept(...)} qui permettra d'ajouter un
+nouveau client à la liste.
+\item soit d'un des descripteurs des clients, et il traite alors les données
+venant de ce client (il l'enlève de la liste en fin de communication).
+\end{itemize}
+Cette technique conduit à des performances nettement supérieures aux
+serveurs multiprocessus ou multithreads (pas de temps perdu à lancer
+des processus), au prix d'une programmation qui oblige le programmeur
+à gérer lui-même le ``contexte de déroulement'' de chaque processus.
+
+
+
+\source
+\lstinputlisting{../PROGS/LocalStream/serveur-stream-monotache.c}
+
+\index{socket!socketpair())}
+\index{socketpair()}
+
+\section{\texttt{socketpair()}}
+
+\label{socketpair}
+
+La fonction \texttt{socketpair()} construit une paire de sockets
+locaux, bi-directionnels,  reliés l'un à l'autre.
+
+
+\extrait
+\begin{lstlisting}
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int socketpair(int d, int type, int protocol, int sv[2]);
+\end{lstlisting}
+
+
+Dans l'état actuel des implémentations, le paramètre \texttt{d}
+(domaine) doit être égal à \texttt{AF\_LOCAL}, et \texttt{type} à
+\texttt{SOCK\_DGRAM} ou \texttt{SOCK\_STREAM}, avec le protocole par
+défaut (valeur \texttt{0}).
+
+
+Cette fonction remplit le tableau \texttt{sv[]} avec les descripteurs
+de deux sockets du type indiqué. Ces deux sockets sont reliés entre
+eux et bidirectionnels : ce qu'on écrit sur le descripteur
+\texttt{sv[0]} peut être lu sur \texttt{sv[1]}, et réciproquement.
+
+
+On utilise \texttt{socketpair()} comme \texttt{pipe()}, pour la
+communication entre descendants d'un même processus \footnote{au sens
+large, ce qui inclue la communication d'un processus avec un de ses
+fils}. \texttt{socketpair()} possède deux avantages sur
+\texttt{pipe()} : la possibilité de transmettre des datagrammes, et la
+bidirectionnalité.
+
+
+\textbf{Exemple :}
+
+
+\source
+\lstinputlisting{../PROGS/LocalDatagrammes/paire-send.c}
+
+

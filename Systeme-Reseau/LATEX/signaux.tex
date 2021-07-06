@@ -1,0 +1,256 @@
+Ce chapitre présente la communication par signaux entre processus.
+
+Il y a essentiellement deux opérations sur les signaux. En gros :
+
+\begin{itemize}
+\item un appel de fonction demande l'envoi d'un \emph{signal} à un
+  autre processus (destinataire), désigné par son numéro de processus.
+\item le destinataire a indiqué, par autre appel de fonction
+  (\texttt{signal} ou \texttt{sigaction}) quel traitement
+  doit être exécuté quand il reçoit un
+  signal.
+\end{itemize}
+
+Un signal est un simple nombre, dont la valeur correspond à un
+particulier. Il peut être émis par un programme (la fonction d'envoi
+s'appelle \texttt{kill()}) (pour des raisons historiques), ou résulter
+d'un évènement système (fin d'un processus fils, ...), ou d'une
+division par zéro, etc.
+
+En particulier, quand on fait tourner un processus depuis un shell et
+qu'on tape controle-c, ce caractère est reçu par le shell qui envoie
+alors le signal \texttt{SIGINT} (numéro 2) au processus qui tourne en
+avant-plan et rend la main à la boucle interactive du shell. De même,
+contrôle-Z envoie un \texttt{SIGTSTP} (20) qui demande au destinataire
+de se mettre en pause (terminal stop). Ce qu'il fait en s'envoyant
+lui-même le signal \texttt{SIGSTOP} (19).
+
+
+Un signal a un comportement par défaut (arrêter le
+programme, ne rien faire, ...), la seconde fonction
+\texttt{signal/sigaction} sert à le changer.
+
+On regarde ici deux bibliothèques liées aux signaux :
+
+\begin{itemize}
+\item la bibliothèque des signaux ``classiques'' d'UNIX, qui est
+  simple à utiliser, mais n'est pas vraiment portable\footnote{le
+    comportement peut être ``légèrement'' différent selon les versions
+    d'UNIX.}
+\item la bibliothèque définie par la norme POSIX, plus riche mais aussi
+  plus complexe.
+\end{itemize}
+
+\section{Les signaux Unix}
+
+\index{signal()}
+\index{signal unix!signal()}
+
+\subsection{\texttt{signal()}}
+
+L'implémentation GNU se présente sous la forme
+
+\extrait
+\begin{lstlisting}
+#include <stdio.h>
+
+sighandler_t signal(int signum, sighandler_t handler);
+\end{lstlisting}
+
+où le type \verb+sighandler_t+ désigne les fonctions qui prennent
+comme paramètre un \texttt{int} :
+
+\begin{lstlisting}
+  typedef void (*sighandler_t)(int);
+\end{lstlisting}
+
+La déclaration ``standard'' est un peu plus difficile à lire :
+\begin{lstlisting}
+  void ( *signal(int signum, void (*handler)(int)) ) (int);
+\end{lstlisting}
+
+
+\paragraph{Rôle : } \texttt{signal()} demande au système de lancer la fonction
+\texttt{handler} lorsque le signal \texttt{signum} est reçu par le processus
+courant.  La fonction \texttt{signal()} renvoie la fonction qui était
+précédemment associée au même signal. 
+
+
+Il y a une trentaine de signaux différents\footnote{La liste
+complète des signaux, leur signification et leur comportement sont
+décrits dans la page de manuel \texttt{signal} (chapitre 7 pour
+Linux)},
+parmi lesquels
+\begin{itemize}
+\item  \texttt{SIGINT} (program interrupt, émis par Ctrl-C), 
+\item  \texttt{SIGTST} (terminal stop, émis par Ctrl-Z)
+\item  \texttt{SIGTERM} (demande de fin de processus)
+\item  \texttt{SIGKILL} (arrêt immédiat de processus)
+\item  \texttt{SIGFPE} (erreur arithmétique),
+\item  \texttt{SIGALRM} (fin de délai, voir fonction \texttt{alarm()}), etc.
+\end{itemize}
+
+La fonction \emph{handler()} prend en paramètre le numéro
+du signal reçu, et ne renvoie rien. 
+
+
+\textbf{Exemple : }
+
+\source
+\lstinputlisting{../PROGS/Signaux/sig-unix.c}
+
+
+\subsection{\texttt{kill()} }
+
+\index{kill()}
+\index{signal unix!kill()}
+
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+int kill(pid_t pid, int sig);
+\end{lstlisting}
+
+
+La fonction \texttt{kill()} envoie un signal à un processus.
+
+\subsection{\texttt{alarm()} }
+
+
+\index{alarm()}
+\index{signal unix!alarm()}
+
+
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+
+long alarm(long delai);
+\end{lstlisting}
+
+
+La fonction \texttt{alarm()} demande au système d'envoyer un signal
+\texttt{SIGALRM} au processus dans un délai fixé (en secondes). Si 
+une alarme était déjà positionnée, elle est remplacée. Un délai
+nul supprime l'alarme existante.
+
+
+\subsection{\texttt{pause()} }
+
+\index{pause()}
+\index{signal unix!pause()}
+
+La fonction \texttt{pause()} bloque le processus courant jusqu'à ce qu'il
+reçoive un signal.
+
+
+\extrait
+\begin{lstlisting}
+#include<unistd.h>
+
+int pause(void);
+\end{lstlisting}
+
+
+\textbf{Exercice} : Écrire une fonction équivalente à \texttt{sleep()}. 
+
+
+\section{Les signaux Posix}
+
+\index{signal POSIX}
+
+Le comportement des signaux classiques d'UNIX est
+ malheureusement différent d'une version à l'autre.
+On emploie donc de préférence les mécanismes définis par
+la norme POSIX, qui offrent de plus la possibilité de masquer des signaux.
+
+
+\subsection{Manipulation des ensembles de signaux}
+
+Le type \texttt{sigset\_t} représente les ensembles de signaux.
+
+
+\extrait
+\begin{lstlisting}
+#include <signal.h>
+
+int sigemptyset(sigset_t *set);
+int sigfillset(sigset_t *set);
+int sigaddset(sigset_t *set, int signum);
+int sigdelset(sigset_t *set, int signum);
+int sigismember(const sigset_t *set, int signum);
+\end{lstlisting}
+
+
+
+La fonction \texttt{sigemptyset()} crée un ensemble vide,
+\texttt{sigaddset()} ajoute un élément, etc.
+
+\subsection{\texttt{sigaction()} }
+
+
+\index{signal POSIX sigaction()}
+\index{sigaction()}
+
+\extrait
+\begin{lstlisting}
+#include <signal.h>
+
+int sigaction(int signum,  
+              const  struct  sigaction  *act,
+              struct sigaction *oldact);
+              \end{lstlisting}
+
+
+La fonction \texttt{sigaction()} change l'action qui sera
+exécutée lors de la réception d'un signal. Cette action
+est décrite par une structure \texttt{struct sigaction}
+
+
+\extrait
+\begin{lstlisting}
+struct sigaction {
+  void (*sa_handler)(int);
+  void (*sa_sigaction)(int, siginfo_t *, void *);
+  sigset_t sa_mask;
+  int sa_flags;
+  void (*sa_restorer)(void); /* non utilisé */
+}            
+\end{lstlisting}
+
+
+\begin{itemize}
+\item \texttt{sa\_handler} indique l'action associée au signal
+\texttt{signum}. Il peut valoir
+\texttt{SIG\_DFL} (action par défaut),
+\texttt{SIG\_IGN} (ignorer),
+ou un pointeur vers une fonction de traitement de lu signal.
+
+\item 
+le masque \texttt{sa\_mask} indique l'ensemble de signaux qui seront bloqués
+pendant l'exécution de ce signal. Le signal lui-même sera bloqué, sauf
+si \texttt{SA\_NODEFER} ou \texttt{SA\_NOMASK} figurent parmi les \emph{flags}.
+\end{itemize}
+
+Le champ \texttt{sa\_flags} contient une combinaison d'indicateurs, 
+parmi lesquels
+\begin{itemize}
+\item \texttt{SA\_NOCLDSTOP} pour le signal \texttt{SIGCHLD}, ne pas 
+recevoir la notification d'arrêt des processus fils 
+(quand les processus fils reçoivent
+\texttt{SIGSTOP},
+\texttt{SIGTSTP}, \texttt{SIGTTIN} ou \texttt{SIGTTOU}).
+
+\item \texttt{SA\_ONESHOT} ou \texttt{SA\_RESETHAND}
+remet l'action par défaut quand le handler a été appelé
+(c'est le comportement par défaut du  \texttt{signal()} classique).
+
+\item \texttt{SA\_SIGINFO} indique qu'il faut utiliser la fonction
+\texttt{sa\_sigaction()} à trois paramètres à la place de
+\texttt{sa\_handler()}.
+\end{itemize}
+
+\textbf{Exemple : }
+
+\source
+\lstinputlisting{../PROGS/Signaux/sig-posix.c}

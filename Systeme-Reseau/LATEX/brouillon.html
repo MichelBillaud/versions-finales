@@ -1,0 +1,1164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="M. Billaud michel.billaud@u-bordeaux.fr" />
+  <title> Programmation Système et Réseau en C sous Unix</title>
+  <style type="text/css">code{white-space: pre;}</style>
+</head>
+<body>
+<div id="header">
+<h1 class="title"> Programmation Système<br />
+et Réseau<br />
+en C sous Unix</h1>
+<h2 class="author">M. Billaud <a href="michel.billaud@u-bordeaux.fr" class="uri">michel.billaud@u-bordeaux.fr</a></h2>
+<h3 class="date">Juin 2018</h3>
+</div>
+<h1 id="avant-propos" class="unnumbered">Avant-Propos</h1>
+<h3 id="objectifs" class="unnumbered">Objectifs</h3>
+<p>Ce document présente quelques appels système utiles à la réalisation d’application communicantes sous UNIX.</p>
+<p>Pour écrire de telles applications il faut savoir faire communiquer de processus entre eux, que ce soit sur la même machine ou sur des machines reliées en réseau (Internet par exemple).</p>
+<p>Pour cela, on passe par des <em>appels systèmes</em> pour demander au système d’exploitation d’effecter des actions : ouvrir des voies de communication, expédier des données, créer des processus etc. On parle de <em>programmation système</em> lorsqu’on utilise explicitement ces appels sans passer par des bibliothèques ou des modules de haut niveau qui les encapsulent pour en cacher la complexité (supposée).</p>
+<p>Les principaux appels systèmes sont présentés ici, avec des exemples d’utilisation.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<h3 id="copyright-versions" class="unnumbered">Copyright, versions</h3>
+<p>(c) 1998-2016 Michel Billaud</p>
+<p>Ce document peut être reproduit en totalité ou en partie, sans frais, sous réserve des restrictions suivantes :</p>
+<ul>
+<li><p>cette note de copyright et de permission doit être préservée dans toutes copies partielles ou totales</p></li>
+<li><p>toutes traductions ou travaux dérivés doivent être approuvés par l’auteur en le prévenant avant leur distribution</p></li>
+<li><p>si vous distribuez une partie de ce travail, des instructions pour obtenir la version complète doivent également être fournies</p></li>
+<li><p>de courts extraits peuvent être reproduits sans ces notes de permissions.</p></li>
+</ul>
+<p>L’auteur décline toute responsabilité vis-à-vis des dommages résultant de l’utilisation des informations et des programmes qui figurent dans ce document.</p>
+<ul>
+<li><p>Version initiale 1998</p></li>
+<li><p>Révision 2002</p></li>
+<li><p>Révision 2014</p></li>
+<li><p>Révision 2016 (C11)</p></li>
+<li><p>Révision 2018 (POSIX 2017)</p></li>
+</ul>
+<p>La dernière version de ce document peut être obtenue depuis la page Web <a href="http://www.labri.fr/~billaud" class="uri">http://www.labri.fr/~billaud</a></p>
+<h1 id="bases-de-c">Bases de C</h1>
+<h2 id="exemple-compilation">Exemple, compilation</h2>
+<p>Un exemple classique de programme écrit en C, à taper dans un fichier <code>hello.c</code></p>
+<p>On peut le compiler par la commande</p>
+<pre><code>$ gcc -std=c11 -Wall -Wextra -pedantic -D_XOPEN_SOURCE=700  hello.c</code></pre>
+<p>Les options permettent de se conformer au maximum au dernier standard du langage C (C11) et de bénéficier de la bibliothèque POSIX.1-2017. <a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<h2 id="lecture-et-affichage">Lecture et affichage</h2>
+<h3 id="lecture-et-écriture-standards-printf-et-scanf">Lecture et écriture standards : <code>printf()</code> et <code>scanf()</code></h3>
+<pre><code>int printf (const char *format, ...);     
+int scanf  (const char *format, ...); </code></pre>
+<p>Ces instructions font des écritures et des lectures <em>formattées</em> sur les flots de sortie et d’entrée standard. Les spécifications de format sont décrites dans la page de manuel <code>printf(3)</code>.</p>
+<h3 id="lecture-et-écriture-dans-une-chaîne-sprintf-et-sscanf">Lecture et écriture dans une chaîne : <code>sprintf()</code> et <code>sscanf()</code></h3>
+<pre><code>int sprintf (      char *str, const char *format, ...);     
+int sscanf  (const char *str, const char *format, ...); </code></pre>
+<p>Similaires aux précédentes, mais les opérations lisent ou écrivent dans le tampon <code>str</code>.</p>
+<h5 id="remarque" class="unnumbered">Remarque : </h5>
+<p>la fonction <code>sprintf()</code> ne connait pas la taille du tampon <code>str</code> ; il y a donc un risque de débordement. Il faut prévoir des tampons assez larges, ou (mieux) utiliser la fonction</p>
+<pre><code>#include &lt;stdio.h&gt;
+int snprintf (char *str, size_t size, const char *format, ...);     </code></pre>
+<p>qui permet d’indiquer un nombre d’octets à ne pas dépasser.</p>
+<h3 id="lancement-dune-commande-system">Lancement d’une commande : <code>system()</code></h3>
+<pre><code>#include &lt;stdlib.h&gt;
+int system (const char * string);</code></pre>
+<p>permet de lancer une ligne de commande (<em>shell</em>) depuis un programme. L’entier retourné par la fonction <code>system()</code> est le <em>code de retour</em> fourni en paramètre à <code>exit()</code> par la commande.</p>
+<h5 id="exemple" class="unnumbered">Exemple</h5>
+<p>:</p>
+<h2 id="communication-avec-lenvironnement">Communication avec l’environnement</h2>
+<h3 id="paramètres-de-main">Paramètres de <code>main()</code></h3>
+<p>Le lancement d’un programme C provoque l’appel de sa fonction principale <code>main()</code>. Le standard C11 autorise deux formes pour la déclaration de <code>main()</code> :</p>
+<pre><code>int main(void);
+int main(int argc, char *argv[]);   </code></pre>
+<ul>
+<li><p><code>argc</code> est le nombre de paramètres sur la ligne de commande (y compris le nom de l’exécutable lui-même) ;</p></li>
+<li><p><code>argv</code> est une tableau de chaînes contenant les paramètres de la ligne de commande.</p></li>
+<li><p>les noms <code>argc, argv</code> sont purement conventionnels.</p></li>
+<li><p>déclaration équivalente pour <code>argv</code> : <code>char **argv</code></p></li>
+</ul>
+<h5 id="exemple-1" class="unnumbered">Exemple :</h5>
+<p>programme qui affiche le tableau <code>argv</code> :</p>
+<h3 id="getopt-analyse-des-paramètres-de-la-ligne-de-commande"><code>getopt()</code> : analyse des paramètres de la ligne de commande</h3>
+<p>La fonction <code>getopt</code> facilite l’analyse des options d’une ligne de commande. On lui fournit :</p>
+<ul>
+<li><p>le tableau des paramètres <code>argv</code> et sa taille <code>argc</code></p></li>
+<li><p>une <em>chaîne de spécification d’options</em>. Par exemple la chaîne <code>hxa:</code> déclare 3 options possibles, la dernière (a) devra être suivies d’un paramètre.</p></li>
+</ul>
+<pre><code>#include &lt;unistd.h&gt;
+
+int getopt(int argc, char *const argv[], const char *optstring);
+
+extern char *optarg;
+extern int  optind, opterr, optopt;</code></pre>
+<p>À chaque étape, <code>getopt()</code> retourne le nom d’une l’option (ou un point d’interrogation pour une option non reconnue), et fournit éventuellement dans <code>optarg</code> la valeur du paramètre associé.</p>
+<p>À la fin de l’analyse, <code>getopt()</code> retourne <code>-1</code>, et le tableau <code>argv</code> a été réarrangé pour que les paramètres supplémentaires (non liés aux options) soient stockés à partir de l’indice <code>optind</code>.</p>
+<h5 id="exemple." class="unnumbered">Exemple.</h5>
+<pre><code>$ essai-getopt -a un deux trois -x quatre
+= option `-x&#39; activée
+= paramètre `-a&#39; présent = un
+3 paramètres supplémentaires
+    -&gt;  deux
+    -&gt;  trois
+    -&gt;  quatre</code></pre>
+<h3 id="variables-denvironnement">Variables d’environnement</h3>
+<p>La fonction <code>getenv()</code> permet de consulter les variables d’environnement :</p>
+<pre><code>#include &lt;stdlib.h&gt;
+char *getenv(const char *name);</code></pre>
+<h5 id="exemple-2" class="unnumbered">Exemple</h5>
+<p>:</p>
+<h5 id="exercice" class="unnumbered">Exercice : </h5>
+<p>Ecrire un programme <code>exoenv.c</code> qui affiche les valeurs des variables d’environnement indiquées. Exemple d’exécution:</p>
+<pre><code>$ exoenv TERM LOGNAME PWD
+TERM=xterm
+LOGNAME=billaud
+PWD=/net/profs/billaud/essais
+$</code></pre>
+<h5 id="voir-aussi" class="unnumbered">Voir aussi</h5>
+<p>les fonctions</p>
+<pre><code>int  putenv  (const char *string);
+int  setenv  (const char *name, const char *value, int overwrite);
+void unsetenv(const char *name);</code></pre>
+<p>qui permettent de modifier les variables d’environnement du processus courant et de ses fils.</p>
+<h5 id="exercice-1" class="unnumbered">Exercice</h5>
+<p>vérifiez que ça ne modifie pas l’environnement du processus père.</p>
+<h3 id="exit-fin-de-programme"><code>exit()</code> : Fin de programme</h3>
+<p>L’exécution d’un programme se termine</p>
+<ul>
+<li><p>soit par un <code>return</code> dans la fonction <code>main()</code></p></li>
+<li><p>soit par un appel à la fonction <code>exit()</code></p></li>
+</ul>
+<pre><code>#include &lt;stdlib.h&gt;
+void exit(int status);</code></pre>
+<p>Le paramètre <code>status</code> est le <em>code de retour</em> du processus. On utilisera de préférence les deux constantes <code>EXIT_SUCCESS</code> et <code>EXIT_FAILURE</code> qui sont définies dans <code>stdlib.h</code>.</p>
+<h2 id="erreurs">Erreurs</h2>
+<h3 id="variable-errno-fonction-perror">Variable <code>errno</code>, fonction <code>perror()</code> </h3>
+<p>La plupart des fonctions du système peuvent échouer pour diverses raisons. Habituellement, elles le signalent en retournant une valeur spéciale. On peut alors examiner la variable globale <code>errno</code> pour déterminer plus précisément la cause de l’échec, et agir en conséquence.</p>
+<pre><code>#include &lt;stdio.h&gt;
+void perror(const char *s);
+
+#include &lt;errno.h&gt;
+extern int errno;</code></pre>
+<p>La fonction <code>perror()</code> imprime sur la sortie d’erreur standard un message qui décrit la dernière erreur qui s’est produite, précédé par la chaîne <code>s</code>.</p>
+<pre><code>#include &lt;stdio.h&gt;
+void perror(const char *s);</code></pre>
+<p>Enfin, la fonction <code>strerror()</code> retourne le texte (en anglais) du message d’erreur correspondant à un numéro.</p>
+<pre><code>#include &lt;string.h&gt;
+char *strerror(int errnum);</code></pre>
+<h5 id="exemple-3" class="unnumbered">Exemple</h5>
+<p>: programme qui change les droits d’accès à des fichiers grâce à l’appel système <em>chmod(2)</em>.</p>
+<h3 id="traitement-des-erreurs-branchements-non-locaux">Traitement des erreurs, branchements non locaux </h3>
+<pre><code>#include &lt;setjmp.h&gt;
+
+int   setjmp(jmp_buf env);
+void longjmp(jmp_buf env, int val);</code></pre>
+<p>Ces deux fonctions permettent de réaliser un <em>branchement</em> d’une fonction à une autre (la première doit avoir été appelée, au moins indirectement, par la seconde). C’est un moyen primitif de réaliser un semblant de traitement d’erreurs par <em>exceptions</em>. À employer avec précaution.</p>
+<p>La fonction <code>setjmp()</code> sauve l’environnement (contexte d’exécution) dans la variable tampon <code>env</code>, et retourne 0 si elle a été appelée directement.</p>
+<p>La fonction <code>longjmp()</code> rétablit le dernier environnement qui a été sauvé dans <code>env</code>. Le programme continue à l’endroit du <code>setjmp()</code> comme si celui-ci avait retourné la valeur <code>val</code>. (Si le paramètre <code>val</code> à 0, la valeur retournée est 1).</p>
+<h5 id="exemple-4" class="unnumbered">Exemple</h5>
+<p>:</p>
+<h2 id="allocation-dynamique">Allocation dynamique</h2>
+<pre><code>#include &lt;stdlib.h&gt;
+void *malloc(size_t size);
+void  free(void *ptr);
+void *realloc(void *ptr, size_t size);</code></pre>
+<ul>
+<li><p><code>malloc()</code> - memory allocation - demande au système d’exploitation l’attribution d’un espace mémoire de taille supérieure ou égale à <code>size</code> octets. La valeur retournée est un pointeur sur cet espace (<code>NULL</code> en cas d’échec).</p></li>
+<li><p><code>free()</code> restitue cet espace au système.</p></li>
+<li><p><code>realloc()</code> permet de redimensionner la zone allouée en conservant son contenu.</p></li>
+</ul>
+<h5 id="exemple-5" class="unnumbered">Exemple</h5>
+<p>: la fonction <code>lire_nouvelle_ligne()</code> ci-dessous lit une ligne de l’entrée standard et retourne cette ligne dans un tampon d’une taille suffisante. Elle renvoie le pointeur <code>NULL</code> si il n’y a plus de place en mémoire.</p>
+<p>Attention : dans l’exemple ci-dessus, la fonction <code>lire_nouvelle_ligne()</code> alloue un nouveau tampon à chaque invocation. Il est donc de la responsabilité du programmeur de libérer ce tampon après usage pour éviter les <em>fuites mémoire</em>. C’est ce que fait l’appel de <code>free()</code> dans la fonction <code>main()</code>.</p>
+<h5 id="copie-de-chaine">Copie de chaine :</h5>
+<p>Il est très fréquent de devoir allouer une zone mémoire pour y loger une copie d’une chaîne de caractères. On utilise pour cela la fonction <code>strdup()</code>, qui ne fait pas partie des bibliothèques standards du langage C lui-même, mais (ouf !) de la bibliothèque POSIX.</p>
+<pre><code>#include &lt;string.h&gt;
+  
+char *strdup (const char *s);</code></pre>
+<p>Dans un environnement non-POSIX, la fonction peut être redéfinie aisément :</p>
+<pre><code>char *strdup (const char *s)
+{
+  size_t new_size = strlen(s);
+  return strcpy(new_size, s);
+}</code></pre>
+<h1 id="fichiers-et-tuyaux">Fichiers et tuyaux</h1>
+<h2 id="manipulation-des-fichiers-opérations-de-haut-niveau">Manipulation des fichiers, opérations de haut niveau</h2>
+<h3 id="flots-standards-entrées-et-sorties-sur-la-console">Flots standards, entrées et sorties sur la console</h3>
+<p>Quand un programme est lancé, il y a trois <em>flots</em> prédéclarés et ouverts , qui correspondent à l’entrée et la sortie standards, ainsi qu’à la sortie d’erreur :</p>
+<pre><code>#include &lt;stdio.h&gt;
+
+FILE *stdin;
+FILE *stdout;
+FILE *stderr;</code></pre>
+<p>Vous avez déjà rencontré quelques fonctions qui agissent sur ces flots, implicitement, sans les nommer en paramètre<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<pre><code>int  printf(const char *format, ...);     
+int  scanf(const char *format, ...);      
+int  getchar(void);                       </code></pre>
+<ul>
+<li><p><code>printf()</code> écrit sur <code>stdout</code> la valeur d’expressions selon un format donné.</p></li>
+<li><p><code>scanf()</code> lit sur <code>stdin</code> la valeur de variables.</p></li>
+<li><p>pour lire une ligne complète, on fait appel à <code>fgets()</code> en utilisant le flot <code>stdin</code>, voir plus loin.</p></li>
+</ul>
+<ul>
+<li><p><code>scanf()</code> renvoie le nombre d’objets qui ont pu être effectivement lus sans erreur.</p></li>
+<li><p><code>getchar()</code> lit un caractère sur l’entrée standard et retourne sa valeur sous forme d’entier positif, ou la constante <code>EOF</code> (= -1) en fin de fichier.</p></li>
+</ul>
+<h3 id="opérations-sur-les-flots">Opérations sur les flots</h3>
+<pre><code>#include &lt;stdio.h&gt;
+  
+FILE *fopen (char *path, char *mode);
+int   fclose  (FILE *stream);</code></pre>
+<ul>
+<li><p><code>fopen()</code> tente d’ouvrir le fichier désigné par la chaîne <code>path</code> selon le mode indiqué, qui peut être</p>
+<ul>
+<li><p><code>r</code> (lecture seulement),</p></li>
+<li><p><code>r+</code> (lecture et écriture),</p></li>
+<li><p><code>w</code> (écriture seulement),</p></li>
+<li><p><code>w+</code> (lecture et écriture, effacement si le fichier existe déjà),</p></li>
+<li><p><code>a</code> (écriture à partir de la fin du fichier si il existe déjà),</p></li>
+<li><p><code>a+</code> (lecture et écriture, positionnement à la fin du fichier si il existe déjà).</p></li>
+</ul>
+<p>Si l’ouverture échoue, <code>fopen()</code> retourne le pointeur <code>NULL</code>.</p></li>
+</ul>
+<pre><code>int fprintf(FILE *stream, const char *format, ...);
+int fscanf (FILE *stream, const char *format, ...);
+int fgetc  (FILE *stream);</code></pre>
+<p>Ces fonctions ne diffèrent de <code>printf()</code>, <code>scanf()</code> et <code>getchar()</code> que par le premier paramètre, qui précise sur quel flot porte l’opération.</p>
+<p>Enfin, la lecture d’une ligne se fait par</p>
+<pre><code>char *fgets(char *s, int size, FILE *stream);</code></pre>
+<ul>
+<li><p>La fonction <code>fgets()</code> lit une ligne de caractères</p></li>
+<li><p>la taille du tampon (size) est indiquée pour éviter les débordements. La lecture s’arrête quand <code>size-1</code> caractères ont été lus, ou quand le caractère de fin de ligne est rencontré</p></li>
+<li><p>les caractères lus (y compris la marque de fin de ligne) sont placés dans un tampon d’adresse <code>s</code>. un octet nul est ajouté après le dernier caractère.</p></li>
+</ul>
+<h5 id="exemple-6" class="unnumbered">Exemple</h5>
+<p>: comptage du nombre de caractères et de lignes d’un fichier. Affichage du résultat sur la sortie standard.</p>
+<h3 id="positionnement">Positionnement</h3>
+<pre><code>int  feof (FILE *stream);
+long ftell(FILE *stream);
+int  fseek(FILE *stream, long offset, int whence);</code></pre>
+<ul>
+<li><p><code>feof()</code> indique si la fin de fichier est atteinte.</p></li>
+<li><p><code>ftell()</code> indique la <em>position courante</em> dans le fichier (0 = début).</p></li>
+<li><p><code>fseek()</code> déplace la position courante : si <code>whence</code> contient</p>
+<ul>
+<li><p><code>SEEK_SET</code> la position est donnée par rapport au début du fichier,</p></li>
+<li><p><code>SEEK_CUR</code> : déplacement par rapport à la position courante,</p></li>
+<li><p><code>SEEK_END</code> : déplacement par rapport à la fin.</p></li>
+</ul></li>
+</ul>
+<h3 id="divers">Divers</h3>
+<pre><code>int   ferror   (FILE *stream);
+void  clearerr (FILE *stream);
+int   fileno   (FILE *stream);
+FILE *fdopen   (int fildes, char *mode);</code></pre>
+<ul>
+<li><p>La fonction <code>ferror()</code> indique si une erreur a eu lieu sur un flot,</p></li>
+<li><p><code>clearerr()</code> efface l’indicateur d’erreur</p></li>
+<li><p><code>fileno()</code> renvoie le numéro de fichier de bas niveau (<em>descripteur de fichier</em>) correspondant à un flot.</p></li>
+<li><p>Inversement, <code>fdopen()</code> ouvre un fichier de haut niveau à partir d’un fichier de bas niveau déjà ouvert.</p></li>
+</ul>
+<h2 id="manipulation-des-fichiers-opérations-de-bas-niveau">Manipulation des fichiers, opérations de bas niveau</h2>
+<p>Pendant l’exécution d’un programme, un certain nombre de fichiers sont <em>ouverts</em> (en cours d’utilisation). I</p>
+<p>Il existe dans le système une table des fichiers actuellement ouverts par le programme, les opérations de bas niveau désignent les fichiers par leur indice dans cette table. On appelle aussi ce numéro de fichier (<code>fileno</code>) un “descripteur de fichier” (<code>fd</code> = file descriptor).</p>
+<p>Les numéros 0, 1 et 2 correspondent respectivement à l’entrée standard, la sortie standard, et la sortie d’erreur. Dans la programmation, utilisez plutot les constantes <code>STDIN_FILENO</code> <code>STDOUT_FILENO</code>, <code>STDERR_FILENO</code> définies dans <code>unistd.h</code>.</p>
+<p>Les opérations de bas niveau communiquent en général avec les fichiers par l’intermédiaire d’un tampon, un tableau d’octets, en indiquant le nombre d’octets à transmettre. Exemple :</p>
+<pre><code>char * message = &quot;Hello, world&quot;;
+
+write(STDOUT_FILENO, message, 5);</code></pre>
+<p>envoie les 5 premiers caractères du message sur la sortie standard.</p>
+<h3 id="ouverture-fermeture-lecture-écriture">Ouverture, fermeture, lecture, écriture</h3>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;fcntl.h&gt;
+  
+int open(const char *pathname, int flags, mode_t mode);</code></pre>
+<p>Ouverture d’un fichier nommé <code>pathname</code>. Les <code>flags</code> peuvent prendre l’une des valeurs suivantes :</p>
+<ul>
+<li><p><code>O_RDONLY</code> (lecture seulement),</p></li>
+<li><p><code>O_WRONLY</code> (écriture seulement),</p></li>
+<li><p><code>O_RDWR</code> (lecture et écriture).</p></li>
+</ul>
+<p>Cette valeur peut être combinée éventuellement (par un “ou logique”) avec des options:</p>
+<ul>
+<li><p><code>O_CREAT</code> (création du fichier si il n’existe pas déjà),</p></li>
+<li><p><code>O_TRUNC</code> (si le fichier existe il sera tronqué),</p></li>
+<li><p><code>O_APPEND</code> (chaque écriture se fera à la fin du fichier),</p></li>
+<li><p>etc.</p></li>
+</ul>
+<p>En cas de création d’un nouveau fichier, le <code>mode</code> sert à préciser les droits d’accès. Lorsqu’un nouveau fichier est créé, <code>mode</code> est combiné avec le <code>umask</code> du processus pour former les droits d’accès du fichier. Les permissions effectives sont alors <code>(mode &amp; ~umask)</code></p>
+<p>Le paramètre <code>mode</code> doit être présent quand les <code>flags</code> contiennent <code>O_CREAT</code>.</p>
+<p>La fonction <code>open()</code> retourne le <em>descripteur de fichier</em> (-1 en cas d’erreur), un nombre entier qui sert à référencer le fichier par la suite.</p>
+<pre><code>#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+
+int close(int fd);
+int read(int fd, char *buf, size_t count);
+size_t write(int fd, const char *buf, size_t count);</code></pre>
+<p><code>close()</code> ferme le fichier indiqué par le descripteur <code>fd</code>. Retourne 0 en cas de succès, -1 en cas d’échec.</p>
+<p><code>read()</code> demande à lire <em>au plus</em> <code>count</code> octets sur <code>fd</code>, à placer dans le tampon <code>buf</code>. Retourne le nombre d’octets qui ont été effectivement lus, qui peut être inférieur à la limite donnée pour cause de non-disponibilité (-1 en cas d’erreur, 0 en fin de fichier).</p>
+<p><code>write()</code> tente d’écrire sur le fichier les <code>count</code> premiers octets du tampon <code>buf</code>. Retourne le nombre d’octets qui ont été effectivement écrits, -1 en cas d’erreur.</p>
+<h5 id="exemple-7" class="unnumbered">Exemple</h5>
+<p>:</p>
+<h5 id="problème." class="unnumbered">Problème.</h5>
+<p>Montrez que la taille du tampon influe sur les performances des opérations d’entrée-sortie. Pour cela, modifiez le programme précédent pour qu’il accepte 3 paramètres : les noms des fichiers source et destination, et la taille du tampon (ce tampon sera alloué dynamiquement).</p>
+<h3 id="duplication-de-descripteurs">Duplication de descripteurs</h3>
+<pre><code>int dup  (int oldfd);
+int dup2 (int oldfd, int newfd);</code></pre>
+<p>Ces deux fonctions créent une copie du descripteur <code>oldfd</code>. <code>dup()</code> utilise le plus petit numéro de descripteur libre. <code>dup2()</code> réutilise le descripteur <code>newfd</code>, en fermant éventuellement le fichier qui lui était antérieurement associé.</p>
+<p>La valeur retournée est celle du descripteur, ou -1 en cas d’erreur.</p>
+<p>L’effet sera que le nouveau descripteur désignera la même fichier que l’ancien.</p>
+<h5 id="exemple-8" class="unnumbered">Exemple</h5>
+<p>:</p>
+<h5 id="exercice-2" class="unnumbered">Exercice</h5>
+<p>: que se produit-il si on essaie de rediriger la <em>sortie</em> standard d’une commande à la manière de l’exemple précédent ? (essayer avec “<code>ls</code>”, “<code>ls -l</code>”).</p>
+<h3 id="positionnement-1">Positionnement</h3>
+<pre><code>#include &lt;unistd.h&gt;
+#include &lt;sys/types.h&gt;
+
+off_t lseek(int fildes, off_t offset, int whence);</code></pre>
+<p><code>lseek()</code> repositionne le pointeur de lecture. Similaire à <code>fseek()</code>. Pour connaître la position courante, faire un appel à <code>stat()</code>.</p>
+<h5 id="exercice." class="unnumbered">Exercice. </h5>
+<p>Écrire un programme pour manipuler un fichier relatif d’enregistrements de taille fixe.</p>
+<h3 id="verrouillage">Verrouillage</h3>
+<pre><code>#include &lt;sys/file.h&gt;
+int flock(int fd, int operation)</code></pre>
+<p>Lorsque <code>operation</code> est <code>LOCK_EX</code>, il y a verrouillage du fichier désigné par le descripteur <code>fd</code>. Le fichier est déverrouillé par l’option <code>LOCK_UN</code>.</p>
+<h5 id="problème.-1" class="unnumbered">Problème. </h5>
+<p>Ecrire une fonction <code>mutex()</code> qui permettra de délimiter une section critique dans un programme C. Exemple d’utilisation :</p>
+<pre><code>#include &quot;mutex.h&quot;
+...
+mutex(&quot;/tmp/foobar&quot;,MUTEX_BEGIN);
+...
+mutex(&quot;/tmp/foobar&quot;,MUTEX_END);</code></pre>
+<p>Le premier paramètre indique le nom du fichier utilisé comme verrou. Le second précise si il s’agit de verrouiller ou déverrouiller. Faut-il prévoir des options <code>MUTEX_CREATE</code>, <code>MUTEX_DELETE</code> ? Qu’arrive-t’il si un programme se termine en “oubliant” de fermer des sections critiques ?</p>
+<p>Fournir le fichier d’interface <code>mutex.h</code>, l’implémentation <code>mutex.c</code>, et des programmes illustrant l’utilisation de cette fonction.</p>
+<h3 id="mmap-fichiers-mappés-en-mémoire"><code>mmap()</code> : fichiers “mappés” en mémoire</h3>
+<p>Un fichier “mappé en mémoire” apparaît comme un tableau d’octets, ce qui permet de le parcourir en tous sens plus commodément qu’avec des <code>seek()</code>, <code>read()</code> et <code>write()</code>.</p>
+<p>C’est technique beaucoup plus économique que de copier le fichier dans une zone allouée en mémoire : c’est le système de mémoire virtuelle qui s’occupe de lire et écrire physiquement les pages du fichier au moment où on tente d’y accéder, et gère tous les tampons.</p>
+<pre><code>#include &lt;unistd.h&gt;
+#include &lt;sys/mman.h&gt;
+
+void * mmap (void  *start,  size_t length, 
+             int prot , int flags, 
+             int fd, off_t offset);
+int munmap  (void *start, size_t length);</code></pre>
+<p>La fonction <code>mmap()</code> “mappe” en mémoire un morceau (de longueur <code>length</code>, en partant du <code>offset</code>-ième octet) du fichier désigné par le descripteur <code>fd</code> , et retourne un pointeur sur la zone de mémoire correspondante.</p>
+<p>On peut définir quelques options (protection en lecture seule, partage, etc) grâce à <code>prot</code> et <code>flags</code>. Voir pages de manuel. <code>munmap()</code> “libère” la mémoire.</p>
+<h2 id="fichiers-répertoires-etc.">Fichiers, répertoires etc.</h2>
+<p>Ici “fichier” est compris dans son sens large (élément d’un système de fichiers), qui inclue aussi les répertoires, les périphériques, les tuyaux et sockets etc. (voir plus loin).</p>
+<h3 id="suppression">Suppression</h3>
+<pre><code>#include &lt;stdio.h&gt;
+int remove(const char *pathname);</code></pre>
+<p>Cette fonction supprime le fichier <code>pathname</code>, et retourne 0 en cas de succès (-1 sinon).</p>
+<h5 id="exercice-3" class="unnumbered">Exercice: </h5>
+<p>écrire un substitut pour la commande <em>rm</em>.</p>
+<pre><code>#include &lt;sys/stat.h&gt;
+#include &lt;unistd.h&gt;
+
+int stat(const char *file_name, struct stat *buf);
+int fstat(int filedes, struct stat *buf);</code></pre>
+<h3 id="informations-sur-les-fichiersrépertoires...">Informations sur les fichiers/répertoires/...</h3>
+<p>Ces fonctions retournent diverses informations sur un fichier désigné par un chemin d’accès (<code>stat()</code>) ou par un descripteur (<code>fstat()</code>).</p>
+<h5 id="exemple-9" class="unnumbered">Exemple</h5>
+<p>:</p>
+<h3 id="parcours-de-répertoires">Parcours de répertoires</h3>
+<p>Le parcours d’un répertoire, pour obtenir la liste des fichiers et répertoires qu’il contient, se fait grâce aux fonctions:</p>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;dirent.h&gt;
+  
+DIR *opendir   (const char *name);
+int  closedir  (DIR *dir);
+void rewinddir (DIR *dir);
+void seekdir   (DIR *dir, off_t offset);
+off_t telldir  (DIR *dir);</code></pre>
+<p>Voir la documentation pour des exemples.</p>
+<h5 id="exercice-4" class="unnumbered">Exercice : </h5>
+<p>écrire une version simplifiée de la commande <code>ls</code>.</p>
+<h5 id="exercice-5" class="unnumbered">Exercice : </h5>
+<p>écrire une commande qui fasse apparaître la structure d’une arborescence. Exemple d’affichage :</p>
+<pre><code>C++
+| CompiSep
+| Fichiers
+Systeme
+| Semaphores
+| Pipes
+| Poly
+  | SVGD
+  | Essais
+| Fifos</code></pre>
+<p>Conseil: écrire une fonction à deux paramètres: le chemin d’accès du répertoire et le niveau de récursion.</p>
+<h2 id="tuyaux-de-communication">Tuyaux de communication </h2>
+<p>Les <em>tuyaux de communication</em> (<em>pipes</em>) permettent de faire communiquer des processus qui s’exécutent d’une même machine. Une fois ouverts, ils sont accessibles comme les fichiers à travers un “file descriptor”. Ce que les processus y écrivent peut être lu immédiatement par d’autres processus.</p>
+<p>Nous en présentons deux variétés :</p>
+<ul>
+<li><p>les tuyaux “simples” qui sont créés par un processus et servent à la communication entre ses descendants et lui.</p></li>
+<li><p><em>tuyaux nommés</em>, qui sont visibles (comme les fichiers et répertoires), dans le système de fichiers. Ils peuvent donc être partagés par des programmes indépendants.</p></li>
+</ul>
+<p>Nous verrons plus loin ([sockets]) une forme de communication plus générale, les sockets.</p>
+<p>Nous commençons par les tuyaux nommés, dont l’usage est proche des fichiers ordinaires.</p>
+<h3 id="tuyaux-nommés-fifo">Tuyaux nommés (FIFO)</h3>
+<p>Les “tuyaux nommés” visibles dans l’arborescence des fichiers et répertoires. Ils sont créés par <code>mkfifo()</code>, et utilisés ensuite par <code>open()</code>, <code>read()</code>, <code>write()</code>, <code>close()</code>, <code>fdopen()</code>, etc.</p>
+<pre><code>#include &lt;stdio.h&gt;
+int mkfifo (const char *path, mode_t mode);</code></pre>
+<p>La fonction <code>mkfifo()</code> crée un FIFO ayant le chemin indiqué par <code>path</code> et les droits d’accès donnés par <code>mode</code>. Si la création réussit, la fonction renvoie 0, sinon -1. Exemple:</p>
+<pre><code>if (mkfifo(&quot;/tmp/fifo.courrier&quot;, 0644) != 0) {
+  perror(&quot;mkfifo&quot;);
+}</code></pre>
+<h5 id="exercice.-1" class="unnumbered">Exercice.</h5>
+<p>Regarder ce qui se passe quand</p>
+<ul>
+<li><p>plusieurs processus écrivent dans une même FIFO (faire une boucle <code>sleep-write</code>).</p></li>
+<li><p>plusieurs processus lisent la même FIFO.</p></li>
+</ul>
+<h5 id="exercice.-2" class="unnumbered">Exercice. </h5>
+<p>Ecrire une commande <em>mutex</em> qui permettra de délimiter une section critique dans des shell-scripts. Exemple d’utilisation :</p>
+<pre><code>mutex -b /tmp/foobar
+...
+mutex -e /tmp/foobar</code></pre>
+<p>Le premier paramètre indique si il s’agit de verrouiller (<code>-b</code> = begin) ou de déverrouiller (<code>-e</code> = end). Le second paramètre est le nom du verrou.</p>
+<p><em>Conseil</em> : la première option peut s’obtenir en tentant de lire une information quelconque (<em>jeton</em>) dans une FIFO. C’est la seconde option qui dépose le jeton, ce qui débloquera le processus lecteur. Prévoir une option pour créer une FIFO ?</p>
+<h3 id="tuyaux-pipe">Tuyaux (pipe)</h3>
+<p>On utilise un <em>pipe</em> (tuyau) pour faire communiquer un processus et un de ses descendants<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a>.</p>
+<pre><code>#include &lt;unistd.h&gt;
+int pipe(int filedes[2]);</code></pre>
+<p>L’appel <code>pipe()</code> fabrique un tuyau de communication et renvoie dans un tableau une paire de descripteurs. On lit à un bout du tuyau (sur le descripteur de sortie <code>fildes[0]</code>) ce qu’on a écrit dans l’autre (<code>filedes[1]</code>). Voir exemple dans [fork].</p>
+<p>Les <em>pipes</em> ne sont pas visibles dans l’arborescence des fichiers et répertoires, par contre ils sont hérités lors de la création d’un processus.</p>
+<p>La fonction <code>socketpair()</code> (voir [socketpair]) généralise la fonction <code>pipe</code>.</p>
+<h3 id="pipes-depuisvers-une-commande">Pipes depuis/vers une commande</h3>
+<pre><code>#include &lt;stdio.h&gt;
+FILE *popen(const char *command, const char *type);
+int pclose(FILE *stream);</code></pre>
+<p><code>popen()</code> lance la commande décrite par la chaîne <code>command</code> et retourne un flot.</p>
+<p>Si <code>type</code> est <code>r</code> le flot retourné est celui de la sortie standard de la commande (on peut y lire). Si <code>type</code> est <code>w</code> c’est son entrée standard.</p>
+<p><code>pclose()</code> referme ce flot.</p>
+<h5 id="exemple-10" class="unnumbered">Exemple</h5>
+<p>: envoi d’un “<code>ls -l </code>” par courrier</p>
+<h2 id="select-attente-de-données"><code>select()</code> : attente de données </h2>
+<p>Il est assez courant de devoir attendre des données en provenance de plusieurs sources. On utilise pour cela la fonction <code>select()</code> qui permet de surveiller plusieurs descripteurs simultanément.</p>
+<pre><code>#include &lt;sys/time.h&gt;
+#include &lt;sys/types.h&gt;
+#include &lt;unistd.h&gt;
+
+int  select(int n, fd_set *readfds, 
+                   fd_set *writefds, 
+                   fd_set *exceptfds, 
+                   struct timeval *timeout);
+
+FD_CLR   (int fd, fd_set *set);
+FD_ISSET (int fd, fd_set *set);
+FD_SET   (int fd, fd_set *set);
+FD_ZERO  (fd_set *set);      </code></pre>
+<p>Cette fonction attend que des données soient prêtes à être lues sur un des descripteurs de l’ensemble <code>readfs</code>, ou que l’un des descripteurs de <code>writefds</code> soit prêt à recevoir des écritures, que des exceptions se produisent (<code>exceptfds</code>), ou encore que le temps d’attente <code>timeout</code> soit épuisé.</p>
+<p>Lorsque <code>select()</code> se termine, <code>readfds</code>, <code>writefds</code> et <code>exceptfds</code> contiennent les descripteurs qui ont changé d’état. <code>select()</code> retourne le nombre de descripteurs qui ont changé d’état, ou <code>-1</code> en cas de problème.</p>
+<p>L’entier <code>n</code> doit être supérieur (strictement) au plus grand des descripteurs contenus dans les 3 ensembles (c’est en fait le nombre de bits significatifs du masque binaire qui représente les ensembles). On peut utiliser la constante <code>FD_SETSIZE</code>.</p>
+<p>Les pointeurs sur les ensembles (ou le délai) peuvent être <code>NULL</code>, ils représentent alors des ensembles vides (ou une absence de limite de temps).</p>
+<p>Les macros <code>FD_CLR, FD_ISSET, FD_SET, FD_ZERO</code> permettent de manipuler les ensembles de descripteurs.</p>
+<h3 id="attente-de-données-provenant-de-plusieurs-sources">Attente de données provenant de plusieurs sources</h3>
+<h5 id="exemple-11" class="unnumbered">Exemple</h5>
+<p>:</p>
+<h3 id="attente-de-données-avec-limite-de-temps">Attente de données avec limite de temps</h3>
+<p>L’exemple suivant montre comment utiliser la limite de temps dans le cas (fréquent) d’attente sur un seul descripteur.</p>
+<h1 id="communication-interprocessus-par-sockets-locaux">Communication interprocessus par sockets locaux</h1>
+<h2 id="sockets">Les sockets</h2>
+<p>Les <em>sockets</em> (<em>prises</em>) sont une interface générique pour la communication entre processus, par divers moyens.</p>
+<p>On s’en sert pour la communication à travers les réseaux (Internet ou autres), mais ils sont utilisables également pour la communication locale entre processus qui s’exécutent sur une même machine (comme les tuyaux déjà vus, et les files de messages IPC que nous verrons plus loin).</p>
+<p>Dans ce chapitre, nous montrons comment s’en servir pour la communication locale, la communication sur le réseau sera vue plus loin.</p>
+<h3 id="création-dun-socket">Création d’un socket</h3>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int socket(int domain, int type, int protocol);</code></pre>
+<p>La fonction <code>socket()</code> crée une nouvelle prise et retourne un descripteur qui servira ensuite aux lectures et écritures. Le paramètre <code>domain</code> indique le domaine de communication” utilisé, qui est <code>PF_LOCAL</code> ou (synonyme) <code>PF_UNIX</code> pour les communications locales.<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
+<p>Le <em>type</em> indique le style de communication désiré entre les deux participants. Les deux styles principaux sont</p>
+<ul>
+<li><p><code>SOCK_DGRAM</code> : communication par messages (blocs contenant des octets) appelés <em>datagrammes</em></p></li>
+<li><p><code> SOCK_STREAM</code> : la communication se fait par un flot (bidirectionnel) d’octets une fois que la connection est établie.</p></li>
+</ul>
+<p><strong>Fiabilité</strong>: la fiabilité des communication par datagrammes est garantie pour le domaine local, mais ce n’est pas le cas pour les domaines réseau” que nous verrons plus loin : les datagrammes peuvent être perdus, dupliqués, arriver dans le désordre etc. et c’est au programmeur d’application d’en tenir compte. Par contre la fiabilité des streams” est assurée par les couches basses du système de communication, évidemment au prix d’un surcoût (numérotation des paquets, accusés de réception, temporisations, retranmissions, etc).</p>
+<p>Enfin, le paramètre <code>protocol</code> indique le protocole sélectionné. La valeur <code>0</code> correspond au protocole par défaut pour le domaine et le type indiqué.</p>
+<h3 id="adresses">Adresses</h3>
+<p>La fonction <code>socket()</code> crée un socket anonyme. Pour qu’un autre processus puisse le désigner, il faut lui associer un <em>nom</em> par l’intermédiaire d’une <em>adresse</em> contenue dans une structure <code>sockaddr_un</code> :</p>
+<pre><code>#include &lt;sys/un.h&gt;
+
+struct sockaddr_un {
+        sa_family_t  sun_family;              /* AF_UNIX */
+        char         sun_path[UNIX_PATH_MAX]; /* pathname */
+};</code></pre>
+<p>Ces adresses sont des chemins d’accès dans l’arborescence des fichiers et répertoires.</p>
+<p>Exemple :</p>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+#include &lt;sys/un.h&gt;
+
+socklen_t longueur_adresse;
+
+struct sockaddr_un  adresse;
+
+adresse.sun_family      = AF_LOCAL;
+strcpy(adresse.sun_path,&quot;/tmp/xyz&quot;);
+longueur_adresse = sizeof adresse;</code></pre>
+<p>L’association d’une adresse à un socket se fait par <code>bind()</code> (voir exemples plus loin).</p>
+<h2 id="communication-par-datagrammes">Communication par datagrammes</h2>
+<p>Dans l’exemple développé ici, un serveur affiche les datagrammes émis par les clients.</p>
+<h3 id="la-réception-de-datagrammes">La réception de datagrammes</h3>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int  bind(int  sockfd, struct sockaddr *my_addr, 
+                       socklen_t addrlen);
+
+int  recvfrom(int  s,  void  *buf,  size_t len, int flags,
+              struct sockaddr *from, socklen_t *fromlen);</code></pre>
+<p>La fonction <code>bind()</code> permet de nommer le socket de réception. La fonction <code>recvfrom()</code> attend l’arrivée d’un datagramme qui est stocké dans les <code>len</code> premiers octets du tampon <code>buff</code>. Si <code>from</code> n’est pas <code>NULL</code>, l’adresse du socket émetteur<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a> est placée dans la structure pointée par <code>from</code>, dont la longueur maximale est contenue dans l’entier pointé par <code>fromlen</code>.</p>
+<p>Si la lecture a réussi, la fonction retourne le nombre d’octets du message lu, et la longueur de l’adresse est mise à jour.</p>
+<p>Le paramètre <code>flags</code> permet de préciser des options.</p>
+<h3 id="émission-de-datagrammes">Émission de datagrammes</h3>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int  sendto(int s, const void *msg, size_t len, int flags,
+            const struct sockaddr *to, socklen_t tolen);</code></pre>
+<p><code>sendto</code> utilise le descripteur de socket <code>s</code> pour envoyer le message formé des <code>len</code> premiers octets de <code>msg</code> à l’adresse de longueur <code>tolen</code> pointée par <code>to</code>.</p>
+<p>Le même descripteur peut être utilisé pour des envois à des adresses différentes.</p>
+<p><strong>Exercice</strong> : modifier les programmes précédents pour que le serveur envoie une réponse qui sera affichée par le client<a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a>.</p>
+<h3 id="emission-et-réception-en-mode-connecté">Emission et réception en mode connecté</h3>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int  connect(int sockfd, 
+             const struct sockaddr *serv_addr,
+             socklen_t addrlen);
+
+int send(int s, const void *msg, size_t len, int flags);
+int recv(int s, void *buf, size_t len, int flags);</code></pre>
+<p>Un émetteur qui va envoyer une série de messages au même destinataire par le même socket peut faire préalablement un <code>connect()</code> pour indiquer une destination par défaut, et employer ensuite <code>send()</code> à la place de <code>sendto()</code>.</p>
+<p>Le récepteur qui ne s’intéresse pas à l’adresse de l’envoyeur peut utiliser <code>recv()</code>.</p>
+<p><strong>Exercice</strong> : modifier les programmes précédents pour utiliser <code>recv()</code> et <code>send()</code>.</p>
+<h2 id="communication-par-flots">Communication par flots</h2>
+<p>Dans ce type de communication, c’est une suite d’octets qui est transmises (et non pas une suite de messages comme dans la communication par datagrammes).</p>
+<p>Les sockets locaux de ce type sont créés par</p>
+<pre><code>int fd = socket(PF_LOCAL,SOCK_STREAM,0);</code></pre>
+<h2 id="architecture-client-serveur">Architecture client-serveur</h2>
+<p>La plupart des applications communicantes sont conçues selon une structure dissymétrique : l’architecture client-serveur, dans laquelle un processus serveur est contacté par plusieurs clients.</p>
+<p>Le client crée un socket (<code>socket()</code>), qu’il met en relation (par <code>connect()</code>) avec celui du serveur. Les données sont échangées par <code>read()</code>, <code>write()</code> ... et le socket est fermé par <code>close()</code>.</p>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int  connect(int sockfd, 
+             const struct sockaddr *serv_addr,
+             socklen_t addrlen);</code></pre>
+<p>Du côté serveur : un socket est crée et une adresse lui est associée (<code>socket()</code> + <code>bind()</code>). Un <code>listen()</code> prévient le système que ce socket recevra des demandes de connexion, et précise le nombre de connexions que l’on peut mettre en file d’attente.</p>
+<p>Le serveur attend les demandes de connexion par la fonction <code>accept()</code> qui retourne un descripteur, lequel permet la communication avec le client.</p>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int  bind(int             sockfd, 
+          struct sockaddr *my_addr, 
+          socklen_t       addrlen);
+
+int  listen(int s, int backlog);       
+
+int  accept(int s,  
+            struct  sockaddr  *addr,  
+            socklen_t         *addrlen);</code></pre>
+<p>Remarque : il est possible ne fermer qu’une “moitié” de socket : <code>shutdown(1)</code> met fin aux émissions (causant une “fin de fichier” chez le correspondant), <code>shutdown(0)</code> met fin aux réceptions.</p>
+<pre><code>#include &lt;sys/socket.h&gt;
+
+int shutdown(int s, int how);</code></pre>
+<p><strong>Le client :</strong></p>
+<p><strong>Le serveur</strong> est programmé ici de façon atypique, puisqu’il traite qu’il traîte une seule communication à la fois. Si le client fait traîner les choses, les autres clients en attente resteront bloqués longtemps.</p>
+<p>Dans une programmation plus classique, le serveur lance un processus (par <code>fork()</code>, voir plus loin) dès qu’une connexion est établie, et délègue le traitement de la connexion à ce processus.</p>
+<p>Une autre technique est envisageable pour traiter plusieurs connexions par un processus unique : le serveur maintient une liste de descripteurs ouverts, et fait une boucle autour d’un <code>select()</code>, en attente de données venant</p>
+<ul>
+<li><p>soit du descripteur “principal” ouvert par le serveur. Dans ce cas il effectue ensuite un <code>accept(...)</code> qui permettra d’ajouter un nouveau client à la liste.</p></li>
+<li><p>soit d’un des descripteurs des clients, et il traite alors les données venant de ce client (il l’enlève de la liste en fin de communication).</p></li>
+</ul>
+<p>Cette technique conduit à des performances nettement supérieures aux serveurs multiprocessus ou multithreads (pas de temps perdu à lancer des processus), au prix d’une programmation qui oblige le programmeur à gérer lui-même le “contexte de déroulement” de chaque processus.</p>
+<h2 id="socketpair"><code>socketpair()</code></h2>
+<p>La fonction <code>socketpair()</code> construit une paire de sockets locaux, bi-directionnels, reliés l’un à l’autre.</p>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int socketpair(int d, int type, int protocol, int sv[2]);</code></pre>
+<p>Dans l’état actuel des implémentations, le paramètre <code>d</code> (domaine) doit être égal à <code>AF_LOCAL</code>, et <code>type</code> à <code>SOCK_DGRAM</code> ou <code>SOCK_STREAM</code>, avec le protocole par défaut (valeur <code>0</code>).</p>
+<p>Cette fonction remplit le tableau <code>sv[]</code> avec les descripteurs de deux sockets du type indiqué. Ces deux sockets sont reliés entre eux et bidirectionnels : ce qu’on écrit sur le descripteur <code>sv[0]</code> peut être lu sur <code>sv[1]</code>, et réciproquement.</p>
+<p>On utilise <code>socketpair()</code> comme <code>pipe()</code>, pour la communication entre descendants d’un même processus <a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a>. <code>socketpair()</code> possède deux avantages sur <code>pipe()</code> : la possibilité de transmettre des datagrammes, et la bidirectionnalité.</p>
+<p><strong>Exemple :</strong></p>
+<h1 id="communication-par-signaux">Communication par signaux</h1>
+<p>Ce chapitre présente la communication par signaux entre processus.</p>
+<p>Il y a essentiellement deux opérations sur les signaux. En gros :</p>
+<ul>
+<li><p>un appel de fonction demande l’envoi d’un <em>signal</em> à un autre processus (destinataire), désigné par son numéro de processus.</p></li>
+<li><p>le destinataire a indiqué, par autre appel de fonction (<code>signal</code> ou <code>sigaction</code>) quel traitement doit être exécuté quand il reçoit un signal.</p></li>
+</ul>
+<p>Un signal est un simple nombre, dont la valeur correspond à un particulier. Il peut être émis par un programme (la fonction d’envoi s’appelle <code>kill()</code>) (pour des raisons historiques), ou résulter d’un évènement système (fin d’un processus fils, ...), ou d’une division par zéro, etc.</p>
+<p>En particulier, quand on fait tourner un processus depuis un shell et qu’on tape controle-c, ce caractère est reçu par le shell qui envoie alors le signal <code>SIGINT</code> (numéro 2) au processus qui tourne en avant-plan et rend la main à la boucle interactive du shell. De même, contrôle-Z envoie un <code>SIGTSTP</code> (20) qui demande au destinataire de se mettre en pause (terminal stop). Ce qu’il fait en s’envoyant lui-même le signal <code>SIGSTOP</code> (19).</p>
+<p>Un signal a un comportement par défaut (arrêter le programme, ne rien faire, ...), la seconde fonction <code>signal/sigaction</code> sert à le changer.</p>
+<p>On regarde ici deux bibliothèques liées aux signaux :</p>
+<ul>
+<li><p>la bibliothèque des signaux “classiques” d’UNIX, qui est simple à utiliser, mais n’est pas vraiment portable<a href="#fn9" class="footnoteRef" id="fnref9"><sup>9</sup></a>,</p></li>
+<li><p>la bibliothèque définie par la norme Posix, plus riche mais aussi plus complexe.</p></li>
+</ul>
+<h2 id="les-signaux-unix">Les signaux Unix</h2>
+<h3 id="signal"><code>signal()</code></h3>
+<p>L’implémentation GNU se présente sous la forme</p>
+<pre><code>#include &lt;stdio.h&gt;
+
+sighandler_t signal(int signum, sighandler_t handler);</code></pre>
+<p>où le type <code>sighandler_t</code> désigne les fonctions qui prennent comme paramètre un <code>int</code> :</p>
+<pre><code>  typedef void (*sighandler_t)(int);</code></pre>
+<p>La déclaration “standard” est un peu plus difficile à lire :</p>
+<pre><code>  void ( *signal(int signum, void (*handler)(int)) ) (int);</code></pre>
+<h5 id="rôle">Rôle : </h5>
+<p><code>signal()</code> demande au système de lancer la fonction <code>handler</code> lorsque le signal <code>signum</code> est reçu par le processus courant. La fonction <code>signal()</code> renvoie la fonction qui était précédemment associée au même signal.</p>
+<p>Il y a une trentaine de signaux différents<a href="#fn10" class="footnoteRef" id="fnref10"><sup>10</sup></a>, parmi lesquels</p>
+<ul>
+<li><p><code>SIGINT</code> (program interrupt, émis par Ctrl-C),</p></li>
+<li><p><code>SIGTST</code> (terminal stop, émis par Ctrl-Z)</p></li>
+<li><p><code>SIGTERM</code> (demande de fin de processus)</p></li>
+<li><p><code>SIGKILL</code> (arrêt immédiat de processus)</p></li>
+<li><p><code>SIGFPE</code> (erreur arithmétique),</p></li>
+<li><p><code>SIGALRM</code> (fin de délai, voir fonction <code>alarm()</code>), etc.</p></li>
+</ul>
+<p>La fonction <em>handler()</em> prend en paramètre le numéro du signal reçu, et ne renvoie rien.</p>
+<p><strong>Exemple :</strong></p>
+<h3 id="kill"><code>kill()</code> </h3>
+<pre><code>#include &lt;unistd.h&gt;
+int kill(pid_t pid, int sig);</code></pre>
+<p>La fonction <code>kill()</code> envoie un signal à un processus.</p>
+<h3 id="alarm"><code>alarm()</code> </h3>
+<pre><code>#include &lt;unistd.h&gt;
+
+long alarm(long delai);</code></pre>
+<p>La fonction <code>alarm()</code> demande au système d’envoyer un signal <code>SIGALRM</code> au processus dans un délai fixé (en secondes). Si une alarme était déjà positionnée, elle est remplacée. Un délai nul supprime l’alarme existante.</p>
+<h3 id="pause"><code>pause()</code> </h3>
+<p>La fonction <code>pause()</code> bloque le processus courant jusqu’à ce qu’il reçoive un signal.</p>
+<pre><code>#include&lt;unistd.h&gt;
+
+int pause(void);</code></pre>
+<p><strong>Exercice</strong> : Écrire une fonction équivalente à <code>sleep()</code>.</p>
+<h2 id="les-signaux-posix">Les signaux Posix</h2>
+<p>Le comportement des signaux classiques d’UNIX est malheureusement différent d’une version à l’autre. On emploie donc de préférence les mécanismes définis par la norme POSIX, qui offrent de plus la possibilité de masquer des signaux.</p>
+<h3 id="manipulation-des-ensembles-de-signaux">Manipulation des ensembles de signaux</h3>
+<p>Le type <code>sigset_t</code> représente les ensembles de signaux.</p>
+<pre><code>#include &lt;signal.h&gt;
+
+int sigemptyset(sigset_t *set);
+int sigfillset(sigset_t *set);
+int sigaddset(sigset_t *set, int signum);
+int sigdelset(sigset_t *set, int signum);
+int sigismember(const sigset_t *set, int signum);</code></pre>
+<p>La fonction <code>sigemptyset()</code> crée un ensemble vide, <code>sigaddset()</code> ajoute un élément, etc.</p>
+<h3 id="sigaction"><code>sigaction()</code> </h3>
+<pre><code>#include &lt;signal.h&gt;
+
+int sigaction(int signum,  
+              const  struct  sigaction  *act,
+              struct sigaction *oldact);
+              </code></pre>
+<p>La fonction <code>sigaction()</code> change l’action qui sera exécutée lors de la réception d’un signal. Cette action est décrite par une structure <code>struct sigaction</code></p>
+<pre><code>struct sigaction {
+  void (*sa_handler)(int);
+  void (*sa_sigaction)(int, siginfo_t *, void *);
+  sigset_t sa_mask;
+  int sa_flags;
+  void (*sa_restorer)(void); /* non utilisé */
+}            </code></pre>
+<ul>
+<li><p><code>sa_handler</code> indique l’action associée au signal <code>signum</code>. Il peut valoir <code>SIG_DFL</code> (action par défaut), <code>SIG_IGN</code> (ignorer), ou un pointeur vers une fonction de traitement de lu signal.</p></li>
+<li><p>le masque <code>sa_mask</code> indique l’ensemble de signaux qui seront bloqués pendant l’exécution de ce signal. Le signal lui-même sera bloqué, sauf si <code>SA_NODEFER</code> ou <code>SA_NOMASK</code> figurent parmi les <em>flags</em>.</p></li>
+</ul>
+<p>Le champ <code>sa_flags</code> contient une combinaison d’indicateurs, parmi lesquels</p>
+<ul>
+<li><p><code>SA_NOCLDSTOP</code> pour le signal <code>SIGCHLD</code>, ne pas recevoir la notification d’arrêt des processus fils (quand les processus fils reçoivent <code>SIGSTOP</code>, <code>SIGTSTP</code>, <code>SIGTTIN</code> ou <code>SIGTTOU</code>).</p></li>
+<li><p><code>SA_ONESHOT</code> ou <code>SA_RESETHAND</code> remet l’action par défaut quand le handler a été appelé (c’est le comportement par défaut du <code>signal()</code> classique).</p></li>
+<li><p><code>SA_SIGINFO</code> indique qu’il faut utiliser la fonction <code>sa_sigaction()</code> à trois paramètres à la place de <code>sa_handler()</code>.</p></li>
+</ul>
+<p><strong>Exemple :</strong></p>
+<h1 id="processus-lourds-et-légers">Processus lourds et légers</h1>
+<p>Dans beaucoup de programmes il est nécessaire d’avoir plusieurs processus qui tournent simutanément pour réaliser ensemble un certain travail. Ils collaboreront à travers des tuyaux, du partage de mémoire et autres techniques décrites ailleurs dans ce document.</p>
+<p>Ici nous présentons deux types de processus. Le premier, présent dès les premières versions d’UNIX, s’obtient essentiellement en dupliquant le processus qui le lance (contenu de la mémoire, fichiers ouverts, ressource diverses, etc). Le processus “fils” possède alors un espace mémoire totalement séparé de celui du “père qui l’a lancé”.</p>
+<p>Cette duplication fait qu’on l’appelle souvent <em>processus lourd</em>, par opposition aux <em>processus légers</em> introduits plus tard qui, eux, partagent le même espace mémoire et les mêmes ressources. Cette “lourdeur” est à relativiser, le système met en oeuvre des techniques comme le copy-on-write qui limitent les dégats.</p>
+<p>Contrairement aux signaux Posix par rapport aux signaux Unix, on ne peut pas dire que les processus légers rendent obsolètes les processus “lourds” : les deux ont leur utilité, leurs avantages et inconvénients.</p>
+<h2 id="les-processus-lourds">Les processus lourds</h2>
+<h3 id="fork"><code>fork()</code>, <code>wait()</code></h3>
+<pre><code>#include &lt;unistd.h&gt;
+pid_t fork(void);
+pid_t wait(int *status)</code></pre>
+<p>La fonction <code>fork()</code> crée un nouveau processus (<em>fils</em>) semblable au processus courant (<em>père</em>). La valeur renvoyée n’est pas la même pour le fils (<code>0</code>) et pour le père (numéro de processus du fils). <code>-1</code> indique un échec.</p>
+<p>La fonction <code>wait()</code> attend qu’un des processus fils soit terminé. Elle renvoie le numéro du fils, et son <code>status</code> (voir <code>exit()</code>) en paramètre passé par adresse.</p>
+<p><strong>Attention.</strong> Le processus fils <em>hérite</em> des descripteurs ouverts de son père. Il convient que chacun des processus ferme les descripteurs qui ne le concernent pas.</p>
+<p><strong>Exemple :</strong></p>
+<p><strong>Exercice :</strong> Observez ce qui se passe si, dans la fonction <code>affiche()</code>, on remplace l’appel à <code>lire()</code> par un <code>read()</code> ? Et si on ne fait pas le <code>wait()</code> ?</p>
+<h3 id="waitpid-attente-de-changement-détat"> <code>waitpid()</code> : attente de changement d’état</h3>
+<p>La fonction <code>waitpid()</code> permet d’attendre un <em>changement d’état</em> d’un des processus fils désigné par son <em>pid</em> (n’importe lequel si <em>pid = -1</em>), et de récupérer éventuellement son code de retour.</p>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/wait.h&gt;
+
+pid_t  waitpid (pid_t pid, int *status, int options);</code></pre>
+<p>L’option <code>WNOHANG</code> rend <code>waitpid</code> non bloquant (qui retourne alors <code>-1</code> si le processus attendu n’est pas terminé).</p>
+<p><strong>Exemple :</strong></p>
+<pre><code>int pid_fils;
+int status;
+
+if( (pid_fils = fork()) != 0) {
+   code_processus_fils();
+   exit(EXIT_SUCCESS);
+   };
+...
+if (waitpid(pid_fils,NULL,WMNOHANG) == -1)
+   printf(&quot;Le processus fils n&#39;est pas encore terminé\n&quot;);
+...</code></pre>
+<p>La fonction retourne</p>
+<ul>
+<li><p>si un processus fils s’est terminé, le numéro du processus fils ;</p></li>
+<li><p><code>-1</code> si le processus a reçu un signal, et la variable <code>errno</code> contient alors <code>EINTR</code> ;</p></li>
+<li><p><code>0</code> si l’option <code>WNOHANG</code> était indiqué, et qu’aucun processus n’a changé d’état</p></li>
+</ul>
+<p>Les macros suivantes permettent de connaître la nature du changement d’état</p>
+<ul>
+<li><p><code>WIFEXITED(status)</code> Vrai si le fils s’est terminé normalement (appel à <code>exit()</code> ou <code>return</code> depuis <code>main()</code>. Dans ce cas <code>WEXITSTATUS(status)</code> donne la valeur du code de retour status fourni par le processus fils.</p></li>
+<li><p><code>WIFSIGNALED(status)</code> Vrai si le fils s’est terminé à cause d’un signal non intercepté. Dans ce cas <code>WTERMSIG(status)</code> donne le numéro du signal qui a causé la fin du fils.</p></li>
+<li><p><code>WIFSTOPPED(status)</code> Vrai si le fils est actuellement stoppé. Dans ce cas <code>WSTOPSIG(status)</code> donne le numéro du signal qui a causé l’arrêt du fils.</p></li>
+<li><p><code>WIFCONTINUED(status)</code> indique si le processus a été continué.</p></li>
+</ul>
+<h3 id="exec"><code>exec()</code></h3>
+<pre><code>#include &lt;unistd.h&gt;
+int execv (const char *FILENAME, char *const ARGV[])
+int execl (const char *FILENAME, const char *ARG0,...)
+int execve(const char *FILENAME, char *const ARGV[], char *const ENV[])
+int execle(const char *FILENAME, const char *ARG0,...char *const ENV[])
+int execvp(const char *FILENAME, char *const ARGV[])
+int execlp(const char *FILENAME, const char *ARG0, ...)</code></pre>
+<p>Ces fonctions font toutes la même chose : activer un exécutable <em>à la place</em> du processus courant. Elles diffèrent par la manière d’indiquer les paramètres.</p>
+<ul>
+<li><p><code>execv()</code> : les paramètres de la commande sont transmis sous forme d’un tableau de pointeurs sur des chaînes de caractères (le dernier étant <code>NULL</code>). Exemple:</p></li>
+<li><p><code>execl()</code> reçoit un nombre variable de paramètres. Le dernier est <code>NULL</code>). Exemple:</p></li>
+<li><p><code>execve()</code> et <code>execle()</code> ont un paramètre supplémentaire pour préciser l’<em>environnement</em>.</p></li>
+<li><p><code>execvp()</code> et <code>execlp()</code> utilisent la variable d’environnement <code>PATH</code> pour localiser l’exécutable à lancer. On pourrait donc écrire simplement:</p>
+<pre><code>  execlp(&quot;gcc&quot;, &quot;gcc&quot;, fichier, &quot;-o&quot;, prefixe, NULL);
+
+  // avec execvp
+  char * args[] = { &quot;gcc&quot;, fichier, &quot;-o&quot;, prefixe, NULL };
+  execlp(&quot;gcc&quot;, args);</code></pre></li>
+</ul>
+<h3 id="numéros-de-processus-getpid-getppid">Numéros de processus : <code>getpid()</code>, <code>getppid()</code></h3>
+<pre><code>#include &lt;unistd.h&gt;
+pid_t getpid(void);
+pid_t getppid(void);</code></pre>
+<p><code>getpid()</code> permet à un processus de connaître son propre numéro, et <code>getppid()</code> celui de son père.</p>
+<h3 id="programmation-dun-démon">Programmation d’un démon</h3>
+<p>Les <em>démons</em><a href="#fn11" class="footnoteRef" id="fnref11"><sup>11</sup></a> sont des processus qui tournent normalement en arrière-plan pour assurer un service. Pour programmer correctement un démon, il ne suffit pas de faire un <code>fork()</code>, il faut aussi s’assurer que le processus restant ne bloque pas de ressources. Par exemple il doit libérer le terminal de contrôle du processus, revenir à la racine, faute de quoi il empêchera le démontage éventuel du système de fichiers à partir duquel il a été lancé.</p>
+<p>Voir FAQ Unix : <em>1.7 How do I get my program to act like a daemon</em></p>
+<h2 id="les-processus-légers-posix-1003.1c">Les processus légers (Posix 1003.1c)</h2>
+<p>Les processus classiques d’UNIX possèdent des ressources séparées (espace mémoire, table des fichiers ouverts...). Lorsqu’un nouveau <em>fil d’exécution</em> (processus fils) est créé par <code>fork()</code>, il se voit attribuer une <em>copie</em> des ressources du processus père.</p>
+<p>Il s’ensuit deux problèmes :</p>
+<ul>
+<li><p>problème de performances, puisque la duplication est un mécanisme coûteux</p></li>
+<li><p>problème de communication entre les processus, qui ont des variables séparées.</p></li>
+</ul>
+<p>Il existe des moyens d’atténuer ces problèmes : technique du <em>copy-on-write</em> dans le noyau pour ne dupliquer les pages mémoires que lorsque c’est strictement nécessaire), utilisation de segments de mémoire partagée (IPC) pour mettre des données en commun. Il est cependant apparu utile de définir un mécanisme permettant d’avoir plusieurs <em>fils d’exécution</em> (threads) dans un même espace de ressources non dupliqué : c’est ce qu’on appelle les <em>processus légers</em>. Ces processus légers peuvent se voir affecter des priorités.</p>
+<p>On remarquera que la commutation entre deux threads d’un même groupe est une opération économique, puisqu’il n’est pas utile de recharger entièrement la table des pages de la MMU.</p>
+<p>Ces processus légers ayant vocation à communiquer entre eux, la norme Posix 1003.1c définit également des mécanismes de synchronisation : exclusion mutuelle (<em>mutex</em>), <em>sémaphores</em>, et <em>conditions</em>.</p>
+<p><strong>Remarque :</strong> les sémaphores ne sont pas définis dans les bibliothèques de AIX 4.2 et SVR4 d’ATT/Motorola. Ils existent dans Solaris et les bibliothèques pour Linux.</p>
+<h3 id="threads">Threads</h3>
+<pre><code>#include &lt;pthread.h&gt;
+
+int pthread_create(pthread_t      *thread, 
+                   pthread_attr_t *attr, 
+                   void           *(*start_routine)(void *), 
+                   void           *arg);
+void pthread_exit(void *retval);
+int pthread_join(pthread_t th, void **thread_return);</code></pre>
+<p>La fonction <code>pthread_create</code> demande le lancement d’un nouveau processus léger, avec les attributs indiqués par la structure pointée par <code>attr</code> (<code>NULL</code> = attributs par défaut). Ce processus exécutera la fonction <code>start_routine</code>, en lui donnant le pointeur <code>arg</code> en paramètre. L’identifiant du processus léger est rangé à l’endoit pointé par <code>thread</code>.</p>
+<p>Ce processus léger se termine (avec un code de retour) lorsque la fonction qui lui est associée se termine par <code>return</code> <em>retcode</em>, ou lorsque le processus léger exécute un <code>pthread_exit</code> <em>(retcode)</em>.</p>
+<p>La fonction <code>pthread_join</code> permet au processus père d’attendre la fin d’un processus léger, et de récupérer éventuellement son code de retour.</p>
+<p><strong>Priorités :</strong> Le fonctionnement des processus légers peut être modifié (priorités, algorithme d’ordonnancement, etc.) en manipulant les <em>attributs</em> qui lui sont associés. Voir les fonctions <code>pthread_attr_init</code>, <code>pthread_attr_destroy</code>, <code>pthread_attr_set-detachstate</code>, <code>pthread_attr_getdetachstate</code>, <code>pthread_attr_setschedparam</code>, <code>pthread_attr_getschedparam</code>, <code>pthread_attr_setschedpolicy</code>, <code>pthread_attr_getschedpolicy</code>, <code>pthread_attr_setinheritsched</code>, <code>pthread_attr_getinheritsched</code>, <code>pthread_attr_setscope</code>, <code>pthread_attr_getscope</code>.</p>
+<h3 id="verrous-dexclusion-mutuelle-mutex">Verrous d’exclusion mutuelle (mutex)</h3>
+<pre><code>#include &lt;pthread.h&gt;
+
+int pthread_mutex_init(pthread_mutex_t   *mutex,   
+                       const pthread_mutexattr_t *mutexattr);
+int pthread_mutex_destroy(pthread_mutex_t *mutex);
+
+int pthread_mutex_lock(pthread_mutex_t *mutex));
+int pthread_mutex_unlock(pthread_mutex_t *mutex);
+
+int pthread_mutex_trylock(pthread_mutex_t *mutex);</code></pre>
+<p>Les verrous d’exclusion mutuelle (<code>mutex</code>) sont créés par <code>pthread_mutex_init</code>. Il en est de différents types (rapides, récursifs, etc.), selon les attributs pointés par le paramètre <code>mutexattr</code>. La valeur par défaut (<code>mutexattr=NULL</code>) fait généralement l’affaire. L’identificateur du verrou est placé dans la variable pointée par <code>mutex</code>.</p>
+<p><code>pthread_mutex_destroy</code> détruit le verrou. <code>pthread_mutex_lock</code> tente de le bloquer (et met le thread en attente si le verrou est déjà bloqué), <code>pthread_mutex_unlock</code> le débloque. <code>pthread_mutex_trylock</code> tente de bloquer le verrou, et échoue si le verrou est déjà bloqué.</p>
+<h3 id="exemple-12">Exemple</h3>
+<p><strong>Source :</strong></p>
+<p><strong>Compilation</strong>:</p>
+<p>Sous Linux, les programmes doivent être compilés avec la bibliothèque <code>libpthread</code>:</p>
+<pre><code>gcc -g -Wall -pedantic  leger_mutex.c -o leger_mutex -lpthread</code></pre>
+<p><strong>Exécution</strong>:</p>
+<pre><code>% leger_mutex 
+[1] Hello
+[2] World
+[3] Hello
+[4] Hello
+[5] World
+ 5 lignes.
+%</code></pre>
+<h3 id="sémaphores">Sémaphores</h3>
+<p>Les sémaphores, qui font partie de la norme POSIX, ne sont pas implémentés dans toutes les bibliothèques de threads.</p>
+<pre><code>#include &lt;semaphore.h&gt;
+
+int sem_init(sem_t *sem, int pshared, unsigned int value);
+int sem_destroy(sem_t * sem);
+
+int sem_wait(sem_t * sem);
+int sem_post(sem_t * sem);
+
+int sem_trywait(sem_t * sem);
+int sem_getvalue(sem_t * sem, int * sval);</code></pre>
+<p>Les sémaphores sont créés par <code>sem_init</code>, qui place l’identificateur du sémaphore à l’endroit pointé par <code>sem</code>. La valeur initiale du sémaphore est dans <code>value</code>. Si <code>pshared</code> est nul, le sémaphore est local au processus lourd (le partage de sémaphores entre plusieurs processus lourds n’est pas implémenté dans la version courante de <code>linuxthreads</code>.).</p>
+<p><code>sem_wait</code> et <code>sem_post</code> sont les équivalents respectifs des primitives <code>P</code> et <code>V</code> de Dijkstra. La fonction <code>sem_trywait</code> échoue (au lieu de bloquer) si la valeur du sémaphore est nulle. Enfin, <code>sem_getvalue</code> consulte la valeur courante du sémaphore.</p>
+<p><strong>Exercice</strong>: Utiliser un sémaphore au lieu d’un <code>mutex</code> pour sécuriser l’exemple.</p>
+<h3 id="conditions">Conditions</h3>
+<p>Les <em>conditions</em> servent à mettre en attente des processus légers derrière un <code>mutex</code>. Une primitive permet de débloquer d’un seul coup tous les threads bloqués par une même condition.</p>
+<pre><code>#include &lt;pthread.h&gt;
+
+int pthread_cond_init(pthread_cond_t  *cond, 
+                      pthread_condattr_t *cond_attr);
+int pthread_cond_destroy(pthread_cond_t *cond);
+
+int pthread_cond_wait(pthread_cond_t *cond,
+                      pthread_mutex_t *mutex);
+
+int pthread_cond_signal(pthread_cond_t *cond);
+int pthread_cond_broadcast(pthread_cond_t *cond);</code></pre>
+<p>Les conditions sont créées par <code>phtread_cond_init</code>, et détruites par <code>phtread_cond_destroy</code>.</p>
+<p>Un processus se met en attente en effectuant un <code>phtread_cond_wait</code> (ce qui bloque au passage un <code>mutex</code>). La primitive <code>phtread_cond_broadcast</code> débloque tous les processus qui attendent sur une condition, <code>phtread_cond_signal</code> en débloque un seul.</p>
+<h1 id="ipc-communication-locale-entre-processus">IPC : Communication locale entre processus</h1>
+<h2 id="les-mécanismes-ipc-system-v">Les mécanismes IPC System V</h2>
+<p>Les mécanismes de communication entre processus (<em>InterProcess Communication</em>, ou <em>IPC</em>), issus d’Unix System V ont été repris dans de nombreuses variantes d’Unix. Il y a 3 mécanismes, permettant le partage d’informations entre processus tournant sur une même machine :</p>
+<ul>
+<li><p>les segments, permettant de partager des zones de mémoire</p></li>
+<li><p>les sémaphores, qui fournissent un moyen d’en contrôler l’accès,</p></li>
+<li><p>les files de messages,</p></li>
+</ul>
+<p>Ces objets sont identifiés par des <em>clés</em>.</p>
+<p>Pour compiler ces programmes, ajoutez l’option <code>-D_XOPEN_SOURCE=700</code> à la compilation</p>
+<h2 id="ftok-constitution-dune-clé"><code>ftok()</code> constitution d’une clé </h2>
+<pre><code># include &lt;sys/types.h&gt;
+# include &lt;sys/ipc.h&gt;
+
+key_t ftok ( char *pathname, char project )</code></pre>
+<p>La fonction <code>ftok()</code> constitue une clé à partir d’un chemin d’accès polet d’un caractère indiquant un projet”. Plutôt que de risquer une explication abstraite, étudions deux cas fréquents :</p>
+<ul>
+<li><p>On dispose d’un logiciel commun dans <code>/opt/jeux/OuiOui</code>. Ce logiciel utilise deux objets partagés. On pourra utiliser les clés <code>ftok(/opt/jeux/OuiOui,’A’)</code> et <code>ftok(/opt/jeux/OuiOui,’B’)</code>. Ainsi tous les processus de ce logiciel se réfèreront aux mêmes objets qui seront partagés entre tous les utilisateurs.</p></li>
+<li><p>On distribue un exemple aux étudiants, qui le recopient chez eux et le font tourner. On souhaite que les processus d’un même étudiant communiquent entre eux, mais qu’ils n’interfèrent pas avec d’autres. On basera donc la clé sur une donnée personnelle, par exemple le répertoire d’accueil, avec les clés <code>ftok(getenv(HOME),’A’)</code> et <code>ftok(getenv(HOME),’B’)</code>.</p></li>
+</ul>
+<h2 id="mémoires-partagées">Mémoires partagées</h2>
+<p>Ce mécanisme permet à plusieurs programmes de partager des <em>segments mémoire</em>. Chaque segment mémoire est identifié, au niveau du système, par une <code>clé</code> à laquelle correspond un <em>identifiant</em>. Lorsqu’un segment est <em>attaché</em> à un programme, les données qu’il contient sont accessibles en mémoire par l’intermédiaire d’un pointeur.</p>
+<pre><code>#include &lt;sys/ipc.h&gt;
+#include &lt;sys/shm.h&gt;
+
+int shmget(key_t key, int size, int shmflg);
+char *shmat (int shmid, char *shmaddr, int shmflg )
+int shmdt (char *shmaddr)
+int shmctl(int shmid, int cmd, struct shmid_ds *buf);</code></pre>
+<p>La fonction <code>shmget()</code> donne l’identifiant du segment ayant la clé <code>key</code>. Un nouveau segment (de taille <code>size</code>) est créé si <code>key</code> est <code>IPC_PRIVATE</code>, ou bien si les indicateurs de <code>shmflg</code> contiennent <code>IPC_CREAT</code>. Combinées, les options <code>IPC_EXCL | IPC_CREAT</code> indiquent que le segment ne doit pas exister préalablement. Les bits de poids faible de <code>shmflg</code> indiquent les droits d’accès.</p>
+<p><code>shmat()</code> attache le segment <code>shmid</code> en mémoire, avec les droits spécifiés dans <code>shmflag</code> (<code>SHM_R, SHM_W, SHM_RDONLY</code>). <code>shmaddr</code> précise où ce segment doit être situé dans l’espace mémoire (la valeur <code>NULL</code> demande un placement automatique). <code>shmat()</code> renvoie l’adresse où le segment a été placé.</p>
+<p><code>shmdt()</code> “libère” le segment. <code>shmctl()</code> permet diverses opérations, dont la destruction d’une mémoire partagée (voir exemple).</p>
+<p><strong>Exemple</strong> (deux programmes):</p>
+<p>Le producteur :</p>
+<p>Le consommateur :</p>
+<p><strong>Question</strong> : le second programme n’affiche pas forcément des informations cohérentes. Pourquoi ? Qu’y faire ?</p>
+<p><strong>Problème</strong> : écrire deux programmes qui partagent deux variables <code>i, j</code>. Voici le pseudo-code:</p>
+<pre><code>processus P1                 	processus P2
+| i=0 j=0			| tant que i==j 
+| repeter indefiniment		|   faire rien
+|   i++	j++			| ecrire i
+fin				fin</code></pre>
+<p>Au bout de combien de temps le processus P2 s’arrête-t-il ? Faire plusieurs essais.</p>
+<p><strong>Exercice</strong> : la commande <code>ipcs</code> affiche des informations sur les segments qui existent. Ecrire une commande qui permet d’afficher le contenu d’un segment (on donne le <em>shmid</em> et la longueur en paramètres).</p>
+<h2 id="sémaphores-1">Sémaphores</h2>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/ipc.h&gt;
+#include &lt;sys/sem.h&gt;   
+
+int semget(key_t key, int nsems, int semflg )
+int semop(int semid, struct sembuf *sops, unsigned nsops)
+int semctl(int semid, int semnum, int cmd, union semun arg )</code></pre>
+<p>Les opérations System V travaillent en fait sur des tableaux de sémaphores généralisés (pouvant évoluer par une valeur entière quelconque).</p>
+<p>La fonction <code>semget()</code> demande à travailler sur le sémaphore généralisé qui est identifié par la clé <code>key</code> (même notion que pour les clés des segments partagés) et qui contient <code>nsems</code> sémaphores individuels. Un nouveau sémaphore est créé, avec les droits donnés par les 9 bits de poids faible de <code>semflg</code>, si <code>key</code> est <code>IPC_PRIVATE</code>, ou si <code>semflg</code> contient <code>IPC_CREAT</code>.</p>
+<p><code>semop()</code> agit sur le sémaphore <code>semid</code> en appliquant simultanément à plusieurs sémaphores individuels les actions décrites dans les <code>nsops</code> premiers éléments du tableau <code>sops</code>. Chaque <code>sembuf</code> est une structure de la forme:</p>
+<pre><code>struct sembuf
+{ 
+  ...
+  short sem_num;  /* semaphore number: 0 = first */
+  short sem_op;   /* semaphore operation */
+  short sem_flg;  /* operation flags */
+  ...
+}</code></pre>
+<p><code>sem_flg</code> est une combinaison d’indicateurs qui peut contenir <code>IPC_NOWAIT</code> et <code>SEM_UNDO</code> (voir manuel). Ici nous supposons que <code>sem_flg</code> est 0.</p>
+<p><code>sem_num</code> indique le numéro du sémaphore individuel sur lequel porte l’opération. <code>sem_op</code> est un entier destiné (sauf si il est nul) à être ajouté à la valeur courante <em>semval</em> du sémaphore. L’opération se bloque si <code>sem_op + semval &lt; 0</code>.</p>
+<p><strong>Cas particulier :</strong> si <em>sem_op</em> est 0, l’opération est bloquée tant que <code>semval</code> est non nul.</p>
+<p>Les valeurs des sémaphores ne sont mises à jour que lorsque aucun d’eux n’est bloqué.</p>
+<p><code>semctl</code> permet de réaliser diverses opérations sur les sémaphores, selon la commande demandée. En particulier, on peut fixer le <code>n</code>-ième sémaphore à la valeur <code>val</code> en faisant :</p>
+<pre><code>semctl(sem,n,SETVAL,val);</code></pre>
+<p><strong>Exemple:</strong> primitives sur les sémaphores traditionnels.</p>
+<p><strong>Exercice :</strong> que se passe-t-il si on essaie d’interrompre <code>semop()</code> ?</p>
+<p><strong>Exercice :</strong> utilisez les sémaphores pour “sécuriser” l’exemple présenté sur les mémoires partagées.</p>
+<h2 id="files-de-messages">Files de messages</h2>
+<p>Ce mécanisme permet l’échange de messages par des processus. Chaque message possède un <em>corps</em> de longueur variable, et un <em>type</em> (entier strictement positif) qui peut servir à préciser la nature des informations contenues dans le corps.</p>
+<p>Au moment de la réception, on peut choisir de sélectionner les messages d’un type donné.</p>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/ipc.h&gt;
+#include &lt;sys/msg.h&gt;
+
+int msgget (key_t key, int msgflg)
+int msgsnd (int msqid, struct msgbuf *msgp, int msgsz, int msgflg)
+int msgrcv (int msqid, struct msgbuf *msgp, int msgsz, 
+                       long msgtyp, int msgflg)
+int msgctl ( int msqid, int  cmd, struct msqid_ds *buf )</code></pre>
+<p><code>msgget()</code> demande l’accès à (ou la création de) la file de message avec la clé <code>key</code>. <code>msgget()</code> retourne la valeur de l’<em>identificateur de file</em>. <code>msgsnd()</code> envoie un message dans la file <code>msqid</code>. Le <em>corps</em> de ce message contient <code>msgsz</code> octets, il est placé, précédé par le <em>type</em> dans le tampon pointé par <code>msgp</code>. Ce tampon de la forme:</p>
+<pre><code>struct msgbuf {
+     long mtype;     /* message type, must be &gt; 0 */
+     char mtext[...] /* message data */
+};</code></pre>
+<p><code>msgrcv()</code> lit dans la file un message d’un type donné (si <code>type &lt; 0</code>) ou indifférent (si <code>type==0</code>), et le place dans le tampon pointé par <code>msgp</code>. La taille du corps ne pourra excéder <code>msgsz</code> octets, sinon il sera tronqué. <code>msgrcv()</code> renvoie la taille du corps du message.</p>
+<p><strong>Exemple.</strong> Deux programmes, l’un pour envoyer des messages (lignes de texte) sur une file avec un type donné, l’autre pour afficher les messages reçus.</p>
+<h1 id="tcp-ip-communication-par-le-réseau">TCP-IP : communication par le réseau</h1>
+<h2 id="communication-par-tcp-ip-spécificités">Communication par TCP-IP, spécificités</h2>
+<p>Les concepts fondamentaux de la transmission d’informations poar le réseau (sockets, adresses, communication par datagrammes et flots, client-serveur etc.) sont les mêmes que pour les sockets locaux (voir [sockets]).</p>
+<p>Les spécificités concernent essentiellement l’adressage : comment <strong>fabriquer une adresse</strong> à partir d’un nom de machine (résolution) et d’un numéro de port, comment retrouver le nom d’une machine à partir d’une adresse (résolution inverse) etc.</p>
+<h2 id="sockets-addresses">Sockets, addresses</h2>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int socket(int domain, int type, int protocol);</code></pre>
+<p>Pour communiquer, les applications doivent créer des <em>sockets</em> (prises bidirectionnelles) par la fonction <code>socket()</code> et les relier entre elles. On peut ensuite utiliser ces sockets comme des fichiers ordinaires (par <code>read</code>, <code>write</code>, ...) ou par des opérations spécifiques ( <code>send</code>, <code>sendto</code>, <code>recv</code>, <code>recvfrom</code>, ...).</p>
+<p>Pour désigner un socket sur une machine il faut une <em>adresse de socket</em>. Comme il existe différents types de sockets, les opérations sur les adresses concerne un type d’adresse général abstrait (<code>struct sockaddr</code>) qui recouvre tous les types concrets particuliers.</p>
+<p>Pour TCP-IP (Inet), les adresses de sockets sont déterminées par un numéro IP, et un numéro de port. Pour IPv4, on utilise des <code>struct sockaddr_in</code>, qui possèdent 3 champs importants :</p>
+<ul>
+<li><p><code>sin_family</code>, la famille d’adresses, valant <code>AF_INET</code></p></li>
+<li><p><code>sin_addr</code>, pour l’adresse IP.</p></li>
+<li><p><code>sin_port</code>, pour le numéro de port</p></li>
+</ul>
+<p>Attention, les octets de l’adresse IP et le numéro de port sont stockés dans <em>l’ordre réseau</em> (big-endian), qui n’est pas forcément celui de la machine hôte sur laquelle s’exécute le programme. Voir plus loin les fonctions de conversion hôte/réseau.</p>
+<p>Pour IPv6, on utilise des <code>struct sockaddr_in6</code>, avec</p>
+<ul>
+<li><p><code>sin6_family</code>, valant <code>AF_INET6</code></p></li>
+<li><p><code>sin6_addr</code>, l’adresse IP sur 6 octets</p></li>
+<li><p><code>sin6_port</code>, pour le numéro de port.</p></li>
+</ul>
+<h2 id="remplissage-dune-adresse">Remplissage d’une adresse</h2>
+<p>Comme pour les sockets locaux, on crée les sockets par <code>socket()</code> et on nomme la prise” par <code>bind()</code>.</p>
+<h3 id="préparation-dune-adresse-distante">Préparation d’une adresse distante</h3>
+<p>Dans le cas le plus fréquent, on dispose du nom de la machine destinataire (par exemple la chaîne de caractères <code>www.elysee.fr</code>), et du numéro de port (un entier).</p>
+<pre><code>       #include &lt;netdb.h&gt;
+       struct hostent *gethostbyname(const char *name);
+       </code></pre>
+<p><code>gethostbyname()</code> retourne un pointeur vers une structure <code>hostent</code> qui contient diverses informations sur la machine en question, en particulier une adresse <code>h_addr</code> <a href="#fn12" class="footnoteRef" id="fnref12"><sup>12</sup></a> que l’on mettra dans <code>sin_addr</code>.</p>
+<p>Le champ <code>sin_port</code> est un entier court <em>en ordre réseau</em>, pour y mettre un entier ordinaire il faut le convertir par <code>htons()</code> <a href="#fn13" class="footnoteRef" id="fnref13"><sup>13</sup></a>.</p>
+<p>Voir exemple <code>client-echo.c</code>.</p>
+<h3 id="préparation-dune-adresse-locale">Préparation d’une adresse locale</h3>
+<p>Pour une adresse sur la machine locale<a href="#fn14" class="footnoteRef" id="fnref14"><sup>14</sup></a>, on utilise</p>
+<ul>
+<li><p>dans le cas le plus fréquent, l’adresse <code>INADDR_ANY</code> (<code>0.0.0.0</code>). Le socket est alors ouvert (avec le même numéro de port) sur toutes les adresses IP de toutes les interfaces de la machine.</p></li>
+<li><p>l’adresse <code>INADDR_LOOPBACK</code> correspondant à l’adresse locale <code>127.0.0.1</code> (alias <code>localhost</code>). Le socket n’est alors accessible que depuis la machine elle-même.</p></li>
+<li><p>une des adresses IP de la la machine.</p></li>
+<li><p>l’adresse de diffusion générale (<em>broadcast</em>) <code>INADDR_BROADCAST</code> (<code>255.255.255.255</code>)<a href="#fn15" class="footnoteRef" id="fnref15"><sup>15</sup></a></p></li>
+</ul>
+<p>Voir exemple <code>serveur-echo.c</code>.</p>
+<p>Pour IPV6</p>
+<ul>
+<li><p>Famille d’adresses <code>AF_INET6</code>, famille de protocoles <code>PF_INET6</code></p></li>
+<li><p>adresses prédéfinies <code>IN6ADD_LOOPBACK_INIT</code> (<code>::1</code>) <code>IN6ADD_ANY_INIT</code></p></li>
+</ul>
+<h3 id="examen-dune-adresse">Examen d’une adresse</h3>
+<p>La fonction <code>getsockname()</code> permet de retrouver l’adresse associée à un socket.</p>
+<pre><code>#include &lt;sys/socket.h&gt;
+
+int   getsockname(int s,  
+                  struct sockaddr  *name,
+                  socklen_t * namelen )
+                  </code></pre>
+<p>Le numéro de port est dans le champ <code>sin_port</code>, pour le convertir en entier normal, utiliser <code>ntohs()</code> (Network TO Host short).</p>
+<p>L’adresse IP peut être convertie en chaîne de caractères en notation décimale pointée (exemple <code>147.210.94.194</code>) par <code>inet_ntoa()</code> (network to ascii),</p>
+<pre><code>#include &lt;sys/socket.h&gt;
+#include &lt;netinet/in.h&gt;
+#include &lt;arpa/inet.h&gt;
+
+char *inet_ntoa(struct in_addr in);</code></pre>
+<p>C’est ce qui est utilisé dans <code>serveur-echo.c</code> pour déterminer et afficher la provenance des requêtes.</p>
+<p>On peut également tenter une <em>résolution inverse</em>, c’est-à-dire de retrouver le nom à partir de l’adresse, en passant par <code>gethostbyaddr</code>, qui retourne un pointeur vers une structure <code>hostent</code>, dont le champ <code>h_name</code> désigne le nom officiel de la machine.</p>
+<p>Cette résolution n’aboutit pas toujours, parce que tous les numéros IP ne correspondent pas à des machines déclarées.</p>
+<pre><code>#include &lt;netdb.h&gt;
+extern int h_errno;
+
+struct hostent *gethostbyaddr(const char *addr, int len, int type);
+
+struct hostent {
+  char    *h_name;        /* official name of host */
+  char    **h_aliases;    /* alias list */
+  int     h_addrtype;     /* host address type */
+  int     h_length;       /* length of address */
+  char    **h_addr_list;  /* list of addresses */
+}
+#define h_addr  h_addr_list[0]  /* for backward compatibility */</code></pre>
+<h2 id="fermeture-dun-socket">Fermeture d’un socket</h2>
+<p>Un socket peut être fermé par <code>close()</code> ou par <code>shutdown()</code>.</p>
+<pre><code>int shutdown(int fd, int how);</code></pre>
+<p>Un socket est bidirectionnel, le paramètre <code>how</code> indique quelle(s) moitié(s) on ferme : <code>0</code> pour la sortie, <code>1</code> pour l’entrée, <code>2</code> pour les deux (équivaut à <code>close()</code>).</p>
+<h2 id="communication-par-datagrammes-udp">Communication par datagrammes (UDP)</h2>
+<h3 id="création-dun-socket-1">Création d’un socket</h3>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int socket(int domain, int type, int protocol);</code></pre>
+<p>Cette fonction construit un socket et retourne un numéro de descripteur. Pour une liaison par datagrammes sur IPv4, utilisez la famille <code>AF_INET</code>, le type <code>SOCK_DGRAM</code> et le protocole par défaut <code>0</code>.</p>
+<p>Retourne <code>-1</code> en cas d’échec.</p>
+<h3 id="connexion-de-sockets">Connexion de sockets</h3>
+<p>La fonction <code>connect</code> met en relation un socket (de cette machine) avec un autre socket désigné, qui sera le correspondant par défaut” pour la suite des opérations.</p>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt;
+
+int  connect(int sockfd, 
+             const struct sockaddr *serv_addr,
+             socklen_t addrlen);
+             </code></pre>
+<h3 id="envoi-de-datagrammes">Envoi de datagrammes</h3>
+<p>Sur un socket connecté (voir ci-dessus), on peut expédier des datagrammes (contenus dans un tampon <code>t</code> de longueur <code>n</code>) par <code>write(sockfd,t,n)</code>.</p>
+<p>La fonction <code>send()</code></p>
+<pre><code>int send(int s, const void *msg, size_t len, int flags);</code></pre>
+<p>permet d’indiquer des <em>flags</em>, par exemple <code>MSG_DONTWAIT</code> pour une écriture non bloquante.</p>
+<p>Enfin, <code>sendto()</code> envoie un datagramme à une adresse spécifiée, sur un socket connecté ou non.</p>
+<pre><code>int sendto(int s, const void *msg, size_t len, int flags,
+           const struct sockaddr *to, socklen_t tolen);
+           </code></pre>
+<h3 id="réception-de-datagrammes">Réception de datagrammes</h3>
+<p>Inversement, la réception peut se faire par un simple <code>read()</code>, par un <code>recv()</code> (avec des flags), ou par un <code>recvfrom</code>, qui permet de récupérer l’adresse <code>from</code> de l’émetteur.</p>
+<pre><code>int recv(int s, void *buf, size_t len, int flags);
+int recvfrom(int  s,  void  *buf,  size_t len, int flags,
+             struct sockaddr *from, socklen_t *fromlen);
+             </code></pre>
+<h3 id="exemple-udp-serveur-décho">Exemple UDP : serveur d’écho</h3>
+<p>Principe:</p>
+<ul>
+<li><p>Le client envoie une chaîne de caractères au serveur.</p></li>
+<li><p>Le serveur l’affiche, la convertit en minuscules, et la réexpédie.</p></li>
+<li><p>Le client affiche la réponse.</p></li>
+</ul>
+<p>Usage:</p>
+<ul>
+<li><p>sur le serveur : <code>serveur-echo</code> <em>numéro-de-port</em></p></li>
+<li><p>pour chaque client : <code>client-echo</code> <em>nom-serveur</em> <em>numéro-de-port</em> <em>message à expédier”</em></p></li>
+</ul>
+<h5 id="le-client">Le client</h5>
+<p>.</p>
+<p><strong>Exercice</strong> : faire en sorte que le client réexpédie sa requête si il ne reçoit pas la réponse dans un délai fixé. Fixer une limite au nombre de tentatives.</p>
+<h5 id="le-serveur">Le serveur</h5>
+<p>:</p>
+<h2 id="communication-par-flots-de-données-tcp">Communication par flots de données (TCP)</h2>
+<p>La création d’un socket pour TCP se fait ainsi</p>
+<pre><code>  int fd;
+  ..
+  fd = socket(AF_INET,SOCK_STREAM,0);
+  </code></pre>
+<h3 id="programmation-des-clients-tcp">Programmation des clients TCP</h3>
+<p>Le socket d’un client TCP doit être relié (par <code>connect()</code>) à celui du serveur, et il est utilisé ensuite par des <code>read()</code> et des <code>write()</code>, ou des entrées-sorties de haut niveau <code>fprintf()</code>, <code>fscanf()</code>, etc. si on a défini des flots par <code>fdopen()</code>.</p>
+<h3 id="exemple-client-web">Exemple : client web</h3>
+<p>Remarque: souvent il est plus commode de créer des flots de haut niveau au dessus du socket (voir <code>fdopen()</code>) que de manipuler des <code>read</code> et des <code>write</code>. Voir dans l’exemple suivant.</p>
+<h3 id="réaliser-un-serveur-tcp">Réaliser un serveur TCP</h3>
+<p>Un serveur TCP doit traiter des connexions venant de plusieurs clients.</p>
+<p>Après avoir créé et nommé le socket, le serveur spécifie qu’il accepte les communications entrantes par <code>listen()</code>, et se met effectivement en attente d’une connexion de client par <code>accept()</code>.</p>
+<pre><code>#include &lt;sys/types.h&gt;
+#include &lt;sys/socket.h&gt; 
+
+int listen(int s, int backlog);
+int accept(int s,  struct  sockaddr  *addr,  
+                   socklen_t  *addrlen);</code></pre>
+<p>Le paramètre <code>backlog</code> indique la taille maximale de la file des connexions en attente. Sous Linux la limite est donnée par la constante <code>SOMAXCONN</code> (qui vaut 128), sur d’autres systèmes elle est limitée à 5.</p>
+<p>La fonction <code>accept()</code> retourne un autre socket, qui sert à la communication avec le client. L’adresse du client peut être obtenue par les paramètres <code>addr</code> et <code>addrlen</code>.</p>
+<p>En général, les serveurs TCP doivent traiter simultanément des connexions venant de plusieurs clients. La solution habituelle est de lancer, après l’appel à <code>accept()</code> un processus fils (par <code>fork()</code>)qui traite la communication avec un seul client.</p>
+<p>Ceci induit une gestion des processus, donc des signaux liés à la terminaison des processus fils.</p>
+<h1 id="exemples-tcp-serveurs-web">Exemples TCP : serveurs Web</h1>
+<p>Dans ce qui suit nous présentons un serveur Web rudimentaire, capable de fournir des pages Web construites à partir des fichiers d’un répertoire. Nous donnons deux implémentations possibles, à l’aide de processus lourds et légers.</p>
+<h2 id="serveur-web-avec-processus">Serveur Web (avec processus)</h2>
+<h3 id="principe-et-pseudo-code">Principe et pseudo-code</h3>
+<p>Cette version suit l’approche traditionnelle. Un processus est créé chaque fois qu’un client contacte le serveur.</p>
+<p>Pseudo-code:</p>
+<pre><code>ouvrir socket serveur (socket/bind/listen)
+répéter indéfiniment
+|    attendre l&#39;arrivée d&#39;un client (accept)
+|    créer un processus (fork) et lui déléguer
+|      la communication avec le client
+fin-répeter</code></pre>
+<h3 id="code-du-serveur">Code du serveur</h3>
+<h3 id="discussion-de-la-solution">Discussion de la solution</h3>
+<p>Un avantage est la simplicité de la solution, et sa robustesse: une erreur d’exécution dans un processus fils est normalement sans incidence sur le fonctionnement des autres parties du serveur.</p>
+<p>En revanche, la création d’un processus est une opération relativement coûteuse, qui introduit un temps de latence au début de chaque communication. D’où l’idée de lancer les processus avant d’en avoir besoin (préchargement), et de réutiliser ceux qui ont terminé leur tâche.</p>
+<h2 id="serveur-web-avec-threads">Serveur Web (avec threads)</h2>
+<h3 id="principe-et-pseudo-code-1">Principe et pseudo-code</h3>
+<p>Les processus légers permettent une autre approche : on crée préalablement un pool” de processus que l’on bloque. Lorsqu’un client se présente, on confie la communication à un processus inoccupé.</p>
+<pre><code>ouvrir socket serveur (socket/bind/listen)
+créer un pool de processus
+répéter indéfiniment
+|    attendre l&#39;arrivée d&#39;un client (accept)
+|    trouver un processus libre, et lui
+|        confier la communication avec le client
+fin-répeter</code></pre>
+<h3 id="code-du-serveur-1">Code du serveur</h3>
+<h3 id="discussion-de-la-solution-1">Discussion de la solution</h3>
+<p>Les inconvénients de cette solution sont symétriques de ses avantages. Les processus légers partageant une grande partie leur espace mémoire, le crash d’un processus léger risque d’emporter le reste du serveur.</p>
+<p>On peut utiliser le même mécanisme de pool de processus” avec des processus classiques. La difficulté technique réside dans la transmission le descripteur résultant de l’<code>accept()</code> du serveur vers un processus fils. Dans la première solution (<code>fork()</code> pour chaque connexion) le fils est lancé <em>après</em> l’<code>accept()</code>, et peut donc hériter du descripteur. Dans le cas d’un préchargement de processus fils, ce n’est plus possible.</p>
+<p>Pour ce faire, on peut utiliser le mécanisme (assez baroque) de transmission des <em>informations de service</em> (<em>Ancillary messages</em> à travers une liaison par <em>socket Unix</em> entre deux processus : des options convenables de <code>sendmsg()</code> permettent de faire passer un ensemble de descripteurs de fichiers d”un processus à un autre (qui tournent sur la même machine, puisqu’ils communiquent par un socket Unix).</p>
+<h2 id="parties-communes-aux-deux-serveurs">Parties communes aux deux serveurs</h2>
+<h3 id="déclarations-et-entêtes-de-fonctions">Déclarations et entêtes de fonctions</h3>
+<h3 id="les-fonctions-réseau">Les fonctions réseau</h3>
+<ul>
+<li><p><code>serveur_tcp()</code> : création du socket du serveur TCP.</p></li>
+<li><p><code>attendre_client()</code></p></li>
+</ul>
+<h3 id="les-fonctions-de-dialogue-avec-le-client">Les fonctions de dialogue avec le client</h3>
+<ul>
+<li><p><code>dialogue_client()</code> : lecture et traitement de la requête d’un client</p></li>
+<li><p><code>envoyer_document()</code>,</p></li>
+<li><p><code>document_non_trouve()</code>,</p></li>
+<li><p><code>requete_invalide()</code>.</p></li>
+</ul>
+<h3 id="exercices-extensions...">Exercices, extensions...</h3>
+<p><strong>Exercice :</strong> modifier <code>traitement-client</code> pour qu’il traite le cas des répertoires. Il devra alors afficher le nom des objets de ce répertoire, leur type, leur taille et un lien.</p>
+<p><strong>Exercice :</strong> Utiliser le mécanisme de transmission de descripteur (voir exemple plus loin) pour réaliser un serveur à processus préchargés.</p>
+<h1 id="transmission-dun-descripteur">Transmission d’un descripteur</h1>
+<p>L’exemple ci-dessous montre comment transmettre un descripteur d’un processus à un autre.</p>
+<h1 id="documentation">Documentation</h1>
+<p>Les documents suivants ont été très utiles pour la rédaction de ce texte et la programmation des exemples :</p>
+<ul>
+<li><p><em>Unix Frequently Asked Questions</em> <a href="http://www.faqs.org/faqs/unix-faq/faq/" class="uri">http://www.faqs.org/faqs/unix-faq/faq/</a></p></li>
+<li><p><em>HP-UX Reference, volume 2 (section 2 and 3, C programming routines).</em> HP-UX release 8.0, Hewlett-Packard. (Janvier 1991).</p></li>
+<li><p><em>Advanced Unix Programming</em>, Marc J. Rochkind, Prentice-Hall Software Series (1985). ISBN 0-13-011800-1.</p></li>
+<li><p><em>Linux online man pages</em> (Distribution Slackware 3.1).</p></li>
+<li><p><em>The GNU C Library Reference Manual</em>, Sandra Loosemore, Richard M. Stallman, Roland McGrath, and Andrew Oram. Edition 0.06, 23-Dec-1994, pour version 1.09beta. Free Software Foundation, ISBN 1-882114-51-1.</p></li>
+<li><p><em>What is multithreading ?</em>, Martin McCarthy, Linux Journal 34, Février 1997, pages 31 à 40.</p></li>
+<li><p><em>Systèmes d’exploitation distribués</em>, Andrew Tanenbaum, InterEditions 1994, ISBN 2-7296-0706-4.</p></li>
+<li><p>Page Web de Xavier Leroy sur les threads : <a href="http://pauillac.inria.fr/~xleroy/linuxthreads" class="uri">http://pauillac.inria.fr/~xleroy/linuxthreads</a></p></li>
+</ul>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Attention, ce sont des illustrations des appels, pas des recommandations sur la bonne manière de les employer. En particulier, les contrôles de sécurité sur les données sont très sommaires.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>identique à IEEE Standard 1003.1-2017 et The Open Group Technical Standard Base Specifications, Issue 7. voir <a href="http://pubs.opengroup.org/onlinepubs/9699919799" class="uri">http://pubs.opengroup.org/onlinepubs/9699919799</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Elles correspondent à des de fonctions plus générales <code>fprintf()</code>, <code>fscanf()</code>, etc. que nous verrons plus loin.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>ou des descendants - au sens large - du processus qui a créé le tuyau<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>Le domaine définit une famille de protocoles (protocol family) utilisables. Autres familles disponibles : <code>PF_INET</code> protocoles internet IPv4, <code>PF_INET6</code> protocoles internet IPv6, <code>PF_IPX</code> protocoles Novel IPX, <code>PF_X25</code> protocoles X25 (ITU-T X.25 / ISO-8208), <code>PF_APPLETALK</code>Appletalk, etc.<a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p>qui peut servir à expédier une réponse<a href="#fnref6">↩</a></p></li>
+<li id="fn7"><p>Penser à attribuer un nom au socket du client pour que le serveur puisse lui répondre, par exemple avec l’aide de la fonction <code>tempnam()</code>.<a href="#fnref7">↩</a></p></li>
+<li id="fn8"><p>au sens large, ce qui inclue la communication d’un processus avec un de ses fils<a href="#fnref8">↩</a></p></li>
+<li id="fn9"><p>comportement lég-èrement différent selon les versions d’UNIX.jusqu’aux années 2000, chaque constructeur proposait sa propre version plus ou moins compatible...<a href="#fnref9">↩</a></p></li>
+<li id="fn10"><p>La liste complète des signaux, leur signification et leur comportement sont décrits dans la page de manuel <code>signal</code> (chapitre 7 pour Linux)<a href="#fnref10">↩</a></p></li>
+<li id="fn11"><p>Traduction de l’anglais <em>daemon</em>, acronyme de Disk And Extension MONitor”, qui désignait une des parties résidentes d’un des premiers systèmes d’exploitation<a href="#fnref11">↩</a></p></li>
+<li id="fn12"><p>Une machine peut avoir plusieurs adresses<a href="#fnref12">↩</a></p></li>
+<li id="fn13"><p>Host TO Network Short<a href="#fnref13">↩</a></p></li>
+<li id="fn14"><p>ne pas confondre avec la notion de <em>socket du domaine local</em> vue en [sockets]<a href="#fnref14">↩</a></p></li>
+<li id="fn15"><p>L’utilisation de l’adresse de diffusion est soumise à restrictions, voir manuel<a href="#fnref15">↩</a></p></li>
+</ol>
+</div>
+</body>
+</html>

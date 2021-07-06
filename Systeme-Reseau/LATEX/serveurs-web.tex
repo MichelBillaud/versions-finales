@@ -1,0 +1,152 @@
+
+Dans ce qui suit nous présentons un serveur Web rudimentaire,
+capable de fournir des pages Web construites à partir des fichiers
+d'un répertoire. Nous donnons deux implémentations possibles,
+à l'aide de processus lourds et légers.
+
+Attention : ces serveurs ne traitent que les requêtes \texttt{GET} de
+\texttt{HTTP/1.0}, et ignorent les entêtes HTTP, les ``keep-alive'',
+qui gardent les connexions ouvertes etc.
+
+
+\section{Serveur Web (avec processus)}
+
+\subsection{Principe et pseudo-code}
+Cette version suit l'approche traditionnelle. Un processus
+est créé chaque fois qu'un client contacte le serveur.
+
+
+
+Pseudo-code:
+
+
+\extrait
+\begin{lstlisting}
+ouvrir socket serveur (socket/bind/listen)
+répéter indéfiniment
+|    attendre l'arrivée d'un client (accept)
+|    créer un processus (fork) et lui déléguer
+|      la communication avec le client
+fin-répeter
+\end{lstlisting}
+
+
+\subsection{Code du serveur}
+
+\source
+\lstinputlisting{../PROGS/Serveurs-Web/serveur-web-processus.c}
+
+
+\subsection{Discussion de la solution}
+
+Un avantage est la simplicité de la solution, et sa robustesse:
+une erreur d'exécution dans un processus fils est normalement
+sans incidence sur le fonctionnement des autres parties du serveur.
+
+
+En revanche, la création d'un processus est une opération
+relativement coûteuse, qui introduit un temps de latence
+au début de chaque communication.  D'où l'idée de lancer
+les processus avant d'en avoir besoin (préchargement), 
+et de réutiliser ceux qui ont terminé leur tâche.
+
+\section{Serveur Web (avec threads)}
+
+\subsection{Principe et pseudo-code}
+
+Les processus légers permettent une autre approche : on 
+crée préalablement un pool'' de processus que l'on bloque.
+Lorsqu'un client se présente, on confie la communication
+à un processus inoccupé.
+
+
+\extrait
+\begin{lstlisting}
+ouvrir socket serveur (socket/bind/listen)
+créer un pool de processus
+répéter indéfiniment
+|    attendre l'arrivée d'un client (accept)
+|    trouver un processus libre, et lui
+|        confier la communication avec le client
+fin-répeter
+\end{lstlisting}
+
+
+
+\subsection{Code du serveur}
+ 
+\source
+\lstinputlisting{../PROGS/Serveurs-Web/serveur-web-threads.c}
+
+
+\subsection{Discussion de la solution}
+
+Les inconvénients de cette solution sont symétriques de ses avantages.
+Les processus légers partageant une grande partie leur espace mémoire, le
+crash d'un processus léger risque d'emporter le reste du serveur.
+
+
+On peut utiliser le même mécanisme de pool de processus'' avec des
+processus classiques. La difficulté technique réside dans la
+transmission le descripteur résultant de l'\texttt{accept()} du
+serveur vers un processus fils. Dans la première solution
+(\texttt{fork()} pour chaque connexion) le fils est lancé \emph{après}
+l'\texttt{accept()}, et peut donc hériter du descripteur. Dans le cas
+d'un préchargement de processus fils, ce n'est plus possible.
+
+
+
+Pour ce faire, on peut utiliser le mécanisme (assez baroque) 
+de transmission des \emph{informations
+de service} (\emph{Ancillary messages} à travers une liaison par 
+\emph{socket Unix} entre deux processus : des options convenables
+de \texttt{sendmsg()}
+permettent de faire passer un ensemble de descripteurs de fichiers
+d''un processus à un autre (qui tournent sur la même machine, puisqu'ils
+communiquent par un socket Unix).
+% Voir exemple à la fin de cette section.
+
+
+
+\section{Parties communes aux deux serveurs}
+
+\subsection{Déclarations et entêtes de fonctions}
+
+\source
+\lstinputlisting{../PROGS/Serveurs-Web/constantes.h}
+
+
+\subsection{Les fonctions réseau}
+\begin{itemize}
+\item  \texttt{serveur\_tcp()} : création du socket du serveur TCP.
+\item \texttt{attendre\_client()}
+\end{itemize}
+
+ 
+\source
+\lstinputlisting{../PROGS/Serveurs-Web/reseau.c}
+
+
+\subsection{Les fonctions de dialogue avec le client}
+\begin{itemize}
+\item \texttt{dialogue\_client()} : lecture et traitement de la requête d'un client
+\item \texttt{envoyer\_document()},
+\item \texttt{document\_non\_trouve()},
+\item \texttt{requete\_invalide()}.
+\end{itemize}
+
+ 
+\source
+\lstinputlisting{../PROGS/Serveurs-Web/traitement-client.c}
+
+
+\subsection{Exercices, extensions...}
+
+\textbf{Exercice : } modifier \texttt{traitement-client} pour
+qu'il traite le cas des répertoires. Il devra alors afficher
+le nom des objets de ce répertoire, leur type, leur taille
+et un lien.
+
+\textbf{Exercice : } Utiliser le mécanisme de transmission
+de descripteur (voir exemple plus loin) pour réaliser un serveur
+à processus préchargés.

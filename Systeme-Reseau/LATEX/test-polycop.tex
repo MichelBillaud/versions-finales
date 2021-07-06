@@ -1,0 +1,129 @@
+%rubber: module xelatex
+\documentclass[10pt,twoside,a4]{extreport}
+
+\usepackage[a4paper]{geometry}
+
+\usepackage{a4wide}
+
+\usepackage{fontspec}
+\usepackage[french]{babel}
+
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{makeidx}
+
+\usepackage{titling}
+\usepackage{textpos}
+\usepackage{rotating}
+
+\usepackage{xcolor}
+\definecolor{msdarkblue}{RGB}{54,95,145}
+\definecolor{msblue}{RGB}{79,129,189}
+ 
+\usepackage{titlesec}
+
+\titleformat{\chapter}[frame]{\normalfont\huge\bfseries}
+{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+
+\titleformat*{\section}{\color{msdarkblue}\Large\sffamily\bfseries}
+\titleformat*{\subsection}{\color{msblue}\large\sffamily\bfseries}
+\titleformat*{\subsubsection}{\color{msblue}\normalsize\sffamily\bfseries}
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{graphicx}
+
+% \usepackage{picins}
+
+\usepackage{fancyhdr}
+
+
+\renewcommand{\maketitle}{
+
+\begin{titlepage}
+% les dimensions pour les coordonnée de textblock
+\setlength{\TPHorizModule}{1mm}
+\setlength{\TPVertModule}{1mm}
+ 
+% barre bleue 
+ \begin{textblock}{50}(-20,-20)
+  \begin{color}{msdarkblue}
+    \rule{3cm}{20cm}    
+  \end{color}
+\end{textblock}
+
+% serie
+\begin{textblock}{30}(-2,170)
+\begin{rotate}{90}
+{\huge\bfseries\textcolor{white}{Architecture - Système - Réseaux}}
+\end{rotate}
+\end{textblock}
+ 
+ \begin{textblock}{130}(20,30)
+ {\noindent\rule{2cm}{2cm}}
+ \\[3em]
+
+{
+\noindent\Huge\bf \thetitle } \\[3em]
+ 
+{\noindent\Huge\bfseries\sf \thedate} \\[5em]
+
+{\noindent\Large\bfseries\sf M3101 - Dept Info. - IUT de Bordeaux }
+
+ \end{textblock}
+\end{titlepage}
+\makeatother
+
+\clearpage
+}
+
+
+\title{
+Programmation Système \\ et Réseau en C
+}
+\author{M. Billaud \url{michel.billaud@u-bordeaux.fr}}
+\date{Juin 2018}
+
+
+\newcommand{\extrait}[0]{\lstset{language=C,frame=leftline,numbers=none}}
+\newcommand{\source}[0]{\lstset{language=C,frame=single,numbers=right,stepnumber
+=5,numberfirstline=true,firstnumber=1}}
+
+ \renewcommand{\familydefault}{\sfdefault}
+
+\makeindex
+
+\begin{document} 
+\sloppy
+\maketitle
+\begin{abstract}
+\input{resume}
+\end{abstract}
+
+\tableofcontents
+
+\newpage
+
+\input{avant-propos}
+
+\newpage
+
+
+\chapter{Bases de C}
+
+\input{bases-c}
+
+\chapter{Fichiers et tuyaux}
+
+\input{fichiers-tuyaux}
+
+\chapter{Documentation}
+
+\input{documentation}
+
+\printindex
+
+\end{document}
+
+
+
+

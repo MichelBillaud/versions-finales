@@ -1,0 +1,473 @@
+
+
+\section{Exemple, compilation}
+
+Un exemple classique de programme écrit en C,
+à taper dans un fichier \texttt{hello.c}
+
+\extrait
+\lstinputlisting{../PROGS/Divers/hello.c}
+
+On peut le compiler par la commande
+
+\extraitbash
+\begin{lstlisting}
+$ gcc -std=c18 -Wall -Wextra -pedantic -D_XOPEN_SOURCE=700 hello.c
+\end{lstlisting}
+
+\index{Options de compilation!POSIX.1-2017}
+\index{Option de compilation!C19}
+
+Avec ces options
+
+\begin{itemize}
+  \item le compilateur vérifie la conformité  au dernier standard
+    du langage C (C18)
+  \item on  bénéficie de la bibliothèque POSIX.1-2017,
+\footnote{
+  identique à IEEE Standard 1003.1-2017 et
+  The Open Group Technical Standard Base Specifications, Issue 7.
+  voir \url{http://pubs.opengroup.org/onlinepubs/9699919799}
+}
+\item un maximum d'avertissements sont affichés.
+\end{itemize}
+
+
+
+
+
+
+\section{Lecture et affichage}
+
+\subsection{Lecture et écriture standards : \texttt{printf()} et \texttt{scanf()}}
+
+\index{printf(format, valeurs...)}  \index{scanf(format, adresses...)}
+\index{Entrees-sorties formattees@Entrées-sorties formattées} \extrait
+\begin{lstlisting}
+#include <stdio.h>
+  
+int printf (const char *format, ...);     
+int scanf  (const char *format, ...); 
+\end{lstlisting}
+
+
+
+Ces instructions font des écritures et des lectures \emph{formattées}
+sur les flots de sortie et d'entrée standard.  Les spécifications de
+format sont décrites dans la page de manuel \texttt{printf(3)}.
+
+
+
+\subsection{Lecture et écriture dans une chaîne :  \texttt{sprintf()} et \texttt{sscanf()}}
+
+\index{sprintf(tampon, format, valeurs...)}  \index{sscanf(tampon,
+  format, adresses...)}  \extrait
+\begin{lstlisting}
+#include <stdio.h>
+  
+int sprintf (      char *str, const char *format, ...);     
+int sscanf  (const char *str, const char *format, ...); 
+\end{lstlisting}
+
+
+Similaires aux précédentes, mais les opérations lisent ou écrivent
+dans le tampon \texttt{str}. 
+
+\paragraph*{Remarque : } la fonction \texttt{sprintf()} ne connaît pas la
+taille du tampon \texttt{str} ; il y a donc un risque de
+débordement. Il faut prévoir des tampons assez larges, ou (mieux)
+utiliser la fonction \texttt{snprintf()} :
+
+\index{snprintf(tampon, taille, format, valeurs...}
+\extrait
+\begin{lstlisting}
+#include <stdio.h>
+int snprintf (char *str, size_t size, const char *format, ...);     
+\end{lstlisting}
+
+qui permet d'indiquer un nombre d'octets à ne pas dépasser.
+
+
+\subsection{Lancement d'une commande : \texttt{system()}}
+
+\index{system(chaine)}
+\extrait
+\begin{lstlisting}
+#include <stdlib.h>
+
+int system (const char * string);
+\end{lstlisting}
+permet de lancer une ligne de commande (\emph{shell}) depuis un
+programme.  L'entier retourné par la fonction \texttt{system()} est le
+\emph{code de retour} fourni en paramètre à \texttt{exit()} par la
+commande.
+
+
+\paragraph*{Exemple} :
+
+
+\source
+%\lstinputlisting{../PROGS/Divers/envoifichier.c}
+\lstinputlisting{../PROGS/Divers/imprimer.c}
+
+
+\section{Communication avec l'environnement}
+
+\subsection{Paramètres de \texttt{main()}}
+
+\index{argc}
+\index{argv}
+Le lancement d'un programme C provoque
+l'appel de sa fonction principale \texttt{main()}.
+Le standard C autorise deux formes pour la déclaration
+de \texttt{main()} :
+
+ 
+\index{main!main(void)}
+\index{main!main(argc,argv)}
+\extrait
+\begin{lstlisting}
+int main(void);
+int main(int argc, char *argv[]);   
+\end{lstlisting}
+
+\begin{itemize}
+\item \texttt{argc}  est le nombre de paramètres sur la ligne de commande
+(y compris le nom de l'exécutable lui-même) ;
+\item \texttt{argv} est une tableau de chaînes contenant les
+  paramètres de la ligne de commande.
+  \item les noms \texttt{argc, argv} sont purement conventionnels.
+  \item déclaration équivalente pour \texttt{argv}  : \verb+char **argv+
+\end{itemize}
+
+\paragraph*{Exemple :} programme qui affiche le tableau \texttt{argv} :
+
+
+\source
+\lstinputlisting{../PROGS/Divers/env.c}
+
+
+
+\subsection{\texttt{getopt()} : analyse des paramètres de la ligne de commande}
+
+La fonction \texttt{getopt} facilite l'analyse des options d'une ligne de commande. On lui fournit :
+
+\begin{itemize}
+\item   le tableau des  paramètres \texttt{argv} et sa taille
+\texttt{argc}
+\item une
+\emph{chaîne de spécification d'options}.  Par exemple la chaîne
+\texttt{"hxa:"} déclare 3 options possibles, la dernière (a) devra être
+suivies d'un paramètre.
+\end{itemize}
+
+\index{getopt}
+
+\extrait
+\begin{lstlisting}
+#include <unistd.h>
+
+int getopt(int argc, char *const argv[], const char *optstring);
+
+extern char *optarg;
+extern int  optind, opterr, optopt;
+\end{lstlisting}
+
+
+À chaque étape, \texttt{getopt()} retourne le nom d'une l'option (ou un
+point d'interrogation pour une option non reconnue), et fournit
+éventuellement dans \texttt{optarg} la valeur du paramètre associé.
+
+À la fin de l'analyse, \texttt{getopt()} retourne \texttt{-1}, et le
+tableau \texttt{argv} a été réarrangé pour que les paramètres
+supplémentaires (non liés aux options) soient stockés à
+partir de l'indice \texttt{optind}.
+
+
+\source
+\lstinputlisting{../PROGS/Divers/essai-getopt.c}
+
+
+\paragraph*{Exemple.}
+
+\extraitbash
+\begin{lstlisting}
+$ essai-getopt -a un deux trois -x quatre
+= option `-x' activée
+= paramètre `-a' présent = un
+3 paramètres supplémentaires
+    ->  deux
+    ->  trois
+    ->  quatre
+\end{lstlisting}
+
+
+
+\subsection{Variables d'environnement}
+
+\index{getenv(), variables d'environnement} \index{variables
+  d'environnement!getenv()}
+La fonction \texttt{getenv()} permet de
+consulter les variables d'environnement : \extrait
+\begin{lstlisting}
+#include <stdlib.h>
+
+char *getenv(const char *name);
+\end{lstlisting}
+
+
+\paragraph*{Exemple} :
+
+\source
+\lstinputlisting{../PROGS/Divers/getlang.c}
+
+
+
+\paragraph*{Exercice : } Ecrire un programme \texttt{exoenv.c} qui affiche les 
+valeurs des variables d'environnement indiquées.
+Exemple d'exécution:
+
+\extrait
+\begin{lstlisting}
+$ exoenv TERM LOGNAME PWD
+TERM=xterm
+LOGNAME=billaud
+PWD=/net/profs/billaud/essais
+$
+\end{lstlisting}
+
+\paragraph*{Voir aussi} les fonctions 
+
+
+\index{setenv(), variables d'environnement}
+\index{variables d'environnement!setenv()}
+
+\index{putenv(), variables d'environnement}
+\index{variables d'environnement!putenv()}
+
+
+\index{unsetenv(), variables d'environnement}
+\index{variables d'environnement!unsetenv()}
+\extrait
+\begin{lstlisting}
+#include <stdlib.h>
+  
+int  putenv  (const char *string);
+int  setenv  (const char *name, const char *value, int overwrite);
+void unsetenv(const char *name);
+\end{lstlisting}
+
+qui permettent de modifier les variables d'environnement
+du processus courant et de ses fils.
+
+\paragraph*{Exercice} vérifiez que ça ne modifie pas l'environnement
+du processus père.
+
+\subsection{\texttt{exit()} : Fin de programme}
+
+Pour arrêter un programme, deux solutions simples :
+\begin{itemize}
+\item soit par un \texttt{return} dans la fonction \texttt{main()}
+\item soit par un appel à la fonction \texttt{exit()}
+\end{itemize}
+
+
+\index{exit(status)}
+\extrait
+\begin{lstlisting}
+#include <stdlib.h>
+  
+void exit(int status);
+\end{lstlisting}
+
+
+Le paramètre \texttt{status} est le \emph{code de retour} du processus.
+On utilisera de préférence les deux constantes 
+\texttt{EXIT\_SUCCESS} et \texttt{EXIT\_FAILURE} qui sont définies dans
+\texttt{stdlib.h}.
+
+\section{Erreurs}
+
+
+\subsection{Variable \texttt{errno}, fonction \texttt{perror()} }
+
+\index{errno}
+\index{perror(message)}
+\index{erreurs!errno}
+\index{erreurs!perror(message)}
+
+La plupart des fonctions du système peuvent échouer pour diverses
+raisons. Habituellement, elles le signalent en retournant une valeur
+spéciale.  On peut alors examiner la variable globale \texttt{errno}
+pour déterminer plus précisément la cause de l'échec, et agir en
+conséquence.
+
+\extrait
+\begin{lstlisting}
+#include <stdio.h>
+
+void perror(const char *s);
+
+#include <errno.h>
+
+extern int errno;
+\end{lstlisting}
+
+
+La fonction \texttt{perror()} imprime sur la sortie
+d'erreur standard un message qui décrit la dernière erreur qui s'est
+produite, précédé par la chaîne \texttt{s}.
+
+
+\extrait
+\begin{lstlisting}
+#include <stdio.h>
+void perror(const char *s);
+\end{lstlisting}
+
+\index{strerror(errnum)}
+\index{erreurs!strerror(errnum)}
+
+Enfin, la fonction \texttt{strerror()} retourne le texte (en anglais)
+du message d'erreur correspondant à un numéro.
+
+
+\extrait
+\begin{lstlisting}
+#include <string.h>
+
+char *strerror(int errnum);
+\end{lstlisting}
+
+
+\index{chmod()!exemple}
+
+\paragraph*{Exemple} : programme qui change les droits d'accès à des fichiers
+grâce à l'appel système \emph{chmod(2)}.
+
+
+\source
+\lstinputlisting{../PROGS/Divers/droits.c}
+
+
+\subsection{Traitement des erreurs, branchements non locaux }
+
+\index{erreurs!setjmp()}
+\index{erreurs!longjmp()}
+\index{setjmp()}
+\index{longjmp}
+
+\extrait
+\begin{lstlisting}
+#include <setjmp.h>
+
+int   setjmp(jmp_buf env);
+void longjmp(jmp_buf env, int val);
+\end{lstlisting}
+
+
+Ces deux fonctions permettent de réaliser un \emph{branchement} d'une
+fonction à une autre (la première doit avoir été appelée, au moins
+indirectement, par la seconde). C'est un moyen primitif de réaliser un
+semblant de traitement d'erreurs par \emph{exceptions}. À employer
+avec précaution.
+
+La fonction \texttt{setjmp()} sauve l'environnement (contexte d'exécution)
+dans la variable tampon \texttt{env}, et retourne 0 si elle a été appelée
+directement. 
+
+La fonction \texttt{longjmp()} rétablit le dernier environnement qui a
+été sauvé dans \texttt{env}. Le programme continue à l'endroit du
+\texttt{setjmp()} comme si celui-ci avait retourné la valeur
+\texttt{val}.  (Si le paramètre \texttt{val} à 0, la valeur retournée
+est 1).
+
+\paragraph*{Exemple} :
+
+
+\source
+\lstinputlisting{../PROGS/Divers/jump.c}
+
+
+
+\section{Allocation dynamique}
+
+\index{allocation dynamique!malloc(taille)}
+\index{allocation dynamique!free(pointeur)}
+\index{allocation dynamique!realloc(pointeur,taille}
+\index{malloc(taille)}
+\index{free(pointeur}
+\index{realloc(pointeur,taille)}
+
+\extrait
+\begin{lstlisting}
+#include <stdlib.h>
+
+void *malloc(size_t size);
+void  free(void *ptr);
+void *realloc(void *ptr, size_t size);
+\end{lstlisting}
+
+
+\begin{itemize}
+\item \texttt{malloc()} - memory allocation -  demande au système d'exploitation 
+l'attribution d'un espace mémoire
+de taille supérieure ou égale à \texttt{size} octets.
+La valeur retournée est un pointeur sur cet espace
+(\texttt{NULL} en cas d'échec). 
+\item \texttt{free()} restitue cet espace au système. 
+\item \texttt{realloc()} permet de redimensionner la
+zone allouée en conservant son contenu.
+\end{itemize}
+
+
+\paragraph*{Exemple} : la fonction \texttt{lire\_nouvelle\_ligne()}
+ci-dessous lit une ligne de l'entrée standard et retourne cette ligne
+dans un tampon d'une taille suffisante. Elle renvoie le pointeur
+\texttt{NULL} si il n'y a plus de place en mémoire.
+
+
+\source
+\lstinputlisting{../PROGS/Divers/lireligne.c}
+
+
+Attention : dans l'exemple ci-dessus, la fonction
+\texttt{lire\_nouvelle\_ligne()} alloue un nouveau tampon à chaque
+invocation. Il est donc de la responsabilité du programmeur de libérer
+ce tampon après usage pour éviter les \emph{fuites mémoire}. C'est ce
+que fait l'appel de \texttt{free()} dans la fonction \texttt{main()}.
+
+\paragraph{Copie de chaîne :}
+
+
+\index{strdup(chaine)}
+\index{chaine@chaîne!duplication, strdup(chaine)}
+
+Il est très fréquent de devoir allouer une zone mémoire pour y loger
+une copie d'une chaîne de caractères. On utilise pour cela la fonction
+\texttt{strdup()}, qui ne fait pas pour l'instant partie des
+bibliothèques standards du langage C lui-même, mais (ouf !) de la
+bibliothèque POSIX. Elle apparaîtra dans C23.
+
+\extrait
+\begin{lstlisting}
+#include <string.h>
+  
+char *strdup (const char *s);
+\end{lstlisting}
+
+
+\index{chaine@chaîne!copie, strcpy(dest, src)}
+
+Dans un environnement non-POSIX, la fonction peut être redéfinie aisément :
+
+
+\source
+\begin{lstlisting}
+char *strdup (const char *s)
+{
+  char *new_string = malloc(strlen(s) + 1);
+  return strcpy(new_string, s);
+}
+\end{lstlisting}
+
