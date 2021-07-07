@@ -1,21 +1,26 @@
-
 /*
- exemple adapté de
+ Exemple adapté de
  http://www.mail-archive.com/
  linux-development-sys@senator-bedfellow.mit.edu/msg01240.html
  (remplacement de alloca par malloc + modifications mineures)
  */
 
-/* passfd.c -- sample program which passes a file descriptor */
-
-/* We behave like a simple /bin/cat, which only handles one argument
- *    (a file name). We create Unix domain sockets through
- *    socketpair(), and then fork(). The child opens the file whose
- *    name is passed on the command line, passes the file descriptor
- *    and file name back to the parent, and then exits. The parent
- *    waits for the file descriptor from the child, then copies data
- *    from that file descriptor to stdout until no data is left. The
- *    parent then exits. */
+/*
+ * This program shows how to transmit an (open) file descriptor
+ * to another process avor a local socket.
+ *
+ * It behaves like a simple /bin/cat, with 1 filename as argument.
+ * 
+ * It forks a child process, which opens a file, and then sends 
+ * its name and file descriptor to the parent process, in a message
+ * though a socket.
+ * The parent process receives it, and displays the data using the 
+ * file descriptor.
+ * 
+ * It works due to the SCM_RIGHTS type for the control message,
+ * which allows to transmit file descriptors or process credentials
+ * over local sockets. See the unix (7) man page.
+ */
 
 #include <malloc.h>
 #include <fcntl.h>
@@ -34,10 +39,10 @@ void die (char *message)
     exit(EXIT_FAILURE);
 }
 
-
-/* Copies data from file descriptor 'from' to file descriptor 'to'
- *    until nothing is left to be copied.
- Exits if an error occurs.   */
+/* 
+ * Copies data from file descriptor 'from' to file descriptor 'to'
+ * Exits if an error occurs.   
+ */
 void copyData (int from, int to)
 {
     char buf[1024];
@@ -47,131 +52,131 @@ void copyData (int from, int to)
             die("write");
         }
     }
-    if (amount < 0)
+    if (amount < 0) {
         die("read");
+    }
 }
 
-/* The child process. This sends the file descriptor. */
+/*
+  The child process.
+  Opens the file and send its descriptor.
+*/
 int childProcess (char *filename, int sock)
 {
     int fd = open(filename, O_RDONLY);
 
-    /* Open the file whose descriptor will be passed. */
+    // Open the file whose descriptor will be passed.
     if (fd < 0) {
         perror("open");
         return EXIT_FAILURE;
     }
 
-
-    /* Send the file name down the socket, including the trailing '\0' */
-    struct iovec vector = {	/* some data to pass w/ the fd */
-        .iov_base = filename,
-        .iov_len = strlen(filename) + 1
+    // buffer for filename to be sent
+    struct iovec vector = {
+        .iov_base = filename,             // address
+        .iov_len = strlen(filename) + 1   // size
     };
 
-    /* Put together the first part of the message.
-       Include the file name iovec */
-    struct msghdr msg = {	/* the complete message */
-        .msg_name = NULL,
-        .msg_namelen = 0,
+    // a message is a struct with
+    // - a header with some members (see man msg), including
+    // an array of iovec to transmit buffers.
+    // - a flexible array member for data 
+    // (see https://en.wikipedia.org/wiki/Flexible_array_member)
+
+    // the first part of the message, with filename in vector
+    struct msghdr message = {	
         .msg_iov = &vector,
         .msg_iovlen = 1
     };
-    /* Now for the control message. We have to allocate room for
-     *        the file descriptor. */
 
-    struct cmsghdr *cmsg;	/* the control message,
-				   which will include the fd */
-    size_t len = sizeof(struct cmsghdr) + sizeof(fd);
-    cmsg = malloc(len);
-    cmsg->cmsg_len = len;
-    cmsg->cmsg_level = SOL_SOCKET;
-    cmsg->cmsg_type = SCM_RIGHTS;
+    // Allocate the control message header with room for file descriptor.
+    size_t len = sizeof(message) + sizeof(fd);
+    struct cmsghdr *control = malloc(len);
 
-    /* copy the file descriptor onto the end of
-    the control message */
-    memcpy(CMSG_DATA(cmsg), &fd, sizeof(fd));
+    control->cmsg_len = len;
+    control->cmsg_level = SOL_SOCKET;
+    control->cmsg_type = SCM_RIGHTS;
 
-    msg.msg_control = cmsg;
-    msg.msg_controllen = cmsg->cmsg_len;
+    // for SCM_RIGHT type, the data is an array of file descriptors
+    memcpy(CMSG_DATA(control), &fd, sizeof(fd));
 
-    if (sendmsg(sock, &msg, 0) != (ssize_t) vector.iov_len) {
+    message.msg_control = control;
+    message.msg_controllen = control->cmsg_len;
+
+    if (sendmsg(sock, &message, 0) != (ssize_t) vector.iov_len) {
         die("sendmsg");
     }
 
-    free(cmsg);
+    free(control);
     return EXIT_SUCCESS;
 }
 
-/* The parent process. This receives the file descriptor. */
+/*
+    The parent process.
+    Receives the file descriptor and displays the content.
+*/
+
 int parentProcess (int sock)
 {
-    char buf[80];		/* space to read file name into */
+    char filename[1000];	
 
-    struct cmsghdr *cmsg;	/* control message with the fd */
-    int fd;
-
-    /* set up the iovec for the file name */
-    struct iovec vector = {	/* file name from the child */
-        .iov_base = buf,
-        .iov_len = 80,
+    struct iovec vector = {
+        .iov_base = filename,
+        .iov_len = sizeof(filename),
     };
 
-    /* the message we're expecting to receive */
-    struct msghdr msg = {	/* full message */
-        .msg_name = NULL,
-        .msg_namelen = 0,
+    struct msghdr message = {	
         .msg_iov = &vector,
         .msg_iovlen = 1
-    };;
+    };
 
-    /* dynamically allocate so we can leave room for the file
-     *        descriptor */
-    cmsg = malloc(sizeof(struct cmsghdr) + sizeof(fd));
-    cmsg->cmsg_len = sizeof(struct cmsghdr) + sizeof(fd);
-    msg.msg_control = cmsg;
-    msg.msg_controllen = cmsg->cmsg_len;
+    int fd;
+    char header_buffer[sizeof(struct cmsghdr) + sizeof(fd)];
+    struct cmsghdr *header = (struct cmsghdr *) header_buffer;
 
-    if (!recvmsg(sock, &msg, 0)) {
+    header->cmsg_len = CMSG_LEN(sizeof(struct cmsghdr) + sizeof(fd));
+    message.msg_control = header;
+    message.msg_controllen = header->cmsg_len;
+
+    if (!recvmsg(sock, &message, 0)) {
         return EXIT_FAILURE;
     }
 
     printf("got file descriptor for '%s'\n", (char *) vector.iov_base);
 
-    /* grab the file descriptor from the control structure */
-    memcpy(&fd, CMSG_DATA(cmsg), sizeof(fd));
+    // get the file descriptor from the data
+    memcpy(&fd, CMSG_DATA(header), sizeof(fd));
     copyData(fd, 1);
-    free(cmsg);
-
+  
     return EXIT_SUCCESS;
 }
 
+/*
+ * main
+ */  
+
 int main (int argc, char **argv)
 {
-    int socks[2];
-    int status;
-
     if (argc != 2) {
         fprintf(stderr, "only a single argument is supported\n");
         return 1;
     }
 
-    /* Create the sockets. The first is for the parent and the
-     *        second is for the child (though we could reverse that
-     *        if we liked. */
+    // Create the sockets. One for the parent and other for the child
+    int socks[2];
     if (socketpair(PF_UNIX, SOCK_STREAM, 0, socks)) {
         die("socketpair");
     }
 
-    if ( fork() == 0 ) { /* child */
+    if ( fork() == 0 ) { // child
         close(socks[0]);
         return childProcess(argv[1], socks[1]);
     }
 
-    /* parent */
-    close(socks[1]);
+    close(socks[1]); // parent
     parentProcess(socks[0]);
 
+    int status;
     wait(&status);
 
     if (WEXITSTATUS(status)) {
