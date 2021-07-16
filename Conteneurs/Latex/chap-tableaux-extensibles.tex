@@ -1,0 +1,125 @@
+\chapter{Tableaux extensibles}
+
+Nous appellons \emph{tableau extensible} une structure de
+données qui sert à stocker des élements, et
+
+\begin{itemize}
+\item comme un tableau ordinaire, permet de désigner un
+  élément par sa position (première =  0, seconde = 1, etc.),
+  pour le modifier ou le consulter.
+\item à la différence des tableaux, permet d'ajouter des éléments
+  à la fin sans limite de taille\footnote{autre que les limitations
+    de l'allocation dynamique}.
+\end{itemize}
+
+Ici nous allons prendre l'exemple des tableaux extensibles d'entiers.
+
+\section{Choix d'une API, exemple d'utilisation}
+
+\begin{itemize}
+ \item
+Le type ``tableau extensible d'entiers'' se matérialise par une
+structure appelée \texttt{tab\_int}.
+\item
+Une famille de fonctions, dont le nom est préfixé par ``\texttt{ti}''
+représentera les actions qui agissent dessus.
+\item
+  Le premier paramètre de ces fonctions sera toujours l'adresse du
+  tableau concerné.\footnote{pour les deux raisons évoquées plus haut
+    :
+    \begin{itemize}
+    \item c'est obligatoire pour les  fonctions qui  modifient le tableau
+    \item c'est souhaitable pour les autres, pour éviter de faire des copies. Dans ce cas on mettra un \texttt{const}.
+    \end{itemize}
+    }
+\end{itemize}
+
+Le programme du listing \ref{prog:utilisationtableau}
+montre l'emploi d'un tel tableau, et on voit
+fig. \ref{run:utilisationtableau} le résultat de l'exécution.
+ 
+\lstinputlisting[style=csource,
+  %  float,
+  label=prog:utilisationtableau,
+  caption={Utilisation d'un tableau extensible d'entiers},
+]{../Sources/utilisation-tableau-extensible.c}
+
+\lstinputlisting[style=run,
+%  float,
+  caption={Exécution},
+  label={run:utilisationtableau}
+]{../Sources/utilisation-tableau-extensible.run}
+
+
+
+\clearpage
+\section{L'implémentation}
+
+\subsection{Données}
+
+Un tableau extensible est représenté par
+
+\begin{itemize}
+\item un \textbf{tableau} alloué dynamiquement, pouvant accueillir
+  un certain nombre d'éléments (sa \textbf{capacité}),
+\item un entier indiquant le nombre d'éléments utilisés, au début
+  du tableau (sa \textbf{taille})
+\end{itemize}
+
+
+\lstinputlisting[style=csource,
+  caption={Fichier \texttt{tab\_int.h}}
+]{../Sources/tab_int.h}
+
+
+\subsection{Code}
+
+Le code comporte quelques choix d'implémentation
+
+\begin{itemize}
+\item la capacité initiale, lorsqu'on initialise un tableau extensible (ici, 4 éléments)
+  \item la stratégie d'agrandissement en cas de débordement. Ici on
+    double : l'ajout du 5ieme élément réalloue le tableau avec une
+    capacité de 8, et l'ajout du 8ieme passe la capacité à 16.  Cette
+    stratégie est justifiée section \ref{strategiedoublement}.
+\end{itemize}
+
+\lstinputlisting[style=csource,
+  caption={Code du module \texttt{tab\_int.h}}
+]{../Sources/tab_int.c}
+
+\subsection{Stratégie de doublement de la capacité}
+
+\label{strategiedoublement}
+
+Lorsque le tableau est plein, on le réalloue
+avec une capacité supérieure.
+
+La stratégie de doublement de cette capacité est,
+contrairement à ce que suggère l'intuition, très efficace
+en terme de nombre de copies : au cours du remplissage,
+chaque élément a été copié \textbf{au plus une fois}
+en moyenne.
+
+Imaginons qu'à un moment le vector ait grandi jusqu'à 500
+éléments. Comme le tableau grandit en doublant de taille, sa capacité
+est la première puissance de 2 supérieure à 500, soit 512.
+
+Le tableau sera agrandi (et réalloué) en ajoutant le 513ieme, sa capacité
+passera à 1024 élements, et pour cela il faudra réallouer ce qui provoquera
+la copie des 
+512 éléments existants. Cout : 512, si on prend comme unité la copie d'un élément.
+
+Mais pour arriver à 513, il avait fallu copier 256 éléments. Et pour
+arriver à 257, en copier 128.
+
+Si on fait le total, si on en est au 513-ième élément ajouté (et jusqu'au
+1024-ième) on a fait en tout $256 + 128 + 64 + \ldots$ copies
+d'éléments, ce qui est plus petit que 512.
+
+Dans le pire des cas (ajout du 513 ième), le coût moyen d'ajout d'un
+élément est inférieur à $512/513$ : il y a donc eu \textbf{moins d'une
+copie par élément}.
+
+\paragraph{Exercice :} évaluez la stratégie consistant à augmenter d'un la capacité à chaque ajout.
+

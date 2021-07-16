@@ -1,0 +1,68 @@
+\documentclass[twoside,openright]{report}
+
+% openright (défaut) : début de partie et de chapitre
+% sur belle page
+% openany : sur n'importe quelle page
+
+% par défaut : 
+\usepackage{fontspec}
+
+\usepackage[a4paper]{geometry} 
+\usepackage[french]{babel}                                                           
+\usepackage{listings}
+
+\lstdefinestyle{csource}{
+  language=C,
+  basicstyle=\small,
+  frame=single
+}
+
+\lstdefinestyle{cextract}{
+  language=C,
+  basicstyle=\small,
+  frame=leftline
+}
+
+\lstdefinestyle{run}{
+  basicstyle=\small,
+  frame=single,
+  frameround=tttt
+}
+
+% ---------------------------------------------
+
+\title{Structures de données courantes \\
+       réalisation en langage C}
+\author{M Billaud}
+\date{\today}
+
+% --------------------------------------
+
+\begin{document}
+
+% \frontmatter
+\maketitle
+\tableofcontents
+
+% \mainmatter
+\input{chap-introduction}
+\part{Rappels sur le langage C}
+\input{chap-rappels}
+\input{chap-pointeurs}
+\input{chap-allocation}
+
+\part{Quelques conteneurs}
+
+\input{chap-tableaux-extensibles}
+
+
+\chapter{Chainages}
+
+\input{chap-ensemble-chaines}
+
+% \backmatter
+
+% \appendix
+% \part{Annexes}
+
+\end{document}

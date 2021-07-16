@@ -1,0 +1,220 @@
+\chapter{Pointeurs}
+
+On appelle \textbf{pointeur} une donnée qui contient l'adresse d'une
+donnée en mémoire.\footnote{Ce terme est aussi (hélas) souvent employé
+  par extension pour désigner les adresses elles-mêmes. Nous
+  essaierons d'éviter ce regrettable manque de rigueur, source de
+  confusions, qui permettrait d'écrire qu'un pointeur (au sens de
+  variable) \emph{contient} un pointeur (au sens d'adresse)...}.
+
+
+On emploie les pointeurs pour diverses raisons, en particulier :
+
+\begin{itemize}
+\item le passage de paramètres,
+\item le parcours de tableaux,
+ \item la manipulation des données allouées dynamiquement.
+\end{itemize}
+
+
+\section{Déclaration des pointeurs}
+
+Pour déclarer un pointeur destiné à contenir des adresses d'objets de type T,
+on précède son nom par une étoile. Exemples :
+
+\begin{lstlisting}[style=cextract]
+int *pi;               // pointeur sur un int
+struct Personne *pp;   // pointeur sur struct Personne
+\end{lstlisting}
+
+Pour déclarer un tableau de pointeurs, le nom du tableau est précédé par une
+étoile
+
+\begin{lstlisting}[style=cextract]
+char *noms[10];  // tableau de 10 pointeurs de caractères
+\end{lstlisting}
+
+La règle générale est qu'en C, la déclaration d'une variable ressemble
+à son usage (voir l'indirection ci-dessous).
+
+\section{Pointeurs non-typé, conversions}
+
+Les pointeurs non-typés sont déclarés avec \texttt{void *}.
+
+\begin{lstlisting}[style=cextract]
+int entier = 123;
+void *adresse = & entier;        // pointeur non typé
+printf("valeur=%d, adresse=%p\n",
+       entier, adresse);
+\end{lstlisting}
+
+\paragraph{Remarque :} l'expression "\texttt{\& entier}'' de la
+seconde ligne est de type \texttt{int *}, mais il y a une
+\textbf{conversion
+implicite} entre les adresses typées et non-typées.
+
+
+\section{Indirection, opérateur ``\texttt{*}''}
+
+L'opérateur ``\texttt{*}'' fournit un  accès à la donnée dont l'adresse est
+contenue dans un pointeur \textbf{typé}. Exemple :
+
+\begin{lstlisting}[style=cextract]
+int nombre = 12;
+int *p = & nombre;            // pointeur typé (entiers)
+
+*p = 33;                      // modif. à travers p
+printf("= %d\n", *p);         // accès indirect
+\end{lstlisting}
+
+\paragraph{Terminologie :} on dit que 
+\begin{itemize}
+\item  la variable \texttt{nombre} \textbf{est pointée par}
+  \texttt{p}.
+\item on fait une \textbf{indirection} pour, à partir d'un pointeur,
+  accéder à la donnée qu'il pointe.
+\item on \textbf{déréference} le pointeur.
+\end{itemize}
+
+\paragraph{Remarque :} dans l'exemple d'un tableau de pointeurs de caractères vu plus haut,
+\begin{itemize}
+\item \texttt{noms[2]} est le troisième\footnote{le premier a l'indice 0...} pointeur ;
+  \item \texttt{*noms[2]} est le \texttt{char} désigné par ce pointeur.
+\end{itemize}
+
+Et puisque \texttt{*noms[i]} est un \texttt{char}, dans la logique de C, il n'est pas anormal que la déclaration d'un tableau de pointeurs
+
+\begin{lstlisting}[style=cextract]
+  char   *noms[10];
+\end{lstlisting}
+
+ressemble fortement à l'usage qu'on a des éléments.
+
+\section{Le pointeur \texttt{NULL}}
+
+La constante \texttt{NULL} est une valeur conventionnelle (de type
+\texttt{void*} que l'on affecte à un pointeur pour indiquer qu'il
+\textbf{ne contient pas}, à un moment donné, l'adresse d'un objet en
+mémoire. Le pointeur ne pointe sur rien.\footnote{Ne pas confondre avec
+  un pointeur non-initialisé, qui contient une valeur aléatoire}
+
+
+Quand un pointeur contient \texttt{NULL},
+tenter de le déréférencer est un \textbf{comportement indéfini},
+qui provoque généralement un arrêt brutal de l'exécution :
+
+\begin{lstlisting}[style=cextract]
+  int *p = NULL;
+  *p = 12;            // crash
+\end{lstlisting}
+
+
+\section{Pointeurs de structures, notation ``\texttt{->}''}
+
+Selon les règles de priorités d'opérateurs de C,
+``\texttt{*a.b}'' se lit  ``\texttt{*(a.b)}''.
+
+La notation ``pointeur->champ'' facilite la désignation
+d'un champ d'une structure dont on a l'adresse dans un
+pointeur. Exemple :
+
+\begin{lstlisting}[style=cextract]
+struct Point {
+  float x, y;
+};
+...
+struct Point *p;  // p pointeur de point
+
+p->x = 0.0;          // au lieu de  (*p).x = 0.0
+p->y = 0.0;
+\end{lstlisting}
+
+\section{Passage de paramètres}
+
+Le langage C ne connaissant que le passage de paramètres \textbf{par valeur},
+on utilise des pointeurs pour simuler le ``passage de référence''
+dans deux situations :
+
+\begin{enumerate}
+  \item l'action que l'on veut coder modifie un objet
+    qu'on lui indique,
+\item les objets que l'on souhaite transmettre sont assez gros, et
+  pour des raisons de performance, on veut éviter la copie inhérente à
+  un passage par valeur.
+\end{enumerate}
+
+\subsection{Pointeur pour le passage par référence}
+
+Exemple du listing \ref{prog:passagereference} : une action consistant à
+échanger les nombres contenus dans deux variables. On la traduit par
+une fonction à qui on passe les adresses des variables à modifier.
+
+\begin{lstlisting}[style=cextract,
+caption={Émulation d'un passage par référence},
+label={prog:passagereference}]
+void echanger(int *pa, int *pb) {
+  int tmp = *pa;
+  *pa = *pb;
+  *pb = tmp;
+}
+
+// usage
+int a = 34, b = 23;
+echanger( & a, & b);
+\end{lstlisting}
+
+\subsection{Pointeur pour éviter de copier}
+
+Exemple (listing \ref{prog:passagestructure}: affichage d'une structure. 
+
+\begin{lstlisting}[style=csource,
+  caption={Passage d'un structure volumineuse},
+  label={prog:passagestructure}
+]
+  struct Personne {
+    char nom[100];
+    char prenom[100];
+    ...
+  };
+  
+  void afficher_personne(const struct Personne *p) {
+    printf("nom = %s\n'', p->nom);
+    ...
+  }
+\end{lstlisting}
+
+Le mot-clé \texttt{const} annonce nos intentions.
+La déclaration de paramètre se lit de droite à gauche : \texttt{p}
+est un pointeur vers une structure \texttt{Personne} qu'on ne modifie pas.
+
+\section{Parcours de tableau, arithmétique des pointeurs}
+
+Une chaine de caractères est un tableau d'octets terminé par un
+caractère nul.
+
+\begin{lstlisting}[style=cextract]
+  char test[] = "abc";  // tableau de _4_ octets
+\end{lstlisting}
+
+Pour parcourir une chaine, on peut\footnote{à la place d'un indice}
+utiliser un pointeur qui va désigner tour à tour chaque octet :
+
+\begin{lstlisting}[style=cextract]
+  void affiche_codes(const char chaine[]) {
+    char *p = chaine;
+    while (*p != '\0') {
+      printf("-> %d\n"; *p);
+      p++;
+    }
+  }
+\end{lstlisting}
+\paragraph{Remarques} \begin{enumerate}
+  \item Un tableau déclaré en paramètre est en réalité un pointeur.
+  \item l'incrémentation d'un pointeur (\texttt{p++]}) modifie ce
+    pointeur pour qu'il désigne l'élément suivant\footnote{la valeur numérique du pointeur - celle qu'on voit avec \texttt{printf} - est augmentée
+      de la taille du type pointé (ici 1, parce que c'est un \texttt{char}.
+    }
+\end{enumerate}
+
+      
+

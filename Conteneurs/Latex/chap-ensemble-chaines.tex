@@ -1,0 +1,213 @@
+\chapter{Ensemble de chaînes, hachage}
+
+
+Dans cette partie, nous montrons comment représenter
+\textbf{efficacement} un ensemble\footnote{fini, donné par extension}
+de chaînes de caractères en utilisant une \textbf{fonction de
+  hachage}.
+
+\section{Opérations de base}
+  
+Les opérations de base sur cet ensemble :
+
+\begin{itemize}
+\item l'initialiser,
+\item y ajouter un élément (si il n'y est pas déjà),
+\item savoir combien il y a d'éléments dans l'ensemble,
+\item tester si un élément est présent,
+\item enlever un élément,
+\item libérer les ressources utilisées.
+\end{itemize}
+
+
+Sur le listing \ref{prog:utilisationensembles} figure un exemple
+d'utilisation où l'on ajoute une suite de mots (éventuellement
+en plusieurs exemplaires) et on fait afficher la taille (qui doit être 10).
+
+Le programme affiche également (listing
+\ref{run:utilisationensembles})  le contenu interne de l'ensemble
+de chaînes, ce qui nous facilitera les explications.
+ 
+\lstinputlisting[style=csource,
+  caption={Utilisation d'un ensemble de chaînes},
+  label={prog:utilisationensembles}
+]{../Sources/utilisation-ensemble-chaines.c}
+
+\lstinputlisting[style=run,
+  caption={Exécution},
+  label={run:utilisationensembles}
+]{../Sources/utilisation-ensemble-chaines.run}
+
+Nous ne présenterons que quelques opérations, les autres sont laissées en
+exercice.
+
+
+\section{Idée générale}
+
+
+\subsection{Répartition en alvéoles}
+
+\begin{itemize}
+  \item les chaînes de caractères qui
+    font partie de l'ensemble sont réparties dans des ``alvéoles''.
+  \item les alvéoles forment un tableau, ce qui permet un
+    accès rapide par indice.
+  \item  le numéro de l'alvéole dans laquelle se trouve (ou
+      devrait se trouver) une chaîne de caractères est calculé à
+      partir du contenu de cette chaîne, par ce qu'on appelle une
+      \textbf{fonction de hachage}.
+    \item plus précisement, le numéro d'alvéole s'obtient comme reste (opération modulo)
+      de la division de la valeur du hachage par le nombre d'alvéoles.
+\end{itemize}
+
+\paragraph{Intérêt :}
+La répartition en alvéoles permet de diviser le nombre de comparaisons
+nécessaires pour tester la présence d'une chaîne : on ne regarde que
+celles présentes dans son alvéole.
+
+\paragraph{Dans l'idéal,} la fonction de hachage serait parfaite, et conduirait à une alvéole où ne se trouve qu'une chaîne.
+
+\paragraph{En pratique,} il va y avoir quand même plusieurs chaînes dans
+certaines alvéoles. On va donc
+
+\begin{itemize}
+\item prévoir qu'une alvéole contient une \texttt{liste} de chaînes,
+\item avoir un grand nombre d'alvéoles de
+  façon à avoir statistiquement peu de chaînes par alvéole.
+\end{itemize}
+
+\subsection{Agrandissement par doublement}
+
+La stratégie choisie est de doubler
+le nombre d'alvéoles quand le nombre de chaînes
+présentes dans l'ensemble atteint certain seuil (3/4 du nombre
+d'alvéoles).  Les chaines sont alors redistribuées entre les
+alvéoles.
+
+Le respect de ce seuil
+garantit qu'il a au maximum $0.75\%$ chaines par alvéole. Il y aura
+donc peu d'alvéoles avec plus d'une chaine.
+
+
+Comme pour les tableaux extensibles, la stratégie de doublement fait
+qu'en moyenne chaque alvéole est copiée au plus une fois.
+
+\subsection{Doublement et redistribution}
+
+Le doublement a une autre propriété intéressante.
+Quand on redistribue
+les chaines d'une alvéole,
+\begin{itemize}
+\item soit elles restent dans la même alvéole,
+\item soit elles vont dans une alvéole ``jumelle'' qui vient d'être ajoutée.
+\end{itemize}
+
+\paragraph{Exemple :} pour la chaîne \texttt{"dix"}, la fonction de hachage
+vaut 30805.
+\begin{itemize}
+\item Si il y a 4 alvéoles, elle se trouve dans l'alvéole
+  $30805 \ \%\  4 = 1$.
+  \item En passant à 8 alvéoles, elle va dans la nouvelle
+    alvéole $30805 \ \%\  8 = 5 = 4 + 1$.
+    \item En passant à 16, elle reste en
+      $30805 \ \%\  16 = 5$.
+      \item En passant à 32, elle va
+en $30805 \ \%\  32 = 21 =
+16 + 5$.
+\item etc.
+  
+\end{itemize}
+Ceci nous autorise à redistribuer les chaines en traitant les
+anciennes alvéoles une par une : on est sûr de ne pas avoir à déplacer
+chaque chaine plus d'une fois.
+
+
+\section{Détails d'implémentation}
+
+\subsection{Sémantique de valeur pour les chaines}
+
+Lorsqu'on appelle la fonction qui sert à ajouter une chaine, ce qu'on
+veut c'est ajouter le contenu de la chaine.  Pour cela on ne peut pas
+se contenter de stocker l'adresse de la chaine reçue, il faut en faire
+une copie.
+
+Ci-dessous une erreur classique de programmation en C : si on fait
+ensuite afficher le tableau, on s'aperçoit qu'il ne contient pas ce
+qu'on pense y avoir mis :
+
+\begin{lstlisting}[style=cextract]
+  char *joueurs[10];
+  char nom[100];
+  for (int i=0; i < 10; i++) {
+    printf("donnez un nom :");
+    scanf("%s", nom);
+    joueurs[i] = nom;       // une erreur de débutant
+}
+\end{lstlisting}
+
+puisqu'on a stocké 10 fois l'adresse de la même variable locale \texttt{nom}...
+
+Lors de l'ajout d'une chaine, on stocke donc en réalité \emph{une
+  copie} obtenue par \texttt{strdup()}. Cette copie est une ressource
+appartenant à l'ensemble, et sera libérée quand
+\begin{itemize}
+\item on retire une chaine de l'ensemble
+\item on libère l'ensemble
+\end{itemize}
+
+\subsection{Structure des alvéoles}
+
+Les alvéoles, qui en principe ne contiendront que peu d'éléments
+(moins de $0.75$ en moyenne), sont représentées ici par des listes
+chainées non ordonnées.
+
+
+\section{Choix de la fonction de hachage}
+
+Une fonction de hachage retourne un nombre non signé, parce qu'elle
+sert à calculer un indice (entier positif ou nul) comme reste d'une
+division (opérateur modulo).
+
+Ce modulo (par une puissance de 2) fait qu'on utilise comme indice
+les bits de poids faible de la valeur retournée. Il est important que
+ces bits soient, autant que possible, dépendants de tous les caractères de la chaine.
+
+Un contre-exemple pour illustrer cette notion. Si le hachage était calculé
+ainsi
+
+\begin{lstlisting}[style=cextract]
+unsigned int hash = 0;
+    for (const char *c = chaine; *c != '\0'; c++) {
+        hash = 16 * hash + *c;               // mauvais
+    }
+\end{lstlisting}
+
+à cause du décalage produit par la multiplication par 16, les 4 bits
+de droite ne dépendraient que du dernier caractère de la chaine; les 8
+bits de droite des deux derniers, etc. Les chaines \texttt{"sept"} et
+\texttt{"huit"} se retrouveraient toujours dans la même alvéole, pour
+les ensembles qui ont moins de 256 alvéoles. Idem pour \texttt{"six"}
+et \texttt{"dix"}. Et à partir d'une certaine taille, les premiers
+octets de la chaine seront sans influence sur le résultat (ils seront
+perdus dans le débordement).
+
+La multiplication par 17 (16 + 1) garantit que chaque octet de la
+chaine a une influence sur les bits de poids faible du résultat de la
+fonction de hachage.
+
+\section{Code source}
+
+\subsection{Entête}
+
+\lstinputlisting[style=csource,
+  caption={Ensemble de chaines : entêtes},
+  label={prog:entetesensemble}
+]{../Sources/ens_chaines.h}
+
+
+\subsection{Code}
+
+\lstinputlisting[style=csource,basicstyle=\footnotesize,
+  caption={Ensemble de chaines : implémentation},
+  label={prog:codeensemble}
+]{../Sources/ens_chaines.c}

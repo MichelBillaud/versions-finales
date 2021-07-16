@@ -1,0 +1,151 @@
+\chapter{Les données en mémoire}
+
+
+Un programme C contient généralement des variables.  Pendant
+l'exécution, chaque variable est stockée en mémoire {quand elle n'est
+  pas sont pas éliminée par le compilateur, ce qui arrive quand il
+  détecte que la variable est inutile, ou suffisamment temporaire pour
+  être rangée dans une registre du processeur}, dans un
+\textbf{emplacement en mémoire} formé d'octets consécutifs.
+
+\section{Taille des données, opérateur \texttt{sizeof()}}
+
+Le nombre d'octets (la \textbf{taille}) dépend du type de la variable.
+On la détermine en appliquant l'opérateur \texttt{sizeof()} à une variable
+ou à un type.
+
+\lstinputlisting[style=csource,
+  float,
+  caption={Affichage de tailles de quelques types},
+  label={source:affichagetaille}
+]{../Sources/tailles-types.c}
+
+\lstinputlisting[style=run,
+  float, caption={Exécution du programme du listing \ref{source:affichagetaille}},
+  label={run:affichagetaille}
+]{../Sources/tailles-types.run}
+
+Le listing \ref{source:affichagetaille} montre un programme qui fait
+afficher les tailles de quelques types. Le résultat (listing
+\ref{run:affichagetaille}) dépend des choix d'implémentation du
+compilateur que vous utilisez, sauf pour le type le type \texttt{char}
+qui correspond \textbf{toujours} à un octet exactement.
+\footnote{Il a été nommé \texttt{char} à une époque où le codage d'un
+  caractère tenait toujours sur un octet (codages ANSI, EBCDIC,
+  ...). Si c'était à refaire, ce type s'appellerait certainement
+  \texttt{byte}.}
+
+Par exemple, un \texttt{int} occupe \emph{en général} 4 octets sur une
+machine 32 bits, et 8 octets sur une machine 64 bits.
+
+
+
+\paragraph{Remarques :} \begin{enumerate}
+\item \texttt{sizeof()} retourne un \texttt{size\_t}, type qui
+  correspond à un entier non signé assez grand pour stocker une
+  taille. L'implémentation de \texttt{size\_t} (\texttt{unsigned int},
+  \texttt{unsigned long}, ...) est dépendante de l'architecture.
+\item Portabilité : utilisez la spécification de format \texttt{\%zu}
+  pour le type \texttt{size\_t}.
+  
+\end{enumerate}
+
+\section{Structures en mémoire}
+
+Rappel : une structure contient un ou plusieurs membres (champs)
+qui peuvent être de types differents. Exemple de définition d'un type et d'une variable :
+
+\begin{lstlisting}[style=cextract]
+struct Employe {
+  char nom[40];
+  int  age;
+};
+
+struct Employe cuistot  = { "Maurice", 63 };
+\end{lstlisting}
+
+\paragraph{Exercice :}  \label{exo:taillestructure} . Écrivez un
+programme montrant un exemple de structure dont la taille n'est pas 
+\emph{égale} à la somme des tailles des champs.
+
+\section{Adresse des données, opérateur ``\texttt{\&}''}
+
+Le programme du Listing \ref{source:adressesvariables} fait afficher
+les adresses de quelques variables pendant l'exécution, obtenues en
+leur appliquant l'opérateur ``\texttt{\&}''
+(\texttt{address-of})\footnote{Il s'agit ici des \emph{adresses
+    virtuelles}, dans l'espace mémoire où le système a chargé le
+  processus.} du langage C. Résultat sur Listing \ref{run:adressesvariables}
+
+\lstinputlisting[style=csource,
+  float,
+  caption={Affichage des adresses de quelques variables},
+  label={source:adressesvariables}
+]{../Sources/adresses-variables.c}
+
+
+
+\lstinputlisting[style=run,
+  float, caption={Exécution du programme},
+  label={run:adressesvariables}
+]{../Sources/adresses-variables.run}
+
+
+
+Les adresses sont des données typées : par exemple l'adresse d'une
+variable de type \texttt{int} est de type \texttt{int*}.
+L'affichage se fait avec la spécification ``\texttt{\%p}" (pour
+\emph{pointer})
+en les convertissant en ``adresses non-typées'' (\texttt{void *}).
+  
+\paragraph{Remarques :}
+\begin{itemize}
+  \item Les variables globales du programme et les variables locales
+    de la fonction \texttt{main()} sont dans des ``segments'' dont les
+    adresses diffèrent considérablement : le segment de données pour
+    les variables globales, et le segment de pile pour les
+    autres\footnote{Sur une machine qui supporte la notion de
+      segmentation, évidemment. Ce n'est pas le cas des petits
+      micro-contrôleurs dans le domaine de l'informatique embarquée}.
+  \item Sur les systèmes d'exploitation modernes, les adresses
+    virtuelles qui s'affichent changent à chaque
+    exécution\footnote{C'est une mesure de sécurité pour éviter
+      l'exploitation de ``débordements de tampon'' et autres erreurs
+      de programmation. Lors du chargement d'un programme, le système d'exploitation choisit des adresses aléatoires pour placer les segments dans l'espace mémoire virtuel du processus.}.
+\end{itemize}
+
+
+\paragraph{Exercice :} reprenez l'exemple de structure (\ref{exo:taillestructure}) dont la taille est supérieure à la somme des tailles des champs, et définissez une variable de ce type. Faites afficher l'adresse et la taille de la structure et de chacun de ses champs. Conclusion ?
+
+
+\section{Tableaux et adresses}
+
+Le programme du listing \ref{source:adressestableaux} affiche
+l'adresse d'un tableau et de ses éléments. Résultat sur Listing \ref{run:adressestableaux}.
+
+\lstinputlisting[style=csource,
+  float,
+  caption={Tableaux et adresses},
+  label={source:adressestableaux}  
+]{../Sources/adresses-tableaux.c}
+
+\lstinputlisting[style=run,
+  float,
+  caption={Exécution du programme},
+  label={run:adressestableaux}
+]{../Sources/adresses-tableaux.run}
+
+
+\paragraph{Remarque :} en C, une variable de type tableau désigne en fait
+l'\emph{adresse} de l'emplacement qui a été réservé en mémoire pour
+placer les éléments. Il n'y a dons pas besoin de mettre un
+``\texttt{\&}'' devant \texttt{tab} dans le \texttt{printf}.
+
+
+On constate qu'à l'exécution, les
+éléments se suivent en mémoire, et l'adresse du tableau
+correspond à celle du premier élément.
+
+
+
+

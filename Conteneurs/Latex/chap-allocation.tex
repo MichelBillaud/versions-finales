@@ -1,0 +1,88 @@
+
+\chapter{Allocation dynamique}
+
+L'\textbf{allocation dynamique de mémoire} est un ensemble de 
+fonctionnalités mises à la disposition du programmeur d'application
+par la bibliothèque standard C.
+
+Elle lui permet de gérer de l'espace mémoire supplémentaire (en plus
+de la pile d'exécution et du segment de données) pour y placer des
+données, en spécifiant le nombre d'octets voulu. Elle permet aussi
+de libérer un espace alloué dont on n'a plus besoin.
+
+\paragraph{Attention :} l'usage de l'allocation dynamique impose un soin très attentif
+au programmeur qui est guetté par deux dangers :
+
+
+\begin{itemize}
+\item \textbf{la fuite mémoire} si un programme alloue en boucle des
+  zones mémoires, sans les libèrer quand il n'en n'a plus
+  besoin. L'espace mémoire du programme s'agrandit indéfiniment, ce
+  qui finit mal.
+\item la \textbf{corruption des données} 
+si un programme utilise par erreur une zone qui a été libérée.
+\end{itemize}
+
+C'est une difficulté typique de la programmation en C.
+
+\section{Fonctions \texttt{malloc()} et \texttt{free()}}
+
+
+Nous utilisons essentiellement deux fonctions, définies dans
+\texttt{stdlib.h} : 
+
+\begin{itemize}
+\item \texttt{malloc()} pour obtenir de l'espace mémoire supplémentaire,
+\item \texttt{free()} pour restituer (libérer) de l'espace obtenu par \texttt{malloc()},
+\end{itemize}
+
+et occasionnellement  \texttt{realloc()} qui agrandit ou rétrécit un espace qu'on
+a obtenu, quitte à le déménager ailleurs.
+
+Le listing \ref{prog:exempleallocation} montre l'utilisation d'un tableau
+de structures alloué dynamiquement.
+
+\lstinputlisting[style=csource,
+  float,
+  caption={Exemple : tableau de structures alloué dynamiquement},
+  label={prog:exempleallocation}
+]{../Sources/exemple-allocation.c}
+
+
+Pour l'allocation par \texttt{malloc()}, on indique en paramètre la
+taille (nombre d'octets) souhaitée. La fonction retourne l'adresse
+(non typée) de la zone allouée, ou \texttt{NULL} en cas d'échec..
+
+Pour libérer une zone, on fournit son adresse à la fonction \texttt{free}.
+
+\paragraph{Exercice :} écrire les fonctions manquantes.
+
+
+\section{Réallocation}
+
+Si on veut ajouter un employé supplémentaire, il faut agrandir le tableau. pour cela on fait un appel à \texttt{realloc()} en indiquant
+
+\begin{itemize}
+\item l'adresse de la zone que l'on veut redimensionner (ici \texttt{tableau}),
+\item la nouvelle taille
+\end{itemize}
+et \texttt{realloc} retournera l'adresse de la nouvelle zone :
+
+\begin{lstlisting}[style=cextract]
+nbElements += 1;
+tableau = realloc(tableau,
+                  nbElements * sizeof(struct Employe));
+\end{lstlisting}
+
+\paragraph{À savoir} : \begin{itemize}
+  \item si le premier paramètre de \texttt{realloc} est \texttt{NULL},
+    la fonction se comporte comme \texttt{malloc()},
+  \item vous l'aviez deviné : en cas d'échec, \texttt{realloc()} retourne \texttt{NULL}.
+\end{itemize}
+
+\paragraph{Exercice :} écrivez un programme qui \begin{itemize}
+\item part d'un tableau vide
+\item fait une boucle, en demandant si on veut en ajouter d'autres
+  \item les affiche tous à la fin.
+\end{itemize}
+

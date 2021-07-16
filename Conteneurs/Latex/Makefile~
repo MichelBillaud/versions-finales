@@ -1,0 +1,25 @@
+pdfs = livret.pdf 
+
+
+all:   
+	(cd sources; make)
+	make all_
+
+all_ : $(pdfs) 
+
+
+%.pdf: %.tex
+	rubber -m xelatex  $<
+
+clean:
+	rubber --clean livret
+	$(RM) *~ *.bak
+	(cd sources ; make clean)
+
+mrproper: clean
+	$(RM) $(pdfs)
+	(cd sources ; make mrproper)
+
+
+livret.pdf: $(wildcard chap-*.tex) $(wildcard sources/*.run)
+
