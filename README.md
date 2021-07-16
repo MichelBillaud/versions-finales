@@ -4,7 +4,9 @@ Au cours de ma carrière au département informatique de l'IUT de l'Université 
 certain nombre de documents pédagogiques (polycopiés, supports de cours etc).
 
 Comme j'ai un peu de temps libre, j'essaie d'en faire des versions un peu plus propres (correction des fautes, réorganisation, etc),
-et je les dépose ici, avec les sources.
+et je les dépose ici, avec les sources. Si ça peut être utile à quelqu'un, tant mieux. Sinon c'esrt pas grave, c'est juste une mise
+à jour superficielle.
+
 
 # Anciennes et nouvelles versions
 
