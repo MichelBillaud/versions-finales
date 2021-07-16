@@ -1,2 +1,0 @@
-cc -std=c11 -Wall -Wextra -pedantic -D_XOPEN_SOURCE=700 -MD    serveur-echo.c   -o serveur-echo
-cc -std=c11 -Wall -Wextra -pedantic -D_XOPEN_SOURCE=700 -MD    client-echo.c   -o client-echo

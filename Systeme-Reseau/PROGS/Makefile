@@ -1,5 +1,12 @@
-all:
+FILES = $(shell find . -name *.{c,h})
+
+last_check: $(FILES)
+	make compile mrproper
+	date > $@
+
+compile:
 	for d in */ ; do (cd $$d/; make) ; done
+
 
 clean:
 	$(RM) *~
