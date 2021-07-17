@@ -3,8 +3,8 @@ PDFDIR = ../Output
 EBOOKSDIR = ../Output
 
 
-EBOOKS = compilation-projet-java
-HTMLPAGES = compilation-projet-java
-PDF1COL = compilation-projet-java
+EBOOKS = projet-java
+HTMLPAGES = projet-java
+PDF1COL = projet-java
 
 include ../lib/common5.mk
