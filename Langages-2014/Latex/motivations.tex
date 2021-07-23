@@ -1,0 +1,136 @@
+\section{Motivations}
+
+\subsection{Linguistique}
+
+La \emph{théorie des langages} est issue de problématiques
+de linguistique, quand les linguistes se sont intéressés 
+aux mécanismes qui permettent de construire des phrases
+plus ou moins complexes, à partir de règles relativement simples.
+
+Par exemple, la phrase 
+\begin{quote}
+Le chat noir dort sur le vieux banc du jardin
+\end{quote}
+se décompose en trois parties.
+
+\begin{itemize}
+\item le sujet ``le chat noir''
+\item le verbe ``dort''
+\item le complément ``sur le vieux banc du jardin''
+\end{itemize}
+le sujet comporte lui-même trois parties : un article, un nom, et un adjectif.
+
+Ces règles de constructions de \emph{syntagmes}, qu'on apprend
+laborieusement lorsqu'on étudie une langue étrangère, sont acquises
+implicitement lors de l'apprentissage de la langue maternelle dans la
+petite enfance. Ce qui laisse supposer certaines prédispositions de
+l'espèce humaine.
+
+D'où l'intérêt développé, au XX-ième siècle, pour l'étude formelle de
+ces mécanismes que l'on retrouve sous des formes voisines dans les
+différentes langues.
+
+\subsection{Langages informatiques}
+
+À la fin des années 50 sont apparus les premiers langages de
+programmation. Au début, la programmation consistait à établir des
+listes d'instructions machine, mais assez rapidement est apparu le
+besoin d'écrire des programmes sous une forme plus ``naturelle'', dans
+laquelle les éléments (fonctions, instructions, déclarations,
+expressions, etc) sont combinés selon des règles précises.
+
+Avec cela, la \emph{définition du langage}, vient une autre
+préoccupation : comment écrire, à moindre frais, des
+\emph{compilateurs} qui analysent le code source, et génèrent sa
+traduction ?
+
+
+
+\paragraph{Au delà de ces motivaqtions} pratiques, la \emph{ théorie des langages} s'intéresse aux propriétés
+des \emph{langages formels}.
+
+
+\section{Langages formels}
+
+\subsection{Lettres, mots}
+
+ Pour définir un langage formel on se donne un ensemble, généralement
+fini, de \emph{symboles}, appelés aussi \emph{lettres}.  On appelle cet ensemble le
+\emph{vocabulaire}, ou l'\emph{alphabet}.
+A partir de ces lettres, on définit les \emph{mots}, qui sont simplement des séquences de \emph{lettres}.
+
+
+\paragraph{Notations}
+\begin{itemize}
+\item On emploie souvent les lettres de la fin de l'alphabet $x, y, z$, pour désigner des lettres,
+et $u,v, w$ (comme word) pour désigner des mots.
+\item la longueur d'un mot $w$ est notée $\abs{w}$,
+\item le mot vide, de longueur nulle est noté $\epsilon$,
+% %\item on note $A^*$ le langage (infini) qui contient tous les mots sur $A$.
+\end{itemize}
+\paragraph{Exemples} 
+
+\begin{itemize}
+\item soit $A$ l'alphabet à trois lettres $A = \{ a, b, c \}$
+\item $a$, $bc$, $aaa$ sont des mots de longueurs respectives 1, 2 et 3 sur $A$
+\end{itemize}
+
+
+\paragraph{La concaténation} de deux mots consiste à les mettre bout à bout. Plus formellement,
+si $u = x_1 x_2 \ldots x_n$ et $v = y_1 y_2 \ldots y_p$ sont deux mots
+de longueurs respectives $n$ et $p$, le mot $u.v$ (noté aussi $uv$)
+est la suite $ x_1 x_2 \ldots x_n y_1 y_2 \ldots y_p$ de longueur
+$n+p$.
+
+\manicule la concaténation est-elle associative, commutative ?
+A-t-elle un élément neutre ?
+
+\subsection{Langages}
+
+\paragraph{Définition} Un \emph{langage} est un ensemble de mots.
+
+\paragraph{Exemples} 
+\begin{itemize} 
+\item le langage des mots de deux lettres au plus sur $A = \{a, b\}$
+  est $$L = \{ \epsilon, a, b, c, aa, bb, cc, ab, ba, bc, cb, ac, ca
+  \}$$
+\item $ \{ a^n \| 4\leq n\leq 2\} = \{ aa, aaa, aaaa \}$
+\end{itemize}
+
+\subsection{Opérations sur les langages}
+
+\paragraph{Opérations ensemblistes : } les langages sont
+ des ensembles (de mots), on peut en faire
+\begin{itemize}
+\item l'intersection : par exemple si $L_1$ est l'ensemble des mots
+  qui commencent par la lettre $a$, et $L_2$ ceux qui finissent par
+  $b$, $L_1 \cap L_2$ contient les mots qui commencent $a$ \emph{et}
+  finissent par $b$.
+\item l'uunion, souvent notée $+$ : $L_1 + L_2$ contient les mots qui
+  commencent $a$ \emph{ou} finissent par $b$ (ou les deux);
+\item la différence, etc.
+\end{itemize}
+
+\paragraph{Le \emph{produit} de deux langages} est une opération 
+spécifique, notée par un point : $L_1 . L_2$ est l'ensemble des mots
+qui sont obtenus par concaténation d'un mot de $L_1$ avec un mot de
+$L_2$.  Exemple : avec $L_1 = \{a, ab, c \}$ et $L_2 = \{ \epsilon, b
+\}$
+$$L_1.L_2 = \{ a, ab, c, abb, cb \}$$
+
+
+\paragraph{L'élévation à une puissance  $L^n$} d'un langage $L$ 
+consiste à concaténer $n$ mots de $L$.  Par exemple $\{a,ab\}^2 = \{
+aa, aab, aba, abab \}$
+
+\paragraph{l'étoile $L^n$} est l'union de tous les $L^n$, 
+pour $n \geq 0$ : c'est l'ensemble des mots que l'on peut décomposer
+en une suite de facteurs pris dans $L$. Il contient le mot vide, même
+si celui-ci n'est pas dans $L$.
+
+Avec une certaine logique, on note aussi $A^*$ le langage de tous les
+mots sur $A$ (puisqu'ils se décomposent en lettres.
+
+
+\clearpage
+

@@ -1,0 +1,17 @@
+\usepackage[a4paper] {geometry}
+\usepackage[french] {babel}
+\usepackage[T1] {fontenc}
+\usepackage[latin1] {inputenc}
+\usepackage {graphicx}
+\usepackage {listings}
+\usepackage[draft] {hyperref}
+\usepackage {multicol}
+\usepackage {framed}
+\usepackage{helvet}
+
+\renewcommand{\familydefault}{\sfdefault}
+\newenvironment {pratique} {\framed \begin{minipage}[t]{0.9\textwidth}\textbf{Pratique} \\
+} {\end{minipage} \endframed}
+
+\newenvironment {boite}[1] {\framed \begin{minipage}[t]{0.9\textwidth}\textbf{#1} \\ }{\end{minipage} \endframed}
+

@@ -1,0 +1,120 @@
+\usepackage[latin1]{inputenc}
+\usepackage[french]{babel} 
+\usepackage{fancyhdr}  
+
+% \usepackage{a4wide}
+% \usepackage{vmargin} %  pour redefinition des marges
+% \usepackage{amssymb}
+
+% \usepackage{textcomp} % pour caractères spéciaux
+
+\usepackage{hyperref}
+\usepackage[a4paper,hmargin=1.5cm,vmargin=2.5cm]{geometry}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{listings}
+
+\newcommand*{\formation}[1]{\def\laFormation{#1}}
+\newcommand*{\matiere}[1]{\def\laMatiere{#1}}
+\newcommand*{\titre}[1]{\def\leTitre{#1}}
+\newcommand*{\sigle}[1]{\def\leSigle{#1}}
+\newcommand*{\basdepage}[1]{\def\leBasDePage{#1}}
+
+% \renewcommand{\rmdefault}{phv} % Arial
+% \renewcommand{\sfdefault}{phv} % Arial
+
+\newcommand*{\licence}[0]{\begin{center}
+\fbox{\begin{minipage}{.75\linewidth} Ce document est copiable et
+    distribuable librement et gratuitement à la condition expresse que
+    son contenu ne soit modifié en aucune façon, et en particulier que
+    le nom de son auteur et de son institution d'origine continuent à
+    y figurer.
+  \end{minipage}
+}
+\end{center}
+}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\pagestyle{fancy}
+
+\renewcommand{\maketitle}{
+\fancyfoot[C]{\leBasDePage}
+\fancyfoot[RO, LE] {\thepage}
+\noindent
+\begin{tabular}{|lll|}
+\hline
+\parbox{.20\linewidth}{
+\vspace{1mm}
+\includegraphics[width=\linewidth]{Style/nouveau-logo-iut.jpg}
+}
+&
+\parbox{.50\linewidth}{
+\begin{center}
+\textsf{
+\large
+\laFormation \\
+\vspace{1em}
+\emph{\laMatiere} \\
+\vspace{1em}
+\Large
+\textbf{\leTitre}}
+\end{center}
+}
+&
+\parbox{.25\linewidth}{
+\begin{center}
+ \vspace{0.2cm}
+\Huge{\textbf{\leSigle}}
+\end{center}
+}
+\\
+\hline 
+\end{tabular}
+\vspace{0.5cm}
+}
+
+\newenvironment{oexercice}[1]{\vspace{.2cm} \addtocounter{exercices}{1}\noindent\rule{\linewidth}{1pt}\\\noindent\fbox{\arabic{exercices}} \textbf{#1}}{\par\vspace{0.1cm}\noindent\rule{\linewidth}{1pt}}
+
+% \setmarginsrb{2cm}{1cm}{2cm}{1cm}{0cm}{1cm}{0cm}{1cm}
+\newcounter{exercices}[part]
+
+\setlength{\columnseprule}{0.5pt}
+\newcommand{\FIGURE}[2]{
+    \includegraphics[width=0.9\linewidth]{memoire-images/#1}
+  \begin{center}#2\end{center}
+}
+
+\sloppy
+
+\newenvironment{exercice}{%
+\vspace{.5cm}\noindent\addtocounter{exercices}{1}%
+\begin{tabular}{|c|}
+\hline 
+\ \\
+\begin{minipage}{0.9\linewidth}
+\noindent \textbf{Exercice \arabic{exercices}.} 
+}{%
+\end{minipage} \\
+\\
+\hline
+\end{tabular}
+}
+
+\newenvironment{todo}{%
+\vspace{.5cm}\noindent%
+\begin{tabular}{|c|}
+\hline 
+\ \\
+\begin{minipage}{0.9\linewidth}
+\noindent \textbf{À faire :} 
+}{%
+\end{minipage} \\
+\\
+\hline
+\end{tabular}
+}
+
+
+
+% --- c'est tout

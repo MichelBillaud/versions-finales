@@ -1,0 +1,80 @@
+
+\usepackage[a5paper,top=2cm, bottom=2cm, left = 2.5cm, right=2cm]{geometry}
+
+\usepackage{fontspec}
+%\usepackage[T1]{fontenc}
+%\usepackage[latin1]{inputenc}
+% \usepackage{lmodern}
+
+
+\usepackage[french]{babel}
+\usepackage{listings}
+
+\usepackage{textpos}
+\usepackage{rotating}
+
+\usepackage{xcolor}
+\definecolor{msdarkblue}{RGB}{54,95,145}
+\definecolor{msblue}{RGB}{79,129,189}
+ 
+\usepackage{titlesec}
+
+\titleformat{\chapter}[frame]{\normalfont\huge\bfseries}
+{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+
+\titleformat*{\section}{\color{msdarkblue}\Large\sffamily\bfseries}
+\titleformat*{\subsection}{\color{msblue}\large\sffamily\bfseries}
+\titleformat*{\subsubsection}{\color{msblue}\normalsize\sffamily\bfseries}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\usepackage{graphicx}
+\usepackage{picins}
+
+\usepackage{fancyhdr}
+
+\newcommand*{\titre}[1]{\def\letitre{#1}}
+\newcommand*{\soustitre}[1]{\def\lesoustitre{#1}}
+\newcommand*{\serie}[1]{\def\laserie{#1}}
+\newcommand*{\auteurs}[1]{\def\lesauteurs{#1}}
+
+
+\renewcommand{\maketitle}{
+\begin{titlepage}
+% les dimensions pour les coordonnée de textblock
+\setlength{\TPHorizModule}{1mm}
+\setlength{\TPVertModule}{1mm}
+ 
+% barre bleue 
+ \begin{textblock}{50}(-20,-20)
+  \begin{color}{msdarkblue}
+    \rule{3cm}{20cm}    
+  \end{color}
+\end{textblock}
+
+% serie
+\begin{textblock}{30}(-2,170)
+\begin{rotate}{90}
+{\huge\bfseries\textcolor{white}{\laserie}}
+\end{rotate}
+\end{textblock}
+ 
+ \begin{textblock}{130}(20,30)
+ {\noindent\rule{2cm}{2cm}}
+ \\[3em]
+
+{
+\noindent\Huge\bf \letitre } \\[3em]
+ 
+{\noindent\Huge\bfseries\sf \lesoustitre} \\[5em]
+
+{\noindent\Large\bfseries\sf \lesauteurs}
+\end{textblock}
+\end{titlepage}
+
+\clearpage
+}
+
+\newcommand*{\manicule}{\parpic{
+\includegraphics[width=1cm]{manicule}
+}}

@@ -1,0 +1,19 @@
+-- test analyse lexicale
+chaine : beta * beta - (4*  alpha*gamma)
+- 7 beta
+- 4 *
+- 7 beta
+- 3 -
+- 0 (
+- 6 4
+- 4 *
+- 7 alpha
+- 4 *
+- 7 gamma
+- 1 )
+-- test analyse  syntaxique
+chaine : beta * beta - (4*  alpha*gamma)
+(  la difference  de (  le produit  de la variable  beta et de la variable  beta)  et de (  le produit  de (  le produit  de la constante  4 et de la variable  alpha)  et de la variable  gamma) ) 
+-- test analyse  syntaxique
+chaine : HT * (100+TVA)/100
+(  le quotient  de (  le produit  de la variable  HT et de (  la somme  de la constante  100 et de la variable  TVA) )  et de la constante  100) 

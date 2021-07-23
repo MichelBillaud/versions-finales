@@ -1,0 +1,65 @@
+\usepackage[latin1]{inputenc}
+\usepackage[french]{babel}   
+
+\usepackage{a4wide}
+\usepackage{textcomp}
+\usepackage[draft]{hyperref}
+\usepackage{multicol}
+\usepackage{vmargin}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{framed,color}
+
+\newcommand*{\titreEpreuve}[1]{\def\leTitreEpreuve{#1}}
+\newcommand*{\dateEpreuve}[1]{\def\laDateEpreuve{#1}}
+\newcommand*{\publicEpreuve}[1]{\def\lePublicEpreuve{#1}}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\renewcommand{\maketitle}{
+\noindent
+\begin{tabular}{|l|l|l|}
+\hline
+\parbox{.2\linewidth}{
+\includegraphics[width=\linewidth]{Style/logo_gris_2013}
+}
+&
+\parbox{.50\linewidth}{
+\begin{center}
+\textsf{
+\large
+IUT - Université  Bordeaux 1 \\
+Département Informatique \\ 
+\vspace{1em}
+\Large
+\textbf{\leTitreEpreuve}}
+\end{center}
+}
+&
+\parbox{.30\linewidth}{
+\textsf{
+\begin{tabular}{lr}
+& \laDateEpreuve \\ \\
+Groupe & \\ \\
+Nom & \\ \\ 
+Prénom & \\ \\ 
+\end{tabular}
+}} \\ 
+\hline 
+\end{tabular}
+}
+
+%\newcommand{\question}[2]{ \addtocounter{questions}{1}\noindent\fbox{\textbf{\arabic{questions}}} #1\par\vspace{#2}}
+
+\newcommand{\question}[2]{\par\addtocounter{questions}{1}\noindent\fbox{\textbf{\arabic{questions}}} #1\\\rule{.3pt}{#2}}
+\setmarginsrb{2cm}{1cm}{2cm}{1cm}{0cm}{1cm}{0cm}{1cm}
+\newcounter{questions}[part]
+
+
+
+\newif\ifsolution
+
+\definecolor{shadecolor}{rgb}{.9,.9,.9}
+\newcommand{\espace}[1]{\begin{framed}\vspace{#1}\end{framed}}
+\newenvironment{reponse}{\textbf{Solution :}}{}
+

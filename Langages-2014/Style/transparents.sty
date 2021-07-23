@@ -1,0 +1,29 @@
+
+\mode<presentation>
+{
+  %%  \usetheme{Warsaw}
+  %% \usetheme{Hannover}
+  %% \usetheme{Pittsburgh}
+  \usetheme{Rochester}
+  \usecolortheme{crane}
+}
+
+\usepackage[french]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{listings}
+\usepackage{multicol}
+
+%\setbeamertemplate{footline}[page number]
+\setbeamertemplate{footline}[frame number]
+
+
+\defbeamertemplate*{part page}{mypartpage}[1][]
+{
+\begin{centering}
+{\usebeamerfont{part name}\usebeamercolor[fg]{part name}\partname}
+\vskip1em\par
+\begin{beamercolorbox}[rounded=true,shadow=true,sep=8pt,center,#1]{part title}
+\usebeamerfont{part title}\insertpart\par
+\end{beamercolorbox}
+\end{centering}
+}

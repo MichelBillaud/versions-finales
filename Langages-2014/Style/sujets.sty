@@ -1,0 +1,96 @@
+% ----- extp.sty -------- pour LaTeX -----------------
+% DEFINITION DES ENVIRONNEMENTS POUR LES SUJETS DE TP
+% ou TD ET MISE EN PAGE
+% = tp + \comm{une commande} et + \fich{un fichier}
+% On utilise les caractères accentués du clavier
+\usepackage[latin1]{inputenc}
+\usepackage[french]{babel}       % et on parle français
+
+% Commandes pour caractériser le TP : chaque TP définit
+%
+%   \quand{la date du TD}
+%   \sorte{TD, TP ou autre chose}
+%   \siglemat{Le nom de la matière, comme SY, MP ou IHM}
+%   \titrefeuille{Le titre de la feuille}
+%   \formation{le nom de la formation, comme Diic2-LSI}
+%   \titre{le titre du TP, avec son numéro si besoin}
+%
+\newcommand*{\quand}[1]{\def\lequand{#1}}
+\newcommand*{\sorte}[1]{\def\lasorte{#1}}
+\newcommand*{\siglemat}[1]{\def\lesiglemat{#1}}
+\newcommand*{\titrefeuille}[1]{\def\letitrefeuille{#1}}
+\newcommand*{\siglefeuille}[1]{\def\lesiglefeuille{#1}}
+\newcommand*{\formation}[1]{\def\laformation{#1}}
+\newcommand*{\titre}[1]{\def\letitre{#1}}
+%
+% Valeurs par défaut
+\quand{} \sorte{} \siglemat{} \siglefeuille{}
+\titrefeuille{} \formation{} \titre{}
+% Ces commandes sont mises en LyX dans Format-Préambule
+%   précédées d'un \usepackage{extp}
+% Commande qui s'exécute juste après le \begin{document}
+%   pour mettre le titre
+\newcommand{\mettreletitre}{%
+  \vspace*{1ex} {\centering\Large \textbf{\letitre} }
+  \vspace{4ex plus 3ex minus 2ex}\thispagestyle{plain}
+}
+\AtBeginDocument{\mettreletitre\thispagestyle{plain}}
+% Environnement LISTENUM, énumération avec des titres
+%   non numérotés
+%   \begin{listenum}{Titre des exos suivant}
+%      \item énoncé d'un exo
+%      \item d'un autre
+%   \end{listenum}
+%   \begin{listenum}{Autre titre pour la suite} ...
+%
+\newcounter{sauve}[section]\setcounter{sauve}{0}
+\newenvironment{listenum}[1]%
+  {\subsection*{#1}\begin{enumerate}
+   \setcounter{enumi}{\value{sauve}}}%
+  {\setcounter{sauve}{\value{enumi}} \end{enumerate}
+}
+% Styles de caractère \comm{une commande} \fich{un fichier}
+%
+\newcommand{\comm}[1]{{\small\bfseries\sffamily #1}}
+\newcommand{\fich}[1]{\texttt{#1}}
+%  ----- styles des pages -----
+% EN-TÊTE ET PIEDS DE PAGE
+\usepackage[dvips]{graphicx}  % pour les logos
+\usepackage{pstricks}
+\usepackage{fancyhdr}         % pour le style fancy
+\pagestyle{fancy}             % on utilise le style fancy
+% On place des logos dans l'en-tête de la première page :
+% on augmente   en conséquence sa hauteur, et on ajuste
+% la longueur du texte
+\addtolength{\headheight}{1.5cm}
+\addtolength{\textheight}{-1.5cm}
+% Style "plain" de la première page, incluant les
+%   caractéristiques du TP : commencer le TP par la commande
+%   \mettreletitre (LaTeX et LyX)
+%
+\fancypagestyle{plain}{%
+\fancyhf{}
+%\fancyhead[L]{\includegraphics[width=2.0cm]{logo.eps}}
+\fancyhead[L]{
+\Huge\textsf{\lesiglefeuille}
+}
+\fancyhead[C]{\textbf{\letitrefeuille} \\ \laformation}
+\fancyhead[R]{\Huge\textsf{\lesiglemat}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[L]{\lasorte\ \lesiglemat}
+\fancyfoot[R]{\lequand}
+}
+% Style d'une page standard
+%
+\fancyhead{}\fancyhead[L]{\laformation}
+\fancyhead[R]{\letitre}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyfoot[L]{\lasorte\ \lesiglemat}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{\lequand}
+\def\mois{\ifcase\month\or Janvier\or Février\or Mars\or
+Avril\or Mai\or Juin\or Juillet\or Août\or Septembre\or
+Octobre\or Novembre\or Décembre\fi \space\number\year}
+                        
+% fin style sujets

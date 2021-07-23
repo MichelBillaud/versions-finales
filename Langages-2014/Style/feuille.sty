@@ -1,0 +1,61 @@
+\usepackage[latin1]{inputenc}
+\usepackage[french]{babel}   
+
+\usepackage{a4wide}
+\usepackage{vmargin} %  pour redefinition des marges
+
+% \usepackage{textcomp} % pour caractères spéciaux
+
+\usepackage[draft]{hyperref}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{listings}
+
+\newcommand*{\formation}[1]{\def\laFormation{#1}}
+\newcommand*{\matiere}[1]{\def\laMatiere{#1}}
+\newcommand*{\titre}[1]{\def\leTitre{#1}}
+\newcommand*{\sigle}[1]{\def\leSigle{#1}}
+
+% \renewcommand{\rmdefault}{phv} % Arial
+% \renewcommand{\sfdefault}{phv} % Arial
+
+
+\renewcommand{\familydefault}{\sfdefault}
+
+\renewcommand{\maketitle}{
+\noindent
+\begin{tabular}{|lll|}
+\hline
+\parbox{.20\linewidth}{
+\vspace{1mm}
+\includegraphics[width=\linewidth]{Style/logo_gris_2013.jpg}
+}
+&
+\parbox{.50\linewidth}{
+\begin{center}
+\textsf{
+\large
+\laFormation \\
+\vspace{1em}
+\emph{\laMatiere} \\
+\vspace{1em}
+\Large
+\textbf{\leTitre}}
+\end{center}
+}
+&
+\parbox{.25\linewidth}{
+\begin{center}
+ \vspace{0.2cm}
+\Huge{\textbf{\leSigle}}
+\end{center}
+}
+\\
+\hline 
+\end{tabular}
+\vspace{0.5cm}
+}
+
+\setmarginsrb{2cm}{1cm}{2cm}{1cm}{0cm}{1cm}{0cm}{1cm}
+
+% --- c'est tout
