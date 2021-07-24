@@ -1,9 +1,9 @@
 
 OUTDIR = ../Output
 
-ALL = $(OUTDIR)/architecture.pdf
+ALL = $(OUTDIR)/circuits-logiques.pdf
 
-SRC=architecture.tex abrev.tex elements.tex codages.tex techno.tex \
+SRC=circuits-logiques.tex abrev.tex elements.tex codages.tex techno.tex \
 	 boole.tex sequ.tex combi.tex
 EPS=fig1.eps fig2.eps fig3.eps fig4.eps fig5.eps fig6.eps fig7.eps \
 	fig8.eps fig9.eps fig10.eps  boole1.eps boole2.eps boole3.eps \
@@ -21,7 +21,7 @@ $(OUTDIR)/%.pdf: %.tex
 
 # dépendances
 
-$(OUTDIR)/architecture.pdf: $(SRC) $(IMG)
+$(OUTDIR)/circuits-logiques.pdf: $(SRC) $(IMG)
 
 
 clean:
