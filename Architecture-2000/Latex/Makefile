@@ -1,0 +1,34 @@
+
+OUTDIR = ../Output
+
+ALL = $(OUTDIR)/architecture.pdf
+
+SRC=architecture.tex abrev.tex elements.tex codages.tex techno.tex \
+	 boole.tex sequ.tex combi.tex
+EPS=fig1.eps fig2.eps fig3.eps fig4.eps fig5.eps fig6.eps fig7.eps \
+	fig8.eps fig9.eps fig10.eps  boole1.eps boole2.eps boole3.eps \
+	seq1.eps seq2.eps seq3.eps seq4.eps seq5.eps \
+	combi1.eps combi2.eps combi3.eps combi4.eps combi5.eps \
+	combi6.eps combi7.eps combi8.eps 
+
+IMG = $(addprefix ../Images/, $(EPS))
+
+all:	$(ALL)
+
+$(OUTDIR)/%.pdf: %.tex
+	xelatex -output-directory $(OUTDIR)  $<
+	xelatex -output-directory $(OUTDIR)  $<
+
+# dépendances
+
+$(OUTDIR)/architecture.pdf: $(SRC) $(IMG)
+
+
+clean:
+	$(RM) *~
+	(cd $(OUTDIR);  $(RM) *.log *.toc *.lof *.aux)
+
+
+
+
+

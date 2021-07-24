@@ -1,0 +1,253 @@
+\chapter{Quelques circuits combinatoires}
+
+Dans ce chapitre nous \'etudions bri\`evement quelques circuits
+combinatoires qui interviennent dans la r\'ealisation des 
+composants logiques d'un ordinateur.
+
+Nous pr\'esenterons l'\'etude de ces circuits sous une forme commune~:
+la {\em sp\'ecification} \'enonce rapidement le r\^ole du circuit, la
+{\em fonction de tranfert} indique pr\'ecis\'ement (en général par des
+tables de v\'erit\'e) la valeur des sorties pour toutes les entr\'ees
+possibles, la {\em r\'ealisation} montre un des circuits possibles.
+
+\section{Demi-additionneur}
+
+\paragraph{Sp\'ecification} 
+C'est un circuit (voir fig. \ref{combi1}) \`a deux entr\'ees $a, b$ et
+deux sorties $r, s$.  Les entr\'ees repr\'esentent les nombres 0 et 1,
+et $rs$ est l'expression en binaire de leur somme. ($s$ est la somme,
+$r$ la retenue).
+
+\dessin{combi1}{combi1.eps}{Demi-additionneur}
+
+
+\paragraph{Fonction de transfert} 
+$$
+\begin{array}{|cc|cc|}
+\hline
+	a& b&	r & s\\
+\hline
+	0 & 0 &	0 & 0 \\
+	0 & 1 &	0 & 1 \\
+	1 & 0 &	0 & 1 \\
+	1 & 1 &	1 & 0 \\
+\hline
+\end{array}
+\begin{array}{rcl}
+\multicolumn{3}{c}{\mbox{Équations:}} \\
+r &=& a b \\
+ s &=& a\overline{b} + b\overline{a} \\
+	&=& a \oplus b
+\end{array}
+$$
+
+\paragraph{R\'ealisation:} Le sch\'ema de la figure \ref{combi2} se d\'eduit imm\'ediatement des \'equations.
+
+\dessin{combi2}{combi2.eps}{Sch\'ema d'un demi-additionneur}
+
+
+\section{Additionneur \'el\'ementaire}
+
+Le demi-additionneur que nous venons de voir ne suffit pas pour r\'ealiser des
+additions ``chiffre par chiffre'' parce qu'il produit des retenues, mais
+ ne sait pas les utiliser. 
+
+\paragraph{Sp\'ecification} 
+L'{\em additionneur \'el\'ementaire} (Fig. \ref{combi3})
+est un circuit \`a 3 entr\'ees $a,b,c$ et deux sorties $r,s$. Le nombre
+$rs$ indique, en binaire, le nombre d'entr\'ees qui sont \`a 1.
+\dessin{combi3}{combi3.eps}{Additionneur}
+\paragraph{Fonction de transfert}
+$$
+\begin{array}{|ccc|cc|}
+\hline
+	a& b& c&	r & s\\
+\hline
+	0 & 0 & 0 &	0 & 0 \\
+	0 & 0 & 1 &	0 & 1 \\
+	0 & 1 & 0 &	0 & 1 \\
+	0 & 1 & 1 &	1 & 0 \\
+	1 & 0 & 0 &	0 & 1 \\
+	1 & 0 & 1 &	1 & 0 \\
+	1 & 1 & 0 &	1 & 0 \\
+	1 & 1 & 1 &	1 & 1 \\
+\hline
+\end{array} \hspace{1cm}
+\begin{array}{rcl}
+\multicolumn{3}{l}{\mbox{Equations:}} \\
+r &=& a b + bc +a c\\
+ s &=& a \oplus b \oplus c \\
+	&= & abc + \overline{a}\overline{b}c + a\overline{b}\overline{c} 
++ \overline{a}b\overline{c}
+\end{array}
+$$
+
+\begin{exercice}{} Montrez qu'un additionneur 
+peut \^etre r\'ealis\'e \`a partir de trois demi-additionneurs
+\end{exercice}
+
+\begin{exercice}{} Montrez qu'un additionneur 
+peut \^etre r\'ealis\'e \`a partir de deux demi-additionneurs et une
+porte OU.
+\end{exercice}
+
+\section{Circuit additionneur $2 \times n$ bits}
+
+En mettant c\^ote \`a c\^ote $n$ additionneurs on peut r\'ealiser un
+additionneur $n$ bits.
+
+\paragraph{Sp\'ecification} Circuit \`a $2n+1$ entr\'ees ($a_0 \ldots a_{n-1},
+b_0 \ldots b_{n-1}, c$) et  $n+1$ sorties ($s_0 \ldots s_{n-1},r$). 
+Les entr\'ees $a_{n-1}a_{n-2}\ldots a_1 a_0$  repr\'esentent un nombre A cod\'e 
+en binaire (et de m\^eme pour B sur les entr\'ees $b_j$), et $c$ est la retenue
+entrante. Les sorties $rs_{n-1}s{n-2}\ldots s_1 s_0$ expriment la valeur de
+$A+B+c$.
+
+\paragraph{R\'ealisation} Une r\'ealisation directe (par \'etude des
+tables de v\'erit\'e et recherche d'expressions minimales) n'est
+envisageable que pour de tr\`es petites valeurs de n (si n = 3 il y a
+7 entr\'ees, donc des tables de v\'erit\'e \`a 128 cases \ldots).
+
+On proc\`ede donc par d\'ecomposition du problème~: il suffit de
+mettre en parall\`ele n additionneurs \'el\'ementaires identiques.  La
+figure \ref{combi4} montre un additionneur $2 \times 4$ bits.
+
+\dessin{combi4}{combi4.eps}{Additionneur en tranches}
+
+\begin{remarque}{} Ces additionneurs ``en tranches'' peuvent eux-m\^emes
+\^etre juxtapos\'es pour former des additionneurs capables de traiter
+des nombres plus grands~: il suffit de relier la retenue sortante
+de chaque circuit \`a la retenue entrante du suivant.
+\end{remarque}
+
+\section{D\'ecodeur}
+
+Ce circuit permet d'envoyer un signal \`a une sortie choisie.
+
+\subsection{D\'ecodeur simple}
+
+\paragraph{Sp\'ecification}
+Ce circuit poss\`ede $n$ entr\'ees $a_0 \ldots a_{n-1}$ et $2^n$ sorties
+$s_0 \ldots s_{{2^n}-1}$.  Les entr\'ees $a_i$ codent un nombre $A$ en
+binaire. La sortie $s_A$ est mise \`a 1, les autres \`a 0.
+
+\paragraph{Fonction de transfert} Pour $n=2$ on a la table~:
+$$ \begin{array}{|cc|cccc|}
+\hline
+a_1 & a_0 & s_0 & s_1 & s_2 & s_3 \\
+\hline
+0 & 0 & 1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 1 & 0 & 0 \\
+1 & 0 & 0 & 0 & 1 & 0 \\
+1 & 1 & 0 & 0 & 0 & 1 \\
+\hline
+\end{array} $$
+
+\paragraph{R\'ealisation}
+On voit facilement qu'\`a chaque sortie correspond un mon\^ome complet
+sur $a_0,a_1\ldots$, et r\'eciproquement. Voir figure \ref{combi5} pour
+le sch\'ema d'un d\'ecodeur ``2 vers 4''.
+
+\dessin{combi5}{combi5.eps}{D\'ecodeur ``2 vers 4''}
+
+\begin{exercice}{Dessinez un d\'ecodeur ``3 vers 8''}
+\end{exercice}
+
+\subsection{D\'ecodeur avec validation }
+
+Ce d\'ecodeur poss\`ede une entr\'ee suppl\'ementaire V, qui sert
+à ``activer'' le circuit.  Si cette entr\'ee
+est \`a 1, le d\'ecodeur fonctionne comme pr\'ec\'edemment. Si $V=0$,
+toutes les sorties sont \`a 0.
+
+On obtient (fig. \ref{combi6}) ce circuit par une simple modification du 
+sch\'ema pr\'ec\'edent.
+
+
+\dessin{combi6}{combi6.eps}{D\'ecodeur ``2 vers 4'' avec validation}
+
+\begin{remarque}{} Les d\'ecodeurs avec validation peuvent \^etre
+assembl\'es entre eux pour former des d\'ecodeurs plus gros. Le montage
+de la figure \ref{combi7} montre un d\'ecodeur ``ma\^{\i}tre'' pilotant
+4 d\'ecodeurs esclaves, le tout formant un d\'ecodeur ``4 vers 16''
+avec validation.
+\end{remarque}
+
+\dessin{combi7}{combi7.eps}{Montage de d\'ecodeurs en ma\^{\i}tre-esclaves}
+
+\begin{exercice}{} Quelles doivent être les valeurs des entrées pour
+avoir $s_{13} = 1$ ?
+\end{exercice}
+
+\section{Multiplexeur}
+
+Autre circuit très utile, le multiplexeur permet de s\'electionner une
+entr\'ee parmi plusieurs. C'est un circuit \`a une seule sortie S.  Il
+prend comme entr\'ees un nombre $N$ sur k bits, et $2^k$ entr\'ees
+$e_i$. La valeur de la $N$-i\`eme entr\'ee est copi\'ee sur la sortie
+S.
+
+\dessin{combi8}{combi8.eps}{Multiplexeur 4 voies}
+
+La figure \ref{combi8} montre un multiplexeur 4 voies. On remarquera
+que le multiplexeur contient  un d\'ecodeur 2 vers 4.
+
+\begin{exercice}{Multiplexeur 16 voies} Montrez comment r\'ealiser un multiplexeur 16 voies par
+un montage ma\^{\i}tre-esclaves.
+\end{exercice}
+
+\section{Exercices}
+
+\subsection{Test d'égalité}
+
+Concevoir un circuit qui prendra en entr\'ee deux nombres binaires A et B 
+de 4 chiffres, et indiquera si ces deux nombres sont \'egaux.
+
+\subsection{Comparateur}
+Concevoir un circuit qui prendra en entr\'ee deux nombres binaires A
+et B de 4 chiffres, et indiquera si $A<B$, $A=B$ ou $A>B$.  Essayez
+d'obtenir un circuit ``cascadable'' pour comparer des nombres plus
+grands.
+
+
+\subsection{Additionneur \`a retenue anticip\'ee}
+
+Dans l'additionneur classique la retenue se propage de chiffre
+en chiffre, ce qui induit un d\'elai de calcul proportionnel au
+nombre N de bits des nombres \`a traiter.  Evaluez ce délai
+en fonction de N et du temps de travers\'ee des portes ET, NON, OU.
+
+La premi\`ere retenue sortante $r_0$ vaut $a_0b_0 + a_0c_0 + b_0c_0$
+($c_0$ est la premi\`ere retenue entrante). Pour la seconde retenue
+on a $r_1 = a_1b_1 + a_1c_1 + b_1c_1$. Comme $c_1=r=0$, on peut donc
+exprimer $r_1$ en fonction de $a_0,a_1,b_0,b_1,c_0$ (donnez la formule).
+C'est ce qu'on appelle le {\em pr\'e-calcul} de $r_1$.
+Or cette formule s'exprime avec deux \'etages de portes
+(faites le sch\'ema). 
+
+En suivant la m\^eme technique, donnez une formule pour $r_2$, puis
+$r_3$. Que dire du temps de travers\'ee d'un tel additionneur N bits ?
+Quelle est la contrepartie de ce gain de temps ?
+
+% \subsection{Temps de propagation}
+% \subsection{Analyse de l'additionneur en tranches}
+% \subsection{Pr\'e-calcul de la retenue}
+% \subsection{Sch\'ema}
+ 
+\subsection{Compteur}
+
+R\'ealiser un circuit \`a 3 entr\'ees $e_1,e_2,e_3$ et 2 sorties $s_0,s_1$.
+Le nombre binaire $s_1s_0$ indiquera le nombre d'entr\'ees qui sont \`a 1.
+
+
+\subsection{Encodeur de priorit\'es}
+
+R\'ealiser un circuit \`a 3 entr\'ees $e_1,e_2,e_3$ et 2 sorties $s_0,s_1$.
+Le nombre binaire $s_1s_0$ indiquera le plus grand indice des entr\'ees
+qui sont \`a 1, ou $00$ si toutes les entr\'ees sont \`a 0.
+
+
+
+
+% \section{Unit\'e arithm\'etique simple}
+

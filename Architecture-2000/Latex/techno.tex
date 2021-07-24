@@ -1,0 +1,488 @@
+\chapter{El\'ements de technologie}
+
+Nous avons vu comment coder l'information par des
+suites de valeurs binaires. Nous allons voir maintenant comment
+repr\'esenter ces valeurs binaires par des signaux \'electriques
+afin de les manipuler par des circuits \'electroniques.
+
+
+\section{Repr\'esentations de la logique binaire}
+
+\subsection{Repr\'esentation des signaux}
+
+
+Il existe plusieurs fa\c{c}ons de coder les valeurs 0 et 1. La plus simple,
+que nous adopterons dans la suite, est appel\'ee {\em logique positive} 
+et consiste \`a repr\'esenter 1 par la pr\'esence
+d'une tension (par exemple +5v) et 0 par une 
+tension nulle.\footnote{
+Une logique {\em n\'egative} aura des signaux invers\'es:
+ 0v repr\'esente la valeur 1,  +5v la valeur 0.}
+
+
+\subsection{G\'en\'eration d'un signal}
+
+Il est facile de fournir de tels signaux \`a un circuit: il suffit
+d'un interrupteur \`a deux positions  (utilis\'e pour les va-et-vient); 
+dans une position la sortie de l'interrupteur transmettra la tension +V, 
+dans l'autre 0v (voir figure \ref{fig1})
+
+\dessin{fig1}{fig1.eps}{G\'en\'eration d'un signal d'entr\'ee}
+%\AFAIRE{fig1 dessin d'un interrupteur \`a deux positions}
+
+En pratique, on utilise plutôt (figure \ref{fig2})
+un interrupteur simple dont la sortie est reli\'ee
+\`a une {\em r\'esistance de rappel} R assez forte. 
+Lorsque l'interrupteur est ferm\'e,
+la sortie est \`a +V, lorsqu'il est ouvert la r\'esistance ram\`ene 
+la tension de sortie vers 0. De plus ceci évite d'avoir une entrée
+``en l'air'' quand l'interrupteur est entre deux positions.
+
+\dessin{fig2}{fig2.eps}{G\'en\'eration d'un signal d'entr\'ee (2)}
+%dessin d'un interrupteur avec une r\'esistance de rappel
+%\AFAIRE{fig2 dessin d'un interrupteur avec une r\'esistance de rappel}
+
+\subsection{Observation d'un signal}
+
+Pour observer la sortie d'un circuit on peut utiliser (figure \ref{ampoule})
+une ampoule du voltage
+voulu (5v = lampe de poche). 
+
+\dessin{ampoule}{fig3.eps}{Ampoule t\'emoin}
+% \AFAIRE{fig3 Ampoule en sortie}
+
+
+On préfèrera généralement employer des 
+diodes \'electro-luminescentes (LED = Light Emitting Diode),
+qui coûtent moins cher et n\'ecessitent un courant moindre 
+(voir figure \ref{temoin-led}).
+0
+\dessin{temoin-led}{fig4.eps}{LED t\'emoin}
+%\AFAIRE{fig4 LED en sortie}
+
+
+Encore mieux, pour \'eviter de trop ``tirer'' sur la sortie du circuit
+observ\'e, on pourra utiliser un transistor en amplification
+(voir plus loin \ref{trans-ampli}).
+
+
+
+
+
+\section{Notions rudimentaires d'\'electronique}
+
+Quelques notions sommaires d'\'electronique sont n\'ecessaires pour la 
+compr\'ehension des circuits logiques de base. Le lecteur est suppos\'e
+conna\^{\i}tre la loi d'Ohm et des rudiments d'\'electricit\'e.
+
+\subsection{La diode}
+
+La diode \`a semi-conducteurs est un composant \'electronique muni de deux
+bornes: l'{\em anode} et la {\em cathode} (voir \ref{diode}). 
+\dessin{diode}{fig7.eps}{La diode: apparence physique et symbole}
+La propri\'et\'e fondamentale de
+la diode est d'opposer qu'une r\'esistance tr\`es faible lorsqu'elle est 
+travers\'ee par un courant de l'anode vers la cathode (sens passant), et une résistance très forte dans le sens inverse.
+Voir figure \ref{diode-on-off}.
+\dessin{diode-on-off}{fig6.eps}{Diodes passante (D1) et bloqu\'ee (D2)}
+% Dessin de deux diodes en s\'erie avec des lampes, une dans chaque sens.
+% La diode passante est allum\'e, l'autre \'eteinte.
+%\AFAIRE{fig6 Diodes passante (D1) et bloqu\'ee D2}
+
+
+Pour analyser les circuits logiques nous consid\'ererons que les diodes sont
+parfaites, c'est-\`a-dire ayant une r\'esistance  nulle dans l'\'etat passant,
+et infinie dans l'\'etat bloqu\'e.
+
+
+\begin{remarque}{importante.} Lorsque nous construirons des circuits nous
+aurons soin d'\'eviter de faire traverser les diodes par des courants trop 
+forts (risque de claquage). Il faudra donc de les monter en s\'erie avec des
+r\'esistances pour limiter le courant.
+\end{remarque}
+
+\subsection{La diode \'electro-luminescente}
+
+Les diodes \'electro-luminescentes (LED = Light Emitting Diod, voir
+fig. \ref{fig9}) émettent de la lumi\`ere quand elles sont
+travers\'ees par un courant de l'ordre de 10 \`a 20 mA dans le sens
+passant.  Ces diodes offrant une r\'esistance tr\`es faible, il
+conviendra de les monter en série avec une {\em r\'esistance
+limitatrice de courant} d'une valeur suffisante ($R=U/I=5v/10mA=500
+\Omega$).
+
+\dessin{fig9}{fig9.eps}{LED: apparence physique et sch\'ema}
+
+
+
+
+\subsection{Le transistor}
+
+
+
+Le transistor\footnote{Pour simplifier l'expos\'e nous n'\'evoquerons
+que les transistors NPN.}
+ est un composant \`a 3 pattes: l'\'emetteur, le collecteur et la
+base (voir figure \ref{transistor}).  
+
+\dessin{transnpn}{fig8.eps}{Transistor NPN: boitier, broches (vues de dessous), sch\'ema}
+% \AFAIRE{Fig8 transistor NPN: boitier, broches sch\'ema}
+
+
+
+Dans les montages usuels, 
+le collecteur est reli\'e \`a la tension d'alimentation $+V$ au travers d'une 
+r\'esistance $R_c$, l'\'emetteur \'etant reli\'e \`a la masse (0v). Le courant $I_b$
+qui traverse la base permet de contr\^oler l'intensit\'e de celui qui traverse
+l'\'emetteur et le collecteur.
+
+\dessin{transistor}{fig10.eps}{Polarisation d'un transistor}
+% Dessin d'un transistor NPN, avec resistance entre collecteur et +V,
+%et indication des courants $I_b, I_e$ et $I_c$.
+
+
+Lorsque le transistor est utilis\'e en amplification, les courants
+sont li\'es par les \'equations 
+$$ \begin{array}{rcl}
+I_e &=& I_c + I_b \\
+I_c &=& \beta . I_b + I_{ce}
+\end{array} $$
+
+Les deux constantes $\beta$ et $I_{ce}$ d\'ependent du transistor:
+le gain $\beta$ est de l'ordre de 100, le courant $I_{ce}$
+vaut quelques micro-amp\`eres pour les transistors au silicium,
+et quelques nano-amp\`eres pour les transistors au germanium. En g\'en\'eral
+on le n\'eglige pour les calculs.
+
+Les montages logiques utilisent le mode de fonctionnement 
+{\em bloqu\'e-satur\'e}, en d\'ebordant largement de la plage de valeurs o\`u les
+formules ci-dessus sont valides: si on applique une tension assez forte 
+(proche de +V) \`a la base, l'intensit\'e $I_b$ est maximum et le transistor
+n'oppose qu'une r\'esistance tr\`es faible entre \'emetteur et collecteur:
+le transistor est satur\'e. Si on applique une tension nulle \`a la base,
+le courant $I_c$ sera n\'egligeable~: le transistor est alors dit bloqu\'e.
+
+\label{trans-ampli}
+\dessin{ampli-diode}{fig5.eps}{LED amplifi\'ee par un transistor}
+% \AFAIRE{fig5 Diode amplifiee par transistor}
+Ceci justifie le montage
+ de la figure \ref{ampli-diode}~: lorsque l'entr\'ee est \`a +V, le transistor est
+satur\'e,  donc il laisse passer le courant \`a travers la LED qui s'\'eclaire. Lorsque 
+l'entr\'ee est au niveau bas (0v), le transistor est bloqu\'e et la LED 
+reste \'eteinte.  En raison des propri\'et\'es amplificatrices du transistor, 
+le courant de base n'a pas besoin d'\^etre tr\`es \'elev\'e
+ (de l'ordre de $I_c/\beta$), par cons\'equent on peut mettre une 
+r\'esistance limitatrice sur la base. Cette r\'esistance \'evite de trop
+``tirer de courant'' du signal que l'on observe, ce qui risquerait
+de perturber son fonctionnement.
+
+\section{Portes logiques}
+
+En assemblant ces composants on obtient des {\em portes logiques}
+qui combinent les signaux.
+
+\subsection{Porte OU}
+
+\subsubsection{Montage \`a diodes}
+
+Deux diodes et une r\'esistance suffisent pour r\'ealiser une {\em porte OU}
+selon le sch\'ema de la figure \ref{porte-ou}.
+
+\dessin{porte-ou}{log1.eps}{Porte logique OU \`a diodes} 
+% Dessin d'une porte OU avec 2 diodes et une r\'esistance. Les entr\'ees sont 
+% marqu\'ees A et B et la sortie S.
+
+
+\subsubsection{Analyse du montage}
+
+
+Supposons que les deux entr\'ees A et B soient port\'ees au potentiel
++V.  Les deux diodes sont dans le sens passant, et laissent donc passer le
+courant.  Tout se passe alors comme si la sortie S \'etait reli\'ee \`a
+la m\^eme tension +V.
+
+Si A et B sont reli\'ees  \`a la masse (0v), les diodes ne conduisent pas 
+le courant. La sortie S est donc ramen\'e \`a 0v par 
+la r\'esistance de rappel.
+
+Si une des entr\'ees est  \`a +V et l'autre  \`a la masse, la diode passante
+suffit, comme dans le premier cas, \`a amener la tension +V sur S.
+
+
+\subsubsection{Table de v\'erit\'e}
+
+Si nous prenons la convention de logique positive, la tension +V correspond
+\`a la valeur logique ``vrai'' (not\'ee 1) et 0v \`a ``faux'' (0). La table
+de v\'erit\'e de l'op\'eration ``$+$'' ainsi obtenue est celle de 
+l'op\'erateur ``OU logique'':
+
+
+$$ \begin{array}{|cc|c|}
+\hline
+A & B & A+B \\
+\hline
+0 & 0 & 0 \\
+0 & 1 & 1 \\
+1 & 0 & 1 \\
+1 & 1 & 1 \\
+\hline
+\end{array} $$
+
+La sortie est \`a 1 si au moins une des entr\'ees est \`a 1.
+\subsubsection{Porte OU multiple}
+
+En reliant plusieurs entr\'ees de la m\^eme fa\c{c}on on obtient 
+une porte OU multiple. Son fonctionnement se r\'esume en une phrase:
+la sortie est \`a 1 si au moins une des entr\'ees est \`a 1.
+
+Dans les sch\'emas logiques, on repr\'esente les portes logiques
+par un symbole (figure \ref{log2})
+\dessin{log2}{log2.eps}{Symboles des portes OU}
+% \AFAIRE{Log2} 
+% Symboles des portes OU \`a 2 et n entr\'ees
+
+
+\subsubsection{Montage \`a transistors}
+
+Le montage de la figure \ref{log8} remplit la m\^eme fonction. L'analyse
+en est laiss\'ee au lecteur.
+\dessin{log8}{log8.eps}{Porte OU \`a transistors en parall\`ele}
+%\AFAIRE{Log8} 
+%Porte OU \`a transistors en parall\`ele
+
+
+
+\subsection{Porte ET}
+
+\subsubsection{Montage \`a diodes}
+
+Le sch\'ema (figure \ref{log3}) n'est pas sans rappeler celui de la porte OU.
+\dessin{log3}{log3.eps}{Porte ET \`a diodes}
+
+
+\subsubsection{Analyse du montage}
+
+Chaque diode ne peut \^etre passante que si l'entr\'ee associ\'ee
+est \`a 0. Si une des entr\'ees est \`a 0, la sortie sera donc \'egalement \`a 
+0.  Par contre si les deux entr\'ees sont \`a +V, la sortie S sera \`a +V
+au travers de la r\'esistance de rappel.
+
+\subsubsection{Table de v\'erit\'e}
+
+L'op\'eration logique ``ET'' (not\'e ``$\cdot$'') correspondant 
+\`a ce montage poss\`ede donc la table de v\'erit\'e suivante:
+$$ \begin{array}{|cc|c|}
+\hline
+A & B & A \cdot B \\
+\hline
+0 & 0 & 0 \\
+0 & 1 & 0 \\
+1 & 0 & 0 \\
+1 & 1 & 1 \\
+\hline
+\end{array} $$
+
+La sortie est \`a 1 si
+les deux entr\'ees sont \`a 1.
+
+On repr\'esente les portes ET (\`a deux ou plusieurs entr\'ees)
+par un symbole (figure \ref{log4})
+\dessin{log4}{log4.eps}{Symboles des portes ET}
+%Symboles des portes ET \`a 2 et n entr\'ees
+
+
+\subsubsection{Montage \`a transistors}
+
+Le montage de la figure \ref{log7} remplit la m\^eme fonction. L'analyse
+en est laiss\'ee au lecteur.
+\dessin{log7}{log7.eps}{Porte ET \`a transistors en s\'erie}
+% Porte ET \`a transistors en s\'erie
+
+
+
+\subsection{Porte NON}
+
+\subsubsection{Montage}
+
+Dans la figure \ref{log5} on utilise un transistor en mode bloqu\'e/satur\'e.
+\dessin{log5}{log5.eps}{Porte NON \`a transistor}
+% \AFAIRE{Log5} 
+% porte NON \`a transistor
+
+
+\subsubsection{Analyse du montage}
+
+Lorsque l'entr\'ee est au niveau haut, le transistor est saturé. La
+sortie est alors reli\'ee \`a la masse par l'interm\'ediaire de la
+r\'esistance interne tr\`es faible du transistor~: la sortie S est au
+niveau bas.
+
+Lorsque l'entr\'ee est au niveau bas, le transistor est bloqu\'e. La
+r\'esistance de rappel ramène donc la sortie au niveau haut.
+
+\subsubsection{Table de v\'erit\'e}
+
+La table de l'op\'erateur NON ``$\neg$'' ainsi obtenu est
+$$ \begin{array}{|c|c|}
+\hline
+A & \neg A \\
+\hline
+0& 1 \\
+1& 0 \\
+\hline
+\end{array} $$
+La sortie est \`a 1 si et seulement si l'entr\'ee est \`a 0.
+
+On symbolise cet op\'erateur (figure \ref{log10}) par un triangle (indiquant 
+par convention l'amplification) suivi d'un rond (n\'egation).
+\dessin{log10}{log10.eps}{Symbole de la Porte NON}
+% \AFAIRE{Log10} 
+% 
+
+
+
+
+\subsection{Porte NON-ET (NAND) }
+
+\dessin{log9}{log9.eps}{Porte NAND} 
+% porte NAND \`a 2 diodes + transistor
+
+
+Le montage de la figure \ref{log9} r\'ealise une fonction dont la table de v\'erit\'e est:
+$$ \begin{array}{|cc|c|}
+\hline
+A & B & S\\
+\hline
+0 & 0 & 1 \\
+0 & 1 & 1 \\
+1 & 0 & 1 \\
+1 & 1 & 0 \\
+\hline
+\end{array} $$
+
+On remarque ais\'ement que l'on a $S = \overline{A.B}$, et on appelle
+cet op\'erateur le NON-ET (ou ``nand'').
+
+\begin{exercice}{} Donnez un sch\'ema de cet op\'erateur utilisant 2 diodes,
+une r\'esistance et un transistor.
+\end{exercice}
+
+On le repr\'esente par un symbole ``ET'' suivi du rond qui indique
+la n\'egation (figure \ref{log11}).
+\dessin{log11}{log11.eps}{Porte NON-ET}
+
+
+La porte NAND a un int\'er\^et pratique \'evident: elle permet de reconstituer
+tous les autres types de portes.
+\begin{itemize}
+\item La porte NON, puisque $\overline{A}= A \nand 1 $
+\item La porte ET, puisque $A . B = \overline{(A \nand B)} =
+ (A \nand B) \nand 1$
+\item La porte OU, puisque $A + B = \overline{\overline{A}.\overline{B}}$
+et donc $A+B= ((A \nand 1) \nand (B \nand  1)) \nand 1$.
+\end{itemize}
+
+\subsection{Porte NON-OU (NOR)}
+
+La fonction ``non-ou'' (symbolis\'ee fig. \ref{log14}) est d\'efinie de la m\^eme fa\c{c}on, par l'\'equation
+$$nor(A,B) = \overline{A + B}$$
+
+\dessin{log14}{log14.eps}{Symbole de la porte NOR (non-ou)}
+
+\begin{exercice}{} Proposez une porte NOR \`a transistors.
+\end{exercice}
+
+\subsection{Porte OU-exclusif (XOR)}
+
+La fonction XOR ``ou-exclusif'' (fig. \ref{log15}) est souvent not\'ee
+$\oplus$. On la d\'efinit par:
+$$A \oplus B = \overline{A}B +A\overline{B}$$
+
+\dessin{log15}{log15.eps}{Symbole de la porte XOR (ou-exclusif)}
+
+\begin{exercice}{} Proposez une porte XOR \`a transistors.
+\end{exercice}
+
+\subsection{Le circuit int\'egr\'e CMOS 4011}
+
+Les circuits int\'egr\'es logiques sont des bo\^{\i}tiers qui renferment plusieurs
+portes logiques interconnect\'ees. Il existe une grande quantit\'e de
+circuits int\'egr\'es logiques, renfermant des portes ET, OU, NAND, etc.
+Pour des petits montages, il est \'economique d'utiliser un seul
+type de circuit, comme le circuit CMOS 4011, qui contient 4 portes NAND.
+
+\subsubsection{Brochage}
+
+Le circuit 4011 se pr\'esente sous forme d'un bo\^{\i}tier DIL (Dual in line)
+\`a 14 broches (voir figure \ref{log12}). Une encoche sur le c\^ot\'e gauche
+permet de reconna\^{\i}tre le sens du circuit.
+\dessin{log12}{log12.eps}{Circuit CMOS 4011 vu de dessus}
+% \AFAIRE{Log12, circuit 4011} 
+
+Les broches 14 (en haut \`a gauche) et 7 (en bas \`a droite) servent \`a 
+l'alimentation du circuit 
+(14: +V, 7: masse). Les autres sont les entr\'ees et sorties des
+4 portes NAND:
+\begin{itemize}
+\item porte 1: entr\'ees 12 et 13, sortie 11;
+\item porte 2: entr\'ees 8 et 9, sortie 10;
+\item porte 3: entr\'ees 1 et 2, sortie 3;
+\item porte 4: entr\'ees 5 et 6, sortie 4;
+\end{itemize}
+
+La figure \ref{log13} montre comment r\'ealiser une porte OU avec ce circuit.
+\dessin{log13}{log13.eps}{Porte OU avec CMOS 4011}
+%porte OU avec CMOS 4011
+
+\begin{exercice}{Fonctions binaires usuelles}
+Montrez comment r\'ealiser les expressions $A.B$, $A \oplus B$, $A+\overline{B}$
+à l'aide d'un circuit 4011.
+\end{exercice}
+
+\begin{exercice}{Fonction majorit\'e}
+R\'ealisez la fonction $maj(A,B,C)$, dont le r\'esultat est 1 si au moins deux
+entr\'ees sont à 1, à l'aide d'un circuit 4011 (ou plusieurs).
+\end{exercice}
+
+\begin{exercice}{}
+R\'ealisez la fonction $f(A,B,C)= \mbox{si $A=1$ alors $B.C$ sinon $B+C$}$.
+\end{exercice}
+
+\subsubsection{Conditions d'emploi des circuits CMOS}
+
+Les circuits de type CMOS pr\'esentent certains avantages pour les
+montages exp\'erimentaux:
+
+\begin{itemize}
+\item ils acceptent une tension d'alimentation entre 3 et 15 V;
+\item leur consommation est tr\`es faible (de l'ordre de 0,1 mW par porte);
+\item les entr\'ees des circuits CMOS ont une imp\'edance tr\`es \'elev\'ee~: on peut
+relier de nombreuses entr\'ees sur la sortie d'une porte sans craindre 
+de ``tirer''
+trop de courant de celle-ci.
+\end{itemize}
+
+Par contre, ces circuit sont sensibles \`a l'\'electricit\'e
+statique\footnote{En particulier ``effet d'antenne'' lorsqu'on
+approche la main d'un circuit dont une des entrées est restée ``en
+l'air''}.  De plus, la propagation des signaux de l'entr\'ee \`a la
+sortie d'une porte est plus lente (20-40 ns) qu'avec d'autres familles
+de circuits, comme les TTL.
+
+\subsubsection{Emploi des circuits TTL}
+
+Les circuits TTL (transistor-transistor-logic) sont tr\`es utilis\'es pour
+les r\'ealisations professionnelles. A titre d'exemple, 
+les caract\'eristiques de la s\'erie SN74
+sont:
+\begin{itemize}
+\item tension nominale d'alimentation de $5v \pm 0.5V$, 
+risque de claquage \`a partir de 7V
+\item fonctionnement entre $0$ et $70^oC$
+\item puissance par porte de l'ordre de 10 mW
+\item courant d'entr\'ee de l'ordre de $1.5 mA$
+\item temps de propagation de l'ordre de 10 \`a 20 ns.
+\end{itemize} 
+
+
+

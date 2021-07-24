@@ -1,0 +1,77 @@
+\documentclass[]{article}
+
+\usepackage{fontspec}
+\usepackage[french]{babel}
+
+\usepackage{a4wide}
+\usepackage{epsf}
+\renewcommand{\epsfsize}[2]{0.5#1}
+
+\frenchspacing
+
+
+\title{
+TD Circuits logiques - Montages \`a diodes}
+
+\author{Première Année \\        Département Informatique \\
+        IUT ``A'' - Université Bordeaux 1}
+
+\date{Brouillon \today}
+
+
+
+\begin{document}
+\maketitle
+
+\section{Matériel}
+
+\subsection{Inventaire}
+\begin{itemize}
+\item 1 plaque d'essai: vue de dessus (côté montage):
+$$ \epsfbox{plaque.eps}$$
+vue de dessous (bandes de connexions):
+$$ \epsfbox{plaque2.eps}$$
+
+\item 2 pinces crocodile
+\item 4 diodes (la cathode (-) est du côté de la bague)
+\item 3 LED (la broche la plus courte est la cathode)
+\item 3 résistances
+\item 2 interrupteurs à poussoir
+\item 4 petits fils
+\end{itemize}
+
+\subsection{Vérification  des LEDs et des interrupteurs}
+
+$$\epsfbox{essailed.eps} \hspace{1cm} \epsfbox{essaiint.eps}$$
+
+\section{Montage porte ``ou''}
+
+Le schéma théorique de la porte "ou":
+$$\epsfbox{porteou.eps}$$
+conduit au montage suivant:
+$$\epsfbox{montageou.eps}$$
+dans lequel RC tient lieu de résistance de rappel.
+
+Pour des raisons de commodité, on pourra procéder ainsi:
+$$\epsfbox{montageou2.eps}$$
+
+
+\section{Montage porte ``et''}
+
+Rappel de la porte ``et'':
+$$\epsfbox{porteet.eps}$$
+Testez le montage suivant. Dans quels cas ne fonctionne-t-il
+pas ? pourquoi ?
+$$\epsfbox{montageet.eps}$$
+
+
+\section{Exercice}
+Réalisez un montage pour l'expression $AB+C$.
+\end{document}
+
+
+
+
+
+
+

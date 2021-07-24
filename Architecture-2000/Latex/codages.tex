@@ -1,0 +1,551 @@
+\chapter{Codages de l'information}
+
+Les ordinateurs manipulent les informations sous forme {\em binaire}~: 
+toutes les donn\'ees sont repr\'esent\'ees par
+des suites d'\'el\'ements d'information ({\em bits}) qui ne peuvent
+prendre que deux valeurs, appel\'ees arbitrairement $0$ et $1$ 
+(ou {\em vrai} et {\em faux}).
+
+
+On remarque qu'une s\'equence de 2 bits peut prendre 4 valeurs diff\'erentes
+$00, 01, 10, 11$. Une s\'equence de 3 bits peut prendre 8 valeurs: $000$,
+$001$,$010$,$011$,$100$,$101$,$110$,$111$. Plus g\'en\'eralement,   il
+ y a $2^n$ s\'equences de $n$ bits.
+
+\begin{exercice}{} 
+Combien faut-il de bits d'information pour d\'esigner une
+carte parmi les 78 d'un jeu de tarot ?
+\end{exercice}
+
+Le codage choisi d\'ependra de
+la nature des informations \`a coder (caract\`eres, nombres entiers ou pas, 
+positifs ou pas etc.) et les traitements que l'on d\'esire effectuer sur
+ces informations.
+
+\section{Bases de num\'eration}
+
+\subsection{La notation positionnelle}
+
+Dans la vie courante nous utilisons le 
+{\em syst\`eme d\'ecimal positionnel} 
+pour repr\'esenter les nombres~; {\em d\'ecimal} 
+parce qu'il emploie dix symboles
+(les chiffres 0 \`a 9), {\em positionnel} parce que la valeur que 
+l'on attache \`a 
+ces chiffres d\'epend de leur position dans le nombre.  
+
+\begin{exemple}{} Dans
+$4305,72$ nous accordons au 4 une valeur de milliers, au 3 des centaines, etc.
+La valeur de ce nombre se lit  donc:
+$$(4 \times 1000) + (3 \times 100) + (0 \times 10) + (5 \times 1) + 
+(7 \time 1/10) + (2 \times 1/100)$$
+ou encore
+$$4 \times 10^3 + 3 \times 10^2 + 0 \times 10^1 + 5 \times 10^0 + 
+7 \times 10^{-1} + 2 \times 10^{-2}$$
+\end{exemple}
+
+Ce syst\`eme positionnel est utilisable avec d'autres bases de num\'eration.
+Les informaticiens emploient fr\'equemment les syst\`emes suivants:
+\begin{itemize}
+\item {\em binaire}, ou base 2, qui utilise seulement deux chiffres 0 et 1,
+\item {\em octal}, ou base 8, (chiffres 0 \`a 7)
+\item {\em hexad\'ecimal}, ou base 16, qui emploie les chiffres $0$ \`a $9$, 
+puis les lettres A (qui repr\'esente la valeur $10$), B=11, \ldots F=15
+\end{itemize} 
+
+Losqu'il y a risque de confusion, on fait figurer la base de num\'eration 
+en indice ou entre parenth\`eses apr\`es le nombre concern\'e.
+
+Le principe commun de toutes ces bases est le suivant: un nombre $N$ \'ecrit 
+en base $B$ est 
+repr\'esent\'e par une suite de chiffres adjacents $x_n x_{n-1} \ldots x_1 x_0$.
+Chacun de ces chiffres est un symbole qui a une valeur enti\`ere comprise entre
+0 et $B-1$. A chaque position est attribu\'e un poids qui est une puissance de 
+$B$. Le chiffre le plus \`a droite a un poids de $1 = B^0$, son voisin 
+de $B=B^1$, le suivant de $B^2$ etc. La valeur du nombre $N$ s'obtient en faisant
+la somme des produits des valeurs des chiffres par leur poids respectifs:
+$$N = x_n \times B^N + x_{n-1} \times B^{n-1} +  \ldots + x_1 \times B^1
++ x_0 \times B^0 $$
+
+\begin{exemple}{Expression d\'ecimale de $421(8)$ }
+$$4 \times 8^2 + 2 \times 8^1 + 1 \times 8^0 
+= 4 \times 64 + 2 \times 8 + 1 = \ldots (10)$$
+\end{exemple}
+
+Ceci se g\'en\'eralise facilement aux nombres ``\`a virgule'': 
+les chiffres de la ``partie 
+d\'ecimale'' ont alors des poids successifs de 
+$B^{-1} = 1/B, B^{-2} = 1/{B^2}, \ldots$.
+ 
+\subsection{Conversion vers le syst\`eme d\'ecimal}
+
+La m\'ethode usuelle de conversion d\'ecoule imm\'ediatement 
+de la d\'efinition donn\'ee plus haut.
+
+\begin{exemple}{Expression d\'ecimale de $N=1001011(2)$}
+On \'ecrit de droite
+\`a gauche, sous chacun des chiffres de N, les puissances successives de 2.
+On multiplie ensuite chaque chiffre par son poids, et on fait la somme.
+$$\begin{array}{r|rrrrrrr|l}
+N= &1 & 0 & 0 & 1 & 0 & 1 & 1 \\
+\times poids &64 &32& 16& 8& 4 &2 &1 \\
+\hline
+= &64 & 0 & 0 & 8 & 0 & 2 & 1 & total =  75 (10)
+\end{array}$$
+\end{exemple}
+
+\subsection{De d\'ecimal vers base quelconque}
+
+
+\subsubsection{M\'ethode des restes successifs}
+
+Diviser le nombre \`a convertir par  la valeur de la base. Le reste de
+la division fournit le chiffre de droite, et recommencer avec le quotient.
+S'arr\^eter \`a 0.
+
+\begin{exemple}{Conversion de $1789 (10)$ en hexad\'ecimal}
+\begin{itemize}
+\item $1789 = 111 \times 16 + 13$. On pose $x_0 = D$.
+\item $111 = 6 \times 16 + 15$. On pose $x_1 = F$.
+\item $6 = 0 \times 16 + 6$. On pose $x_2 = 6$.
+\item le r\'esultat est $6FD (16)$ 
+\end{itemize}
+\end{exemple}
+
+\subsubsection{M\'ethode soustractive}
+
+
+Écrire une liste des puissances successives de la base, 
+de droite \`a gauche. Chercher le 
+plus grand poids contenu dans le nombre. Diviser le nombre par ce poids, 
+\'ecrire le quotient en dessous, et recommencer avec le reste. On met des 
+0 dans les autres positions.
+
+On utilise cette m\'ethode surtout avec le syst\`eme binaire puisque la
+division ne n\'ecessite en fait qu'une soustraction (le quotient
+est forc\'ement 1). 
+
+\begin{exemple}{Conversion de $1789 (10)$ en binaire}
+ 
+La liste des poids est
+$$ \ldots 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1$$
+\begin{itemize}
+\item Comme $2048 > 1789 \geq 1024 $, on met 1 sous 1024, et on soustrait
+ce poids $1789 -1024 = 765$
+\item Comme $1024 > 765 \geq 512 $, on met 1 sous 512, et on soustrait
+ce poids $765 - 512 = 253$
+\item on met 1 sous 128, et on soustrait $253-128 = 125$
+\item on met 1 sous 64, et on soustrait $125-64 = 61$
+\item on met 1 sous 32, et on soustrait $61-32 = 29$
+\item on met 1 sous 16, et on soustrait $29-16 = 13$
+\item on met 1 sous 8, et on soustrait $13-8 = 5$
+\item on met 1 sous 4, et on soustrait $5-4 = 1$
+\item on met 1 sous 1, et on arr\^ete. Le r\'esultat est $110\ 1111\ 1101 (2)$.
+\end{itemize}
+\end{exemple}
+
+\subsection{Conversions entre bases 2, 8 et 16}
+
+Les nombres 8 et 16 \'etant des puissances enti\`eres de 2, 
+il existe un moyen tr\`es rapide
+de convertir un nombre binaire en octal ou hexad\'ecimal 
+(et r\'eciproquement), puisqu'\`a
+chaque chiffre octal (resp. hexad\'ecimal) correspond une ``tranche'' de
+3 (resp. 4) bits dans la représentation binaire du nombre.
+
+\begin{exemple}{Conversion de  $11011111101 (2)$ en octal et hexad\'ecimal}
+On d\'ecoupe le nombre en tranches de 3 bits (mat\'erialis\'ees ici par
+des espaces) en partant des unit\'es. On obtient $11\ 011\ 111\ 101 (2)$.
+On lit  ensuite ce nombre en traduisant chaque tranche par un chiffre octal,
+et on trouve
+	$3375 (8)$.
+
+Si on d\'ecoupe par tranches de 4 on obtient $110\ 1111\ 1101 (2)$, ce qui 
+donne $6FD (16)$.
+\end{exemple}
+
+Le syst\`eme hexad\'ecimal permet de coder des séquences binaires
+de façon  4 fois plus courte,  les conversions se faisant sans calcul.
+
+
+\section{Arithm\'etique binaire}
+
+Les op\'erations arithm\'etiques usuelles 
+peuvent se faire dans toutes les bases, selon des proc\'ed\'es
+tr\`es proches de l'arithm\'etique d\'ecimale.  Nous ne pr\'esenterons ici que
+l'arithm\'etique et la multiplication binaire, les autres op\'erations (ainsi
+que la g\'en\'eralisation \`a d'autres bases) est
+laiss\'ee en exercice.
+
+\subsection{Addition binaire}
+Comme il n'y a que deux chiffres, la table d'addition se r\'eduit \`a peu de choses
+$$\begin{array}{r|rr|}
++ &0 &1 \\
+\hline
+0 &0 &1 \\
+1 &1 &10 \\
+\hline
+\end{array} $$
+
+Pour additionner deux nombres $A$ et $B$, on les \'ecrit l'un sous l'autre, 
+et on commence
+l'addition par la droite. L'addition de deux chiffres 1 engendre une retenue, 
+que l'on propage au rang suivant. 
+
+\begin{exemple}{Somme de 1011101 et 1110001}
+$$\begin{array}{rrrrrrrrrl}
+&1 & 1 & 1 &   &   &   & 1 &   & retenues \\
+&  & 1 & 0 & 1 & 1 & 1 & 0 & 1 & A \\
++&  & 1 & 1 & 1 & 0 & 0 & 0 & 1 & B \\
+\hline
+= &1 & 1 & 0 & 0 & 1 & 1 & 1 & 0 & Somme
+\end{array} $$
+\end{exemple}
+
+% \subsection{Soustraction binaire}
+%
+% Similaire \`a l'op\'eration en d\'ecimal.
+
+\subsection{Multiplication binaire}
+
+\begin{exemple}{Produit de 110011 et 1101}
+$$\begin{array}{rrrrrrrrrr}
+ & & & &1&1&0&1&1 \\
+\times & & & & &1&1&0&1 \\
+\hline
+ & & & &1&1&0&1&1 \\
+ & & &0&0&0&0&0& \\
+ & &1&1&0&1&1& & \\
+ &1&1&0&1&1& \\
+\hline
+1&0&1&0&1&1&1&1&1
+\end{array} $$
+\end{exemple}
+
+A chaque \'etape, les multiplications partielles par chacun des
+chiffres du second nombre se ram\`enent
+soit \`a recopier le premier nombre avec un d\'ecalage,  soit \`a inscrire des 0.
+
+% \subsection{Division}
+%
+%Laiss\'ee en exercice.
+
+\section{Codages des nombres entiers en binaire}
+
+Le probl\`eme est de coder des nombres avec une s\'equence binaire de
+longueur limit\'ee.  On sait d\'ej\`a qu'avec un nombre fini de bits,
+on ne pourra repr\'esenter qu'un nombre fini de valeurs ($2^N$, o\`u
+$N$ est le nombre de bits).
+
+\subsection{Binaire pur}
+
+Si les nombres \`a repr\'esenter sont toujours positifs ou nuls, on pourra
+adopter le codage {\em binaire pur non-sign\'e}, qui est une application
+directe de la num\'eration binaire vue ci-dessus.  
+
+Sur un octet (8 bits) on \'ecrira
+un nombre qui sera forcement compris entre 0 et $2^8-1 =  255$. 
+
+\begin{exemple}{} Le nombre 
+$35 (10)$ sera cod\'e par $0010\ 0011$. Le plus grand nombre repr\'esentable
+(ici 255) sera traduit par une suite de 1\~: $1111\ 1111$.
+\end{exemple}
+
+\begin{exercice}{} Quels nombres peut on coder sur 16 bits ? Sur 32 bits ?
+\end{exercice}
+
+\subsection{Binaire sign\'e}
+
+Si l'on veut repr\'esenter des nombres positifs ou n\'egatifs, la premi\`ere id\'ee
+qui vient est de r\'eserver un bit (par exemple celui de gauche) pour le signe,
+(0 pour positif, 1 pour n\'egatif)
+et de coder la valeur absolue du nombre sur les bits restants.
+
+\begin{exemple}{} Sur 8 bits, $+35 (10)$ sera cod\'e par $0010\ 0011$, et 
+$-35 (10)$ par $1010\ 0011$. 
+\end{exemple}
+
+Quoique simple, ce proc\'ed\'e de codage n'est quasiment pas utilis\'e, car il
+ne permet pas de faire facilement des op\'erations sur les nombres ainsi
+cod\'es (pour additionner deux nombres il faut examiner leurs signes puis
+additionner les valeurs absolues, ou soustraire la plus petite de la plus 
+grande).
+
+En outre, dans ce syst\`eme le nombre 0 possède
+deux codages  ($+0$ et $-0$). On ne code donc que $2^N-1$ nombres 
+distincts (de $-(2^{N-1}-1)$ \`a $+2^{N-1}-1)$.
+
+\subsection{Repr\'esentation biais\'ee}
+
+L'id\'ee est de d\'ecaler les entiers de l'intervalle choisi
+en leur soustrayant la plus petite valeur de cet intervalle. Cela permet
+de se ramener au codage des nombres positifs ou nuls.
+
+\begin{exemple}{} On choisit de coder l'intervalle  $-127\ldots+128$. Le codage du 
+nombre $-94$ s'obtient en lui ajoutant $127$, et en traduisant le r\'esultat
+$-94+127=33$ en binaire, soit $0010\ 0001 (2)$.
+\end{exemple}
+
+Pour additionner deux nombres en représentation biaisée, il faudra additionner
+leurs représentations biaisées, puis soustraire le biais.
+
+\begin{exercice}{}
+Détailler le calcul de $2+3$ en représentation biaisée sur 4 bits.
+Que faut-il faire pour une soustraction ?
+\end{exercice}
+
+\subsection{Binaire compl\'ement \`a deux}
+
+Ce proc\'ed\'e permet de coder, sur $N$ bits,
+ les nombres de $-2^{N-1}$ \`a $+2^{N-1}-1$:
+\begin{itemize}
+\item les nombres positifs (de 0 \`a $+2^{N-1}-1$) sont \'ecrits en binaire pur 
+(on remarque que le bit de gauche sera alors forc\'ement \`a 0)
+\item aux nombres n\'egatifs (entre $-2^{N-1}$ et $-1$), on ajoute $2^N$.
+Le nombre obtenu est alors \'ecrit en binaire pur. Comme il est compris 
+entre $2^{N-1}$ et $2^N-1$, son premier bit est \`a 1.
+\end{itemize}
+
+\begin{exemple}{Codage de $-35$ sur un octet.} Le nombre \`a coder \'etant n\'egatif,
+on lui ajoute $256$, et le probl\`eme se ram\`ene donc \`a coder 
+$256-35 = 221$ en binaire pur, soit $1101\ 1101$.
+\end{exemple}
+
+On le voit, ce codage est bas\'e sur l'arithm\'etique modulo $2^N$. Puisque
+les nombres -positifs ou n\'egatifs- sont repr\'esent\'es par leurs 
+valeurs positives modulo $2^N$,
+l'addition et la soustraction se font sans se pr\'eoccuper des signes~:
+les circuits de calcul en seront grandement simplifi\'es.
+C'est l'avantage d\'ecisif qui a conduit \`a l'adoption 
+générale de ce syst\`eme.
+
+Le d\'enomination de ``compl\'ement \`a deux'' provient 
+de la remarque suivante:
+pour calculer l'oppos\'e d'un nombre ainsi cod\'e, il suffit d'ajouter 1 \`a
+son {\em compl\'ement \`a 1}, que l'on obtient en changeant les 1 en 0 et 
+r\'eciproquement.
+
+\begin{exemple}{Codage de -35 par compl\'ementation \`a deux.}
+En binaire pur $35 (10)$ s'\'ecrit -sur un octet- $0010\ 0011$. 
+Le compl\'ement \`a 1 est $1101\ 1100$.  En ajoutant 1 on trouve
+$1101\ 1101$, qui est le codage attendu.
+\end{exemple}
+
+\begin{remarque}{}
+Cette op\'eration est idempotente: si on compl\'emente
+$1101\ 1101$ on trouve $0010\ 0010$, et en ajoutant 1 on obtient $0010\ 0011$
+qui est la repr\'esentation de $+35$.  On utilise cette propri\'et\'e pour le
+d\'ecodage: pour d\'ecoder un nombre \'ecrit en binaire compl\'ement \`a deux
+\begin{itemize}
+\item si le premier bit est \`a 0, le signe est $+$, et la valeur absolue est obtenue
+par un d\'ecodage binaire non sign\'e du nombre~;
+\item si le premier bit est \`a 1, le signe est $-$, et la valeur absolue
+s'obtient par d\'ecodage binaire non sign\'e du compl\'ement \`a 2 de 
+ce nombre.
+\end{itemize}
+\end{remarque}
+
+\begin{exemple}{D\'ecodage de $1111\ 0100$.} Le signe est n\'egatif. Le
+compl\'ement \`a 2 est $0000\ 1011 + 1 = 0000\  1100$ qui, traduit en d\'ecimal vaut $12$.
+Le nombre cherch\'e est donc $-12$.
+\end{exemple}
+
+\section{D\'ecimal Cod\'e Binaire}
+
+Cette notation hybride est utilis\'ee pour le codage des grands nombres
+entiers ou \`a virgule fixe dans les machines destin\'ees aux applications
+commerciales: chaque chiffre {\em d\'ecimal} est cod\'e par une tranche de 
+4 bits.
+
+\begin{exemple}{Codage BCD de 14285739.} En mettant des espaces pour bien voir 
+les tranches: $$0001\ 0100\ 0010\ 1000\ 0101\ 0111\ 0011\ 1001$$
+\end{exemple}
+
+Les proc\'ed\'es de codages et d\'ecodages entre d\'ecimal et BCD sont tr\`es simples,
+et nous verrons que les circuits d'addition ne sont pas beaucoup plus 
+compliqu\'es que dans le cas du binaire pur.
+
+\section{La repr\'esentation en virgule flottante}
+
+La repr\'esentation en virgule flottante permet de repr\'esenter
+des nombres r\'eels tr\`es petits et tr\`es grands, avec une bonne
+pr\'ecision.
+
+\subsection{La repr\'esentation flottante}
+
+L'id\'ee de base est similaire \`a la notation des nombres
+sous la forme d'une mantisse multipli\'eee par une puissance de 10. 
+Par exemple $12.34 \times 10^{-30}$.
+
+Cette notation est tr\`es employ\'ee en physique. Elle revient \`a d\'ecrire un
+nombre par un couple $(m,e$) form\'e de la mantisse et de l'exposant, ici $(12.34, -30)$.
+Il y a plusieurs couples qui repr\'esentent le m\^eme nombre -par exemple
+$(1.234, -29), (1234, -32), \ldots$ - on peut donc
+convenir d'une repr\'esentation {\em normalis\'ee}, par exemple en d\'ecidant
+que $1 \leq | m | < 10 $. Tous les nombres (sauf 0) auront alors une 
+repr\'esentation unique.
+
+En binaire, c'est la m\^eme id\'ee~: le nombre sera de la forme 
+$m \times 2^e$,
+avec  $0 < | m | \leq 2$.  
+
+\begin{exemple}{} Normaliser le nombre -13 en vue d'une repr\'esentation binaire.
+
+Comme 13 est compris entre $8=2^3$ et $16=2^4$, on prend $e=3$ et
+ $m=-13/8= -1.625 (10) = -1.101 (2) $.
+\end{exemple}
+
+\subsection{Le format flottant standard IEEE}
+
+\subsubsection{Repr\'esentations normalis\'ees}
+
+Le format standard IEEE simple pr\'ecision code les nombres r\'eels sur 32 bits
+(soit 4 octets).
+\begin{itemize}
+\item le premier bit S code le signe du nombre (0:positif, 1:n\'egatif).
+\item 8 bits pour l'exposant (zone E). La repr\'esentation est
+biais\'ee: cette zone repr\'esente un nombre $e$ compris dans
+l'intervalle $-127..+128$, cod\'e en binaire non sign\'e
+avec un d\'ecalage de 127:
+$$ e = E -127 $$
+Attention les ``exposants'' E=0 et E=127 sont réservés pour le codage
+de nombres ``spéciaux'' (voir plus loin).
+\item 23 bits pour la mantisse. Cette zone M ne contient que la
+partie d\'ecimale de la mantisse $m$, en effet
+la convention de normalisation nous assure que la partie enti\`ere est
+toujours 1. (Pour le codatge du 0, voir plus loin).
+\end{itemize}
+
+
+\begin{exemple}{} Coder $-13$ dans le format IEEE simple pr\'ecision.
+
+On sait d\'ej\`a que $-13 = -1.101 (2) \times 2^3$.
+\begin{itemize}
+\item Le nombre \'etant  n\'egatif, le signe S est 1.
+\item L'exposant est 3, on lui ajoute 127, et on obtient 130 qui,
+en binaire sur 8 bits s'\'ecrit $1000 0010$.
+\item La mantisse $1.101 (2)$ priv\'ee de sa partie enti\`ere est 
+cod\'ee sur 23 bits: $101\ 0000\ 0000\ 0000\ 0000\ 0000$
+\end{itemize}
+
+Le nombre r\'eel -13 est donc cod\'e en binaire:
+$$ 1100\ 0001\ 0101\ 0000\ 0000\ 0000\ 0000\ 0000 $$
+ou $C150 0000_H$, si on pr\'ef\`ere l'hexad\'ecimal (plus maniable).
+\end{exemple}
+
+\begin{exercice}{} D\'ecoder le nombre $1234 0000_H$.
+\end{exercice}
+
+\begin{exercice}{} Quel est le plus grand nombre normalis\'e ? Le plus petit 
+(en valeur absolue)~?
+\end{exercice}
+
+\subsubsection{Les z\'eros, les infinis et les autres}
+
+Le nombre z\'ero est, par convention, repr\'esent\'e avec les zones E
+et M remplies de zéros, le signe S \'etant indiff\'erent (il y a donc
+deux z\'eros \ldots)~:
+$$ x000\ 0000\ 0000\ 0000\ 0000\ 0000\ 0000\ 0000 $$
+
+Les deux infinis $+\infty$ et  $-\infty$ ont leur zone E remplies de 1, 
+et la zone M \`a 0:
+$$ S111\ 1111\ 1000\ 0000\ 0000\ 0000\ 0000\ 0000 $$
+
+Certains codes sp\'eciaux repr\'esentent des erreurs, on les appelle des NaN 
+(Not a Number). On les
+reconnait \`a leur zone E remplie de 1, et leur zone M non nulle.
+
+\subsubsection{Pr\'ecision du codage}
+
+L'\'eventail des nombres r\'eels que l'on peut coder ainsi est tr\`es large, 
+mais la pr\'ecision n'est pas illimit\'ee. On peut mesurer cette pr\'ecision
+en calculant l'\'ecart qu'il y a entre le nombre 1.0 et le plus petit
+nombre repr\'esentable qui lui soit imm\'ediatement sup\'erieur.
+
+En repr\'esentation normalis\'ee le nombre 1 s'\'ecrit 
+$1.00\ldots \times 2^0$. Comme la zone M contient les 23 chiffres
+``d\'ecimaux'' de la mantisse, le nombre suivant s'obtient en rempla\c{c}ant
+le chiffre le plus \`a droite par un 1, ce qui correspond \`a $1+ 2^{-23}$.
+La pr\'ecision est donc de $2^{-23}$, 
+soit \`a peu pr\`es $1.2 \times 10^{-7}$. On compte donc, au mieux, sur 6
+chiffres significatifs.
+
+Attention, la pr\'ecision se perd tr\`es rapidement lors des calculs r\'ep\'etitifs,
+par exemple lors d'\'evaluation de s\'eries de Taylor.
+
+Pour avoir une meilleure pr\'ecision on peut employer des nombres en double
+pr\'ecision, la mantisse occupant alors 32 bits suppl\'ementaires.
+
+\section{Codage des caract\`eres}
+
+L'\'echange de donn\'ees avec les p\'eriph\'eriques d'entr\'ee
+(clavier) et de sortie (\'ecran, imprimantes) se fait caract\`ere par
+caract\`ere. Dans les premiers dispositifs utilis\'es (télétypes)
+les caract\`eres \'etaient cod\'es sur 6 bits (26 lettres + 10
+chiffres + 28 symboles). La distinction entre majuscules et minuscules
+a exig\'e le passage \`a 7 bits (codes ASCII et EBCDIC), et le passage
+\`a 8 bits est rendu n\'ecessaire pour la repr\'esentation des
+caract\`eres accentu\'es des langues europ\'eennes bas\'ees sur
+l'alphabet romain (ISO 8859 Latin1).  Il existe également un jeu de
+caract\`eres ``universel'' sur 16 bits appelé UNICODE, qui regroupe les
+principaux alphabets utilisés dans le monde.
+
+\subsection{Code ASCII 7 bits}
+
+Le code ASCII (American Standard Code for Information Interchange)
+ utilise une table de 128 positions, que l'on rep\`ere par leur num\'ero en 
+d\'ecimal. Si on met cette table sous forme de 8 colonnes, de 16 lignes,
+les 2 premi\`eres colonnes contiennent des caract\`eres 
+dits ``non imprimables'' suivis par des symboles divers.
+Les chiffres commencent en quatri\`eme colonne (position 48). Les majuscules
+sont en cinqui\`eme et sixi\`eme colonne (\`a partir de 65), les minuscules dans les
+deux derni\`eres (\`a partir de 97).
+
+En pratique les caract\`eres ASCII sont transmis dans des octets, le bit 
+suppl\'ementaire \'etant ignor\'e ou utilis\'e pour effectuer un {\em contr\^ole de
+parit\'e}:
+\begin{itemize}
+\item bit de parit\'e \`a 0: l'\'emetteur met 0 dans le bit de gauche. Si le 
+r\'ecepteur y lit un 1, il y a eu une erreur de transmission.
+\item bit de parit\'e \`a 1 (semblable au pr\'ec\'edent).
+\item parit\'e paire: l'\'emetteur met 0 ou 1 dans le bit de gauche de fa\c{c}on
+\`a ce que le nombre total de 1 dans l'octet soit pair. Si le r\'ecepteur re\c{c}oit
+un octet avec un nombre impair de 1, il y a eu une erreur. 
+\item parit\'e impaire: comme ci-dessus.
+\end{itemize}
+
+Ce code suffit pour la langue anglaise, qui ignore les accents. 
+
+
+\subsection{Code EBCDIC}
+
+Autrefois pr\'econis\'e par le principal constructeur d'ordinateurs de 
+l'\'epoque (IBM). En d\'esu\'etude maintenant.
+
+\subsection{Code ANSI/ISO Latin 8859-1}
+
+L'existence du march\'e europ\'een a rendu n\'ecessaire l'adoption de codes
+contenant les lettres accentu\'ees de l'alphabet latin. Divers codes 8 bits
+ont  \'et\'e utilis\'es, qui sont (\`a peu de choses pr\`es) des extensions du 
+code ASCII 7 bits: ASCII-IBM (pour les PC sous DOS), ANSI (PC sous Windows),
+ASCII-McIntosh etc. Ces codes sont bien s\^ur incompatibles entre eux.
+
+Actuellement un consensus se d\'egage (c'est une cons\'equence de la
+profusion des r\'eseaux h\'et\'erog\`enes) pour l'utilisation du code
+ANSI, normalis\'e par l'ISO (International Standard Organization) sous
+la r\'ef\'erence ISO-8859-1 (ou ISO-Latin-1).  Ce code 8 bits contient
+le n\'ecessaire pour les alphabets d\'eriv\'es de l'alphabet romain:
+langues latines mais aussi anglo-saxonnes, nordiques, polonais, turc,
+vietnamien etc.  (Avec l'oubli f\^acheux du caract\`ere \OE).
+
+\begin{exercice}{}Chercher dans les documentations accessibles par le Web
+si le caractère ``euro'' a bien été ajouté. 
+\end{exercice}
+
+\subsection{En attendant UNICODE...}
+
+Le code 16 bits UNICODE permet de repr\'esenter 65536 caract\`eres, 
+ce qui suffit pour les alphabets les plus r\'epandus (romain, cyrillique,
+arabe, h\'ebreu, grec, hiragana, katagana, cor\'een \ldots), mais pas pour
+les id\'eogrammes chinois.  L'inconv\'enient d'UNICODE est de n\'ecessiter
+deux fois plus de place pour repr\'esenter un caract\`ere.

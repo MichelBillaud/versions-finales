@@ -1,0 +1,376 @@
+\chapter{Alg\`ebre de Boole et circuits logiques}
+
+En combinant les portes logiques, et en prenant garde de ne pas faire
+de boucles dans les circuits\footnote {les circuits combinatoires
+(sans boucles) et s\'equentiels (avec boucles) seront \'etudi\'es dans
+les chapitres suivants}, on r\'ealise des circuits dont les sorties ne
+d\'ependent que des valeurs des entr\'ees. On pourra alors d\'ecrire
+la fonction r\'ealis\'ee par ce circuit par sa table de v\'erit\'e.
+
+L'\'etude des ``tables de v\'erit\'e'' 
+a \'et\'e entreprise il y a plus d'un si\`ecle, et constitue ce
+qu'on appelle l'alg\`ebre de Boole\footnote{L'oeuvre la plus
+c\'el\`ebre de George Boole (1815-1864) est intitul\'ee {\em Une investigation
+dans les lois de la pens\'ee, sur lesquelles sont fond\'ees les th\'eories 
+math\'ematiques de la logique et des probabilit\'es} (1854), plus connue
+sous le titre abr\'eg\'e {\em Les lois de la pens\'ee}}.
+
+Les propri\'et\'es de cette alg\`ebre nous permettront de {\em raisonner}
+sur les circuits, et donc de les construire rigoureusement, plut\^ot que
+par la (co\^uteuse) m\'ethode des essais et erreurs. En particulier
+nous verrons des m\'ethodes syst\'ematiques pour simplifier les circuits.
+
+
+\section{D\'efinitions}
+
+% \subsubsection{Fonctions bool\'eennes}
+
+On appelle {\em fonction bool\'eenne} toute fonction de $\{0,1\}^n$ 
+dans $\{0,1\}$.
+
+Il y a $2^{2^n}$ fonctions bool\'eennes \`a $n$ variables: en effet pour 
+d\'ecrire une fonction bool\'eenne \`a $n$ variables il suffit de remplir les
+$2^n$ cases de sa table de v\'erit\'e, chaque case pouvant contenir 0 ou 1.
+
+
+
+
+%\subsubsection{Expressions bool\'eennes}
+
+Une {\em expression bool\'eenne} est un terme construit \`a partir de variables
+(prises dans un ensemble $V$), de constantes 0 ou 1, et d'op\'erateurs ET, OU, 
+et NON. Exemple~:  $a + \overline{a . \overline{b}} + b$.
+
+Une expression bool\'eenne {\em repr\'esente} une fonction
+bool\'eenne~; nous dirons que deux expressions sont \'equivalentes si
+elles d\'enotent la m\^eme fonction.
+
+\begin{exemple}{} Si nous construisons la table de v\'erit\'e de l'expression ci-dessus,
+et de l'expression $\overline{a}+b$:
+$$ \begin{array}{|cc|ccc||c||c||c|}
+\hline
+a &b & \overline{b}& a.\overline{b}& \overline{a.\overline{b}} & 
+  \overline{a.\overline{b}} + b & \overline{a} & \overline{a}+b \\
+\hline
+0 & 0  & 1 & 0 & 1 & 1 & 1 & 1\\
+0 & 1  & 0 & 0 & 1 & 1 & 1 & 1\\
+1 & 0  & 1 & 1 & 0 & 0 & 0 & 0\\
+1 & 1  & 0 & 0 & 1 & 1 & 0 & 1\\
+\hline
+\end{array}$$
+nous constatons qu'elles co\"{\i}ncident~: les deux expressions repr\'esentent
+la m\^eme fonction.
+\end{exemple}
+
+Par commodit\'e, on appelle {\em somme} toute expression de la forme 
+$t_1 + t_2 + \ldots + t_n$.
+Elle peut se r\'eduire \`a un seul terme, ou aucun (dans ce cas c'est 0).
+Un {\em produit} est de la forme $t_1.t_2 \ldots t_n$. Le produit vide
+est $1$.
+
+
+
+Un {mon\^ome} est un produit de variables ou de
+n\'egations de variables, chaque variable n'apparaissant qu'au plus une fois.
+
+\begin{exemple}{de mon\^omes: } $x, \overline{y}, x.\overline{y}.z, 1$
+\end{exemple}
+
+\begin{remarque}
+À partir d'un ensemble de $n$ variables on peut construire $C^k_n.2^k$
+mon\^omes distincts \`a $k$ variables~: pour choisir un tel
+monôme il suffit de s\'electionner
+$k$ variables parmi $n$ (d'o\`u le coefficient binomial), et
+d'attribuer ou non \`a chacune d'entre elles une barre ($2^k$
+possibilit\'es).
+
+
+Il y a en tout $3^n$ mon\^omes, puisqu'il suffit de d\'ecider, pour chacune des
+variables, de la faire figurer telle quelle, avec une barre, ou pas du tout.
+Ceci prouve l'\'egalit\'e:
+$$ \sum_{k=0}^n C^k_n.2^k = 3^n$$
+que l'on peut d'ailleurs retrouver en d\'eveloppant $(1 + 2)^n$ \`a l'aide des
+formules connues.
+\end{remarque}
+
+Un mon\^ome est {\em complet} par rapport \`a un ensemble donn\'e de variables
+si toutes les variables de cet ensemble appara\^{\i}ssent une fois. Il y a 
+$2^n$ mon\^omes complets sur un ensemble de $n$ variables, chaque mon\^ome
+complet correspondant \`a une des cases d'une table de v\'erit\'e \`a $n$ variables.
+
+Une expression est {\em en forme canonique} si elle est  \'ecrite sous forme
+d'une somme sans r\'ep\'etition de mon\^omes complets.
+
+
+\paragraph{Proposition} Toute fonction bool\'eenne peut \^etre construite
+par composition d'op\'erations OU, ET et NON.
+
+
+\paragraph{Preuve} Toute fonction bool\'eenne $f(a,b,c\ldots)$ peut \^etre 
+d\'ecrite par sa table de v\'erit\'e. Chaque case de cette table correspond
+\`a un {\em mon\^ome complet}. Une expression de la fonction $f$ s'obtient
+en faisant la somme des mon\^omes complets dont la valeur est 1.
+
+\begin{exemple}{} Consid\'erons une fonction $maj$ (majorit\'e) \`a trois variables $a,b,c$, qui 
+vaut 1 quand au moins deux des entr\'ees sont \`a un. On dresse la table de
+v\'erit\'e de $maj$, en faisant figurer dans la marge les mon\^omes correspondants:
+$$\begin{array}{|ccc|c|l}
+\cline{1-4}
+a & b & c & maj(a,b,c) & \mbox{mon\^ome} \\
+\cline{1-4}
+0 & 0 & 0 & 0 & \overline{a}\overline{b}\overline{c} \\
+0 & 0 & 1 & 0 & \overline{a}\overline{b}c \\
+0 & 1 & 0 & 0 & \overline{a}b\overline{c} \\
+0 & 1 & 1 & 1 & \overline{a}bc \\
+1 & 0 & 0 & 0 & a\overline{b}\overline{c} \\
+1 & 0 & 1 & 1 & a\overline{b}c \\
+1 & 1 & 0 & 1 & ab\overline{c} \\
+1 & 1 & 1 & 1 & abc \\
+\cline{1-4}
+\end{array} $$
+et on obtient l'expression en forme canonique $$
+	maj(a,b,c)=  \overline{a}bc + a\overline{b}c +
+	ab\overline{c} + abc$$
+\end{exemple}
+
+\section{Propri\'et\'es des alg\`ebres de Boole}
+
+Les operations ET, OU, NON definies sur l'ensemble $\{0,1\}$ poss\`edent les 
+propri\'et\'es suivantes:
+{\small
+$$\begin{array}{rclrcll}
+ \overline{\overline{A}} &=& A& &&	& \mbox{double n\'egation} \\
+\overline{0} &=& 1	& \overline{1}	&=& 0	& \mbox{constantes} \\
+\overline{A+B} &=& \overline{A}.\overline{B}	&
+\overline{A.B}	&=& \overline{A}+\overline{B}	& 
+\mbox{dualit\'e} \\
+(A+B)+C &=& A+(B+C)	&
+(AB)C	&=& A(BC)	& \mbox{associativit\'e} \\
+A+B &=&	B+A & AB	&=& BA	& \mbox{commutativit\'e} \\
+(A+B)C &=& AC+BC &
+AB+C	&=& (A+C)(B+C)	& \mbox{distributivit\'e} \\
+A+A &=&	A & AA	&=& A	& \mbox{idempotence} \\
+A+0 &=&	A & A.1 &=& A	& \mbox{\'el\'ements neutres} \\
+A+1 &=&	1 & A.0 &=& 0	& \mbox{absorption} \\
+A+\overline{A} &=&	1 & A.\overline{A} &=& 0	
+& \mbox{compl\'ementaires} \\
+\end{array} $$
+}
+\paragraph{Remarques}
+\begin{itemize}
+\item Chaque \'egalit\'e peut-\^etre v\'erif\'ee en construisant 
+les tables de v\'erit\'e de ses parties gauche et droite.  
+\item La colonne de droite contient des \'equations {\em duales} de celles
+de la colonne de gauche, obtenues en intervertissant $+$ et $\cdot$, 0 et 1.
+On peut passer d'une \'equation \`a l'\'equation duale en utilisant seulement
+$\overline{\overline{A}}=A$, $\overline{0}=1$ et 
+$\overline{A+B}= \overline{A}.\overline{B}$.
+\item On voit
+assez facilement
+que ces \'equations permettent de d\'evelopper n'importe quel terme sous forme
+d'une expression canonique. L'expression canonique d'une fonction \'etant 
+unique (\`a la commutation de $+$ et $.$ pr\`es), ces \'equations 
+suffisent donc 
+pour montrer l'\'equivalence de deux expressions.
+\item Les lois de dualit\'e sont appel\'ees aussi lois de 
+De Morgan.\footnote{Les travaux d'Augustus de Morgan (1806-1871)
+influenc\`erent fortement George Boole, et ses vives recommandations 
+permirent \`a ce dernier,
+bien qu'autodidacte, d'obtenir
+la Chaire de Math\'ematiques du Queen's College de Cork.}
+\end{itemize}
+
+\subsubsection{Alg\`ebre de Boole}
+
+
+On appelle {\em alg\`ebre de Boole} tout ensemble qui poss\`ede deux \'el\'ements
+0 et 1 et des op\'erations $+,\cdot,\neg$ qui satisfont les \'equations ci-dessus.
+
+\begin{exercice}{} Montrez qu'il n'y a pas d'alg\`ebre de Boole \`a 
+3 \'el\'ements $\{0,1,2\}$. (Indication~: que vaut $\overline{2}$ ?).
+\end{exercice}
+
+On voit facilement que le produit $A \times B$ de deux alg\`ebres de
+Boole est \'egalement une alg\`ebre de Boole. Les op\'erations sur le
+produit sont d\'efinies par
+$\overline(a,b)=(\overline{a},\overline{b})$, $(a,b) + (a',b') =
+(a+a',b+b')$, $(a,b).(a',b') = (a.a',b.b')$.  Dans le sens inverse, un
+th\'eor\^eme important et difficile (Stone) dit que toute alg\`ebre de
+Boole se ram\`ene en fait \`a un produit d'alg\`ebres de Boole \`a 2
+\'el\'ements\footnote{Ce produit peut \^etre infini, 
+mais c'est une autre histoire}.
+
+
+\section{Simplification des expressions}
+
+A partir d'une expression  bool\'eenne on pourra facilement fabriquer un
+circuit. Pour r\'ealiser une m\^eme fonction, on aura tout int\'er\^et \`a 
+avoir des circuits qui utilisent le moins possible
+de portes logiques, pour des raisons de simplicit\'e, de co\^ut, de taille du 
+circuit et de consommation de courant.
+
+
+On peut essayer de simplifier les circuits en  utilisant les \'equations vues
+plus haut. Par exemple, pour la fonction $maj$~:
+$$ \begin{array}{rcll}
+	maj(a,b,c)&=& \overline{a}bc + a\overline{b}c + ab\overline{c} + abc \\
+&=&  \overline{a}bc + a\overline{b}c + ab\overline{c} + abc + abc + abc &
+\mbox{(idempotence)} \\
+&=&  \overline{a}bc + abc + a\overline{b}c +abc + ab\overline{c} + abc &
+\mbox{(commutativit\'e)} \\
+&=&  (\overline{a}+a)bc  + a(\overline{b}+b)c + ab(\overline{c}+c) &
+\mbox{(distributivit\'e)} \\
+&=&  1.bc  + a.1.c + ab.1 & \mbox{(compl\'ementarit\'e)} \\
+&=&  bc  + ac + ab & \mbox{(\'el\'ements neutres)} 
+\end{array} $$
+
+Mais la difficult\'e est alors de mener le calcul vers une expression
+simple que l'on ne connait pas a priori.
+
+
+\begin{probleme}{} Donnez une expression aussi simple que possible de chacune des
+$2^{2^2}=16$ fonctions \`a deux variables.
+
+D\'eterminez celles qui sont croissantes, c'est à dire telles que $x \leq x'$ et $y \leq y'$ entra\^ine $f(x,y) \leq f(x',y')$.  Pour chacune d'elles montrez qu'elle peut s'exprimer (sans utiliser de n\'egation) 
+par une somme de produits de variables.
+
+R\'eciproquement, montrez que toute fonction dont l'expression contient
+des ET et des OU mais pas de NON est n\'ecessairement croissante. 
+
+G\'en\'eralisez au cas des fonctions ayant un nombre quelconque de variables. 
+\end{probleme}
+
+\section{M\'ethode de Karnaugh}
+
+La m\'ethode de Karnaugh est une m\'ethode visuelle pour 
+trouver une expression simple d'une fonction bool\'eenne de
+quelques variables (jusqu\`a  6).\footnote{Nous ne montrerons ici
+que la méthode pour 3 et 4 variables, le passage à 5 ou 6 variables
+nécessite une bonne vision dans l'espace}.
+
+Elle repose sur une pr\'esentation particuli\`ere de la table de v\'erit\'e de
+la fonction \'etudi\'ee.  Voici la disposition adopt\'ee pour les fonctions 
+de 3 et 4 variables: 
+
+$$ \begin{array}{|r|cc|}
+\cline{1-3}
+ab\ c&  0 & 1 \\
+\cline{1-3}
+00 & & \\
+01 & & \\
+11 & & \\
+10 & & \\
+\cline{1-3}
+\end{array}
+\hspace{.5in}
+\begin{array}{|r|cccc|}
+\cline{1-5}
+ab\ cd&  00 & 01 & 11 & 10 \\
+\cline{1-5}
+00 & & &&\\
+01 & & &&\\
+11 & & &&\\
+10 & & &&\\
+\cline{1-5}
+\end{array}
+$$
+
+On remarque que dans ces tables, deux cases adjacentes ne diffèrent
+que le changement de valeur d'une seule variable. Comme chaque case
+correspond \`a un mon\^ome complet, un groupement de 2 cases
+adjacentes repr\'esentera un mon\^ome \`a $n-1$ variables.
+
+\begin{exemple}{} Les deux cases du bas de la premi\`ere table correspondent 
+respectivement \`a $a\overline{b}\overline{c}$ et $a\overline{b}c$, 
+qui diff\`erent par la variable $c$. En les regroupant  on obtient
+ $a\overline{b}\overline{c} + a\overline{b}c = a\overline{b}(\overline{c}+c)
+= a\overline{b}$
+\end{exemple}
+
+Attention~: il faut \'egalement consid\'erer les bords oppos\'es comme \'etant adjacents,
+par exemple les cases $\overline{a}\overline{b}\overline{c}$ 
+(en haut \`a gauche) et $a\overline{b}\overline{c}$ (en bas \`a gauche) se
+regroupent en $b\overline{c}$.
+
+Les mon\^omes \`a $n-2$ variables sont visualis\'es sous forme de carr\'es,
+ou de rectangles $1 \times 4$.  
+
+\begin{exemple}{} On a $bd = (a + \overline{a})b(c +\overline{c})d$. En d\'eveloppant
+cette expression on trouve une somme de 4 mon\^omes complets qui occupent le
+milieu de la seconde table.  Les 4 coins de cette m\^eme table forment
+(virtuellement) un carr\'e dont l'expression est $\overline{a}\overline{d}$.
+La colonne de droite  correspond \`a $c\overline{d}$, etc.
+\end{exemple}
+
+De m\^eme les produits de $n-3$ variables occupent 8 cases dispos\'ees
+en rectangles $ 2 \times 4$.
+
+La m\'ethode de Karnaugh consiste \`a 
+ \'ecrire la table de v\'erit\'e de la fonction dans la table, puis
+proc\'eder \`a des regroupements que l'on entoure et dont on \'ecrit
+l`expression au fur et \`a mesure.
+
+
+\paragraph{Algorithme} L'algorithme est le suivant:
+\begin{quote}
+\begin{itemize}
+\item  Si tous les 1s ont \'et\'e entour\'es~: arr\^eter.
+\item trouver, visuellement, le plus gros regroupement possible
+      contenant au moins un 1 non entour\'e.
+\item l'entourer sur le tableau, et \'ecrire son expression
+\item recommencer
+\end{itemize}
+\end{quote}
+
+La figure \ref{boole1} illustre le d\'eroulement possible de la m\'ethode
+sur l'exemple de la fonction majorit\'e.
+Le r\'esultat obtenu est $BC+AB+AC$.
+
+\dessin{boole1}{boole1.eps}{M\'ethode de Karnaugh~: exemple}
+
+
+
+\begin{exercice}{Le vote} Une commission est compos\'e d'un  pr\'esident
+P et trois membres A,B,C.  Cette commission doit se prononcer
+sur un vote par oui ou non \`a la majorit\'e.  Personne ne peut
+s'abstenir. En cas d'égalit\'e entre les oui et les non, la voix
+du pr\'esident est pr\'epond\'erante.  Em utilisant la m\'ethode
+de Karnaugh, donnez une expression simple de la fonction 
+$ vote(A,B,C,P)$.
+\end{exercice}
+
+\begin{exercice}{D\'ecodage 7 segments hexadécimal} Un afficheur 7 segments est compos\'e
+de 7 diodes électro-luminescentes not\'es a,b,\ldots g (voir figure
+\ref{boole2}). Un nombre est fourni, cod\'e en binaire
+sur 4 bits $x_3x_2x_1x_0$, qui devra \^etre affich\'e. Donnez l'expression
+des 7 fonctions $a(x_3,x_2,x_1,x_0), b(x_3,x_2,x_1,x_0), \ldots$
+
+\dessin{boole2}{boole2.eps}{Afficheur 7 segments, chiffres}
+\end{exercice}
+
+La m\'ethode de Karnaugh est également applicable dans le cas des
+fonctions incompl\`etement sp\'ecifi\'ees, c`est-\`a-dire qui ont des
+``cases vides'' dans lesquelles on peut mettre ce que l'on veut, parce
+que cela correspond \`a des situations qui ne peuvent pas se produire.
+
+La m\'ethode est alors la suivante: former les plus gros paquets possibles
+contenant au moins un 1 non entour\'e et aucun 0.
+
+ 
+\begin{exercice}{Le d\'e \'electronique} (fig. \ref{boole3}) poss\`ede trois entr\'ees, par lesquelles
+arrivent des nombres de 1 \`a 6 cod\'es en binaire.  Donnez une fonction
+pour chacune des lampes qui indiquera si elle doit \^etre allum\'ee ou 
+\'eteinte.
+\dessin{boole3}{boole3.eps}{Le d\'e \'electronique}
+\end{exercice}
+
+\begin{exercice}{Décodage 7 segments décimal} Reprendre 
+l'exercice de l'afficheur 7 segments, en supposant que les valeurs
+d'entrée vont toujours de 0000 à 1001.
+\end{exercice}
+
+\begin{exercice}{Multiples de 3}
+Proposez un circuit qui prendra en entr\'ee un nombre $N$ entre 0 et
+15 (cod\'e en binaire \'evidemment) et dont la sortie indiquera si $N$
+est un multiple de $3$.
+\end{exercice}

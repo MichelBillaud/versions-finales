@@ -1,0 +1,435 @@
+\chapter{Circuits s\'equentiels}
+
+
+\section{D\'efinition}
+
+Un circuit s\'equentiel poss\`ede des entr\'ees E et des sorties S,
+mais aussi un \'etat interne Q qui sert \`a m\'emoriser de
+l'information.  On peut r\'esumer un tel circuit par deux
+fonctions. L'une (fonction de sortie $f$) indique la valeur des sorties en
+fonction des entr\'ees et de l'\'etat actuel~:
+
+$$	S = f( E , Q )$$ 
+
+L'autre (fonction de transition $g$) indique l'\'etat que le circuit 
+prendra \`a l'instant suivant:
+
+$$	Q' = g( E , Q ) $$
+
+
+\section{Du bistable \`a la bascule RS}
+
+Une exp\'erience simple consiste \`a monter (fig. \ref{seq1})  deux portes NON t\^ete-b\^eche,
+la sortie de l'une servant d'entr\'ee \`a l'autre. Soient $Q_1$ et $Q_2$ les deux
+sorties. 
+
+\dessin{seq1}{seq1.eps}{Bistable \`a deux portes NON}
+%	Q_1 = non(E1)	E1=Q_2	%	
+%	Q_2 = non(E2)	E2=Q_1A
+
+On constate que ce circuit prend l'un des deux
+ e\'etats suivants:
+\begin{itemize}
+\item \'etat (0)~:  $Q_1=0$ et $Q_2=1$
+\item \'etat (1)~: $Q_1=1$ et $Q_2=0$
+\end{itemize}
+et qu'il y reste ind\'efiniment: on dit que le circuit est {\em stable}.
+(C'est un {\em bistable}, car il y a deux {\em positions de stabilit\'e}).
+
+En revanche si on boucle l'entr\'ee avec la sortie d'une seule porte
+NON, (fig. \ref{seq2}) c'est un circuit {\em astable} qui oscille
+continuellement (et tr\`es rapidement) entre 0 et 1.
+\dessin{seq2}{seq2.eps}{Circuit astable}
+
+Reprenons notre bistable \`a 2 portes NON. Supposons qu'il soit dans
+l'\'etat (0), c'est-à-dire $Q_1=0, Q_2=1$. Pour le faire basculer dans
+l'autre \'etat, il faudrait forcer l'entr\'ee E2 \`a 1. Mais pour l'instant 
+l'entr\'ee E2 n'est reli\'ee qu'\`a $Q_1$. 
+On intercale donc
+(fig. \ref{seq3}) une porte OU avec une entr\'ee de commande S (Set).
+\dessin{seq3}{seq3.eps}{Bistable avec commande S (set)}
+%	Q_1 = non(E1)	E1=Q_2		
+%	Q_2 = non(E2)	E2=Q_1 ou S
+
+Dans l'\'etat (0) avec S=0, la situation est stable.  L'arriv\'ee
+d'une impulsion sur S provoque le passage de E2 \`a 1, puis $Q_2$
+prend la valeur 0 et $Q_1$ passe \`a 0. Le bistable est donc dans la
+situation (1) qui est stable, et il y reste d\'esormais quel que soit
+le signal d'entr\'ee sur S. Ceci est r\'esum\'e par le chronogramme de
+la figure\ref{seq4}.
+
+\dessin{seq4}{seq4.eps}{Chronogramme}
+%
+%        |----------
+%Q_1 -----| 
+%
+%   -----|
+%Q_2	|----------
+%
+%        |-----|
+%S  -----|     |-----
+
+Pour permettre le retour  \`a l'\'etat (0) on peut ajouter -par sym\'etrie-
+une autre entr\'ee de commande R (reset) et une autre porte OU (fig.
+\ref{seq5}).
+%	Q_1 = non(E1)	E1=Q_2 ou R	
+%	Q_2 = non(E2)	E2=Q_1 ou S
+\dessin{seq5}{seq5.eps}{Bascule RS: sch\'ema et symbole}
+
+Le circuit r\'esultant (que l'on r\'ealise avec des portes NOR) est
+appel\'e {\em bascule RS}. Son fonctionnement normal se r\'esume comme suit:
+\begin{itemize}
+\item 2 entr\'ees R et S
+\item 2 sorties $Q_1$ et $ Q_2$ (appel\'ees aussi $Q$ et $\overline{Q}$)
+\item R et S ne doivent pas \^etre \`a 1 simultan\'ement.
+\item une impulsion sur S met $Q_1$ \`a 1 et $Q_2$ \`a 0
+\item une impulsion sur R met $Q_1$ \`a 0 et $Q_2$ \`a 1
+\end{itemize}
+
+La figure \ref{seq6} montre, sous forme de chronogramme, l'effet d'une
+s\'equence de ``tops''  envoy\'es successivement sur les entr\'ees de commande
+d'une bascule RS.
+
+\dessin{seq6}{seq6.eps}{Chronogramme d'une bascule RS}
+
+\paragraph{Remarque}
+Si R et S sont simultan\'ement \`a 1 les deux sorties sont \`a 1. Si S et R
+repassent simultan\'ement \`a 0 le r\'esultat est alors impr\'evisible 
+(d\'epend des vitesses de r\'eaction des diff\'erentes portes).
+
+
+\section{Bascules d\'eriv\'ees}
+
+\subsection{Bascule RS \`a portes NAND}
+
+En mettant des portes NAND au lieu des portes NOR, on obtient une
+bascule RS à signaux de commande invers\'es. On d\'esigne alors les
+entr\'ees de commande par $\overline{R}$ et $\overline{S}$ (voir
+figure \ref{seq7}).
+
+\dessin{seq7}{seq7.eps}{Bascule RS \`a portes NAND}
+
+
+\subsection{Bascule RS avec horloge}
+
+Les commandes R et S ne sont actives que lorsque l'entr\'ee d'horloge est 
+\`a 1. Il suffit (fig. \ref{seq8}) de valider les signaux R et S par l'entr\'ee
+H au moyen de deux portes ET.
+%	R' = R et H
+%	S' = S et H
+\dessin{seq8}{seq8.eps}{Bascule RSH: sch\'ema et symbole}
+
+\subsection{Bascule D}
+
+On la r\'ealise \`a partir de la bascule RSH (figure \ref{seq9})
+Lorsque son entr\'ee H est \`a 1, elle m\'emorise la valeur de son entr\'ee D.
+Quand H=0, elle reste insensible aux changements sur D (voir chronogramme
+de la figure \ref{seq10})
+%	R = non(D) et H
+%	S = D et H
+
+\dessin{seq9}{seq9.eps}{Bascule D}
+\dessin{seq10}{seq10.eps}{Chronogramme d'une Bascule D}
+
+La bascule D est  utilis\'ee pour la constitution des {\em m\'emoires}.
+
+ 
+\section{La conception de circuits s\'equentiels}
+
+
+Consid\'erons par exemple une commande d'\'eclairage 
+par bouton-poussoir.  Il y a une entr\'ee B (l'\'etat du bouton~: appuy\'e ou
+pas), une sortie L (la lampe allum\'ee ou \'eteinte), mais il est clair que
+la sortie ne d\'epend pas seulement de l'entr\'ee, mais aussi de 
+ce qui s'est pass\'e avant, que l'on repr\'esente par un \'etat Q.
+
+Ici on pourra d\'ecider que Q m\'emorise simplement l'\'etat de la lampe.
+	Si Q=0,	la lampe est \'eteinte.
+	Si Q=1,	la lampe est allum\'ee
+
+La sortie est fonction de l'entr\'ee et de l'\'etat
+	$$L = f( B , Q ) $$
+
+Ici on prendra par exemple $L=Q$.
+
+Une autre fonction indique comment l'\'etat interne \'evolue au cours du temps. 
+Pour simplifier le raisonnement on d\'ecoupe 
+le temps en ``instants''. L'\'etat Q' ``\`a l'instant suivant'' d\'epend
+des entr\'ees ainsi que de l'ancien \'etat:
+$$
+	Q' = g(B , Q)
+$$
+Dans l'exemple on dira que si B=0 l'\'etat reste stable et si
+B=1 l'\'etat s'inverse, d'o\`u la table:
+
+$$
+\begin{array}{|cc|l|}
+\hline
+	B & Q &	Q'=g(B,Q) \\
+\hline
+	0 & 0 &	0 \\
+	0 & 1 &	1 \\
+	1 & 0 &	1 \\
+	1 & 1 &	0 \\
+\hline
+\end{array}
+$$
+
+A partir de l\`a on pourrait en conclure qu'il suffit (fig. \ref{seq11})
+ d'une bascule D
+pour repr\'esenter l'\'etat, qui serait activ\'ee par B et 
+dont la sortie serait reboucl\'ee sur l'entr\'ee
+\`a travers un NOT.
+\dessin{seq11}{seq11.eps}{Un montage na\"{\i}f}	
+Mais attention \c{c}a ne marche pas !  En effet l'impulsion sur le
+bouton dure ``plusieurs instants'', ce qui fait clignoter (trop vite
+pour que l'oeil le perçoive) la sortie pendant l'appui du bouton~:
+c'est un \'etat instable. La vitesse élevée d'oscillation fait alors
+qu'à la fin de l'impulsion le résultat est imprévisible.
+	 
+
+Pour s'en sortir on emploiera le montage de la figure \ref{seq12},
+(appel\'e ma\^{\i}tre-esclave).
+\dessin{seq12}{seq12.eps}{Bascule RSH ma\^{\i}tre-esclave}
+
+% - 2 bascules RS avec validation connect\'ees entre-elles 
+
+%	Q_1 -> S2	Q_1_ -> R2
+%	Q_2 -> S1	Q_2_ -> S1
+
+la bascule 1 (ma\^{\i}tre) est valid\'ee par $H_1=B$ et la 2 (esclave) 
+par $H_2=\overline{B}$, mais on utilise
+(et c'est l\`a toute l'astuce) une porte NON dont le seuil 
+de d\'eclenchement est plus bas
+que la normale, ce qui fait qu'une impulsion sur B correspond \`a deux
+impulsions d\'ecal\'ees sur $H_1$ et $H_2$, comme le montre le
+chronogramme de la figure \ref{seq13}.
+\dessin{seq13}{seq13.eps}{Seuils de d\'eclenchement}
+%              /------------\
+% 	      /              \
+% B	-----/                \---------
+% 	       --------------	
+%              |            |
+% V1	-------|            |----------
+% 
+% 	 ------ 	     ----------
+%             |              |
+% V2	      |--------------|         
+
+
+Donc \`a l'arriv\'ee d'une impulsion (front montant) la bascule esclave 
+se verrouille en m\'emorisant l'\'etat du ma\^{\i}tre, puis le ma\^{\i}tre change d'\'etat.
+A la fin de l'impulsion (front descendant de l'impulsion sur B)
+le ma\^{\i}tre se verrouille, et l'esclave change d'\'etat.
+
+\begin{exercice}{}: v\'erifier le fonctionnement de ce circuit \`a l'aide d'un chronogramme
+(dessiner l'arriv\'ee de 2 impulsions sur B).
+\end{exercice}
+
+\begin{probleme}{Bascule JK} En utilisant le m\^eme principe (ma\^{\i}tre-esclave) 
+concevoir une bascule JK. Comme son nom l'indique une bascule JK poss\`ede 
+3 entr\'ees J,K et H et deux sorties $Q$ et $\overline{Q}$.
+La bascule ne peut changer d'\'etat que pendant une impulsion sur H.
+Si J=K=0 l'\'etat reste inchang\'e. Si J=1 K=0 l'\'etat devient 1.
+Si J=0 et K=1 l'\'etat devient 0. Si J=K=1 l'\'etat s'inverse.
+\end{probleme}
+
+
+\paragraph{Circuits Synchrones}
+On appelle {\em circuit synchrone} un circuit s\'equentiel dont
+l'\'etat interne ne change qu'\`a l'arriv\'ee d'une impulsion sur une
+entr\'ee sp\'eciale appel\'ee ``Horloge''.  On suppose en g\'en\'eral
+que les autres signaux ne varient pas pendant l'arriv\'ee d'un top
+d'horloge.
+
+L'int\'er\^et de cette horloge est de donner une d\'efinition pr\'ecise de
+``l'instant suivant''. C'est l'horloge qui rythme les transitions d'\'etat.
+
+
+\section{Application \`a la synth\`ese de compteurs}
+
+On appelle {\em compteur} un dispositif séquentiel qui passe
+p\'eriodiquement par une suite d'\'etats. Par exemple le compteur
+binaire sur deux bits suivra la s\'equence $00, 01, 10 , 11, 00, 01,
+10, 11, 00$, etc. \`a chaque top d'horloge.
+
+Nous allons voir comment r\'ealiser, de mani\`ere syst\'ematique, n'importe
+quel compteur, d'abord avec des bascules D ma\^{\i}tre-esclave, puis avec des 
+bascules JK qui permettent d'obtenir des circuits plus simples.
+
+
+\subsection{R\'ealisation \`a l'aide de bascules D}
+
+\begin{exemple}{compteur binaire 2 bits}
+
+Les deux bits de l'\'etat sont stock\'es dans deux bascules D.
+\begin{itemize}
+\item il n'y a pas de signal en entr\'ee
+\item les sorties $Q_1, Q_0$ sont issues directement des bascules D
+\item pour r\'ealiser la fonction de transition, il suffit de pr\'esenter sur
+les entr\'ees D1 et D0 la valeur du prochain \'etat que l'on calculera
+\`a partir de $ Q_1$ et $Q_0$. Pour cela on construit la table:
+$$ \begin{array}{|cc|cc|}
+\hline 
+\multicolumn{2}{|c|}{	\mbox{ancien} } &
+\multicolumn{2}{c|}{	\mbox{nouvel}} \\
+\multicolumn{2}{|c|}{	\mbox{\'etat} } &
+\multicolumn{2}{c|}{	\mbox{\'etat}} \\
+\hline
+	Q_1 & Q_0 &	D1 & D0 \\
+\hline
+	0 &  0 &	0 &  1 \\
+	0 &  1 &	1 &  0 \\
+	1 &  0 &    	1 &  1 \\
+	1 &  1 &	0 &  0 \\
+\hline
+\end{array} $$
+D'o\`u on tire facilement~:
+$$ \begin{array}{rcl}
+	D1 &=& Q_1 \oplus  Q_0 \\
+	D0 &=& \overline{ Q_0}
+\end{array}
+$$
+\end{itemize}
+\end{exemple}
+
+\subsection{R\'ealisation \`a l'aide de bascules JK}
+
+Le principe est l\'eg\`erement diff\'erent~: \`a partir de l'ancien \'etat 
+nous ne faisons plus calculer le nouvel \'etat pour l'injecter dans 
+les bascules, mais nous d\'eterminons les commandes \`a envoyer aux bascules
+(sur les entr\'ees J et K) pour que l'\'etat change.
+
+Avant de reprendre l'exemple du compteur 2 bits, quelques remarques
+sur les bascules JK. Regardons la table de transition~:
+$$ \begin{array}{|c|cc||c|}
+\hline 
+\mbox{ancien}	&  &  & \mbox{nouvel} \\
+\mbox{\'etat}	& J & K & \mbox{ \'etat} \\
+\hline
+	0 &	0 &  0 &	0 \\
+	0 &	0 &  1 &	0 \\
+	0 &	1 &  0 &	1 \\
+	0 &	1 &  1 &	1 \\
+	1 &	0 &  0 &	1 \\
+	1 &	0 &  1 &	0 \\
+	1 &	1 &  0 &	1 \\
+	1 &	1 &  1 &	0 \\
+\hline	
+\end{array} $$
+
+En regardant cette table d'une fa\c{c}on diff\'erente, on obtient
+$$ \begin{array}{|cc|c|}
+\hline 
+\multicolumn{2}{|c|}{\mbox{pour passer}} &
+\mbox{il faut} \\
+\mbox{de} & \mbox{\`a} & \mbox{avoir} \\
+\hline
+	0 &	0 &	J=0 \\
+	0 &	1 &	J=1 \\
+	1 &	0 &	K=1 \\
+	1 &	1 &	K=0 \\
+\hline
+\end{array} $$
+
+Ceci va nous servir pour construire le compteur 2 bits, \`a l'aide de 2
+bascules JK.
+
+$$
+\begin{array}{|cc|cc|cc|}
+\hline
+\multicolumn{2}{|c|}{\mbox{ancien}} &
+\multicolumn{2}{c|}{\mbox{nouvel}} &
+\multicolumn{2}{c|}{\mbox{commandes}}  \\
+\multicolumn{2}{|c|}{\mbox{\'etat}} &
+\multicolumn{2}{c|}{\mbox{\'etat}} &
+\multicolumn{2}{c|}{\mbox{\`a envoyer}} \\
+	Q_1 &Q_0&	Q'_1& Q'_0& & \\	
+\hline
+	0&  0&	0&   1&	J_1=0 &J_0=1 \\
+	0&  1&	1&   0&	J_1=1 &K_0=1  \\
+	1&  0&    1&   1&	K_1=0 &J_0=1  \\
+	1&  1&	0&   0&	K_1=1& K_0=1  \\
+\hline
+\end{array} $$
+
+Il ne reste plus qu'\`a trouver des expressions convenables pour 
+$J_0,K_0,J_1$ et $K_1$ en fonction de $Q_1$ et $Q_0$. En remplissant 
+les tableaux de Karnaugh~:
+{ \small
+$$ 
+\begin{array}{|r|cc|}
+\hline
+J_0(Q_0,Q_1) & 0 & 1 \\
+\hline
+0 & 1 & . \\
+1 & 1 & 1 \\
+\hline
+\end{array}
+\hspace{0.5cm}
+\begin{array}{|r|cc|}
+\hline
+K_0(Q_0,Q_1) & 0 & 1 \\
+\hline
+0 & . & 1 \\
+1 & . & 1 \\
+\hline
+\end{array}
+$$
+$$
+\begin{array}{|r|cc|}
+\hline
+J_1(Q_0,Q_1) & 0 & 1 \\
+\hline
+0 & 0 & 1 \\
+1 & . & . \\
+\hline
+\end{array}
+\hspace{0.5cm}
+\begin{array}{|r|cc|}
+\hline
+K_1(Q_0,Q_1) & 0 & 1 \\
+\hline
+0 & . & . \\
+1 & 0 & 1 \\
+\hline
+\end{array}
+$$}
+L'abondance de cas  ind\'etermin\'es nous permet 
+d'obtenir des expressions tr\`es simples:
+$J_0 = 1$,		
+$K_0 = 1$,
+$J_1= Q_1$,
+$K_1= Q_1$.
+
+
+\begin{exercice}{compteur modulo 3} 
+La s\'equence \`a effectuer est $00,01,10,00,01,10$, etc.
+\end{exercice}
+
+\begin{exercice}{compteur binaire sur 3 bits}
+$000, 001, 010, 011, ... 111,000,...$
+\end{exercice}
+
+\begin{exercice}{Compteur modulo 10} 
+S\'equence 0000,0001,....,1000,1001,0000...
+\end{exercice}
+
+\begin{exercice}{Compteur/d\'ecompteur 3 bits} 
+Une entr\'ee suppl\'ementaire C
+indique s'il faut compter (C=1) ou d\'ecompter (C=0).
+\end{exercice}
+
+\begin{exercice}{Compteurs rampants}
+	0000, 1000, 1100, 1110, 1111, 0111, 0011, 0001, 0000, ....
+\end{exercice}
+
+\begin{exercice}{Compteurs de gray}
+\begin{itemize}
+\item sur 1 bit:	0,1,0,1...
+\item sur 2 bits:	00,01,11,10,00,....
+\item sur 3 bits:	000,001,011,010,110,111,101,100,...
+\end{itemize}
+\end{exercice}
+
+

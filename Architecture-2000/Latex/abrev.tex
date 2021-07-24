@@ -1,0 +1,50 @@
+
+% \newcommand{\exemple}[1]{\paragraph{Exemple #1}}
+% \newcommand{\exercice}[1]{\paragraph{Exercice #1}}
+
+\newenvironment{exercice}[1]{\begin{quote}{\bf Exercice #1}}{\end{quote}}
+\newenvironment{exemple}[1]{\begin{quote}{\bf Exemple #1}}{\end{quote}}
+\newenvironment{probleme}[1]{\begin{quote}{\bf Probl\`eme #1}}{\end{quote}}
+\newenvironment{remarque}[1]{\begin{quote}{\bf Remarque #1}}{\end{quote}}
+
+% \newcommand{\probleme}[1]{\paragraph{Probl\`eme#1}}
+% \newcommand{\remarque}[1]{\paragraph{Remarque #1}}
+\newcommand{\AFAIRE}[1]{\fbox{#1}}
+\newenvironment{encadre}{\begin{tabular}{|l|} \hline \begin{minipage}{14cm}}{\end{minipage} \\ \hline \end{tabular}}
+
+%----
+% \renewcommand{\epsfsize}[2]{0.5#1}
+
+\newcommand{\dessinepsf}[3]{\begin{figure}[htb] 
+		$$	\epsfbox{#2}  $$
+			\caption{#3}
+			\label{#1} 
+			\end{figure}}
+
+\newcommand{\dessin}[3]{\begin{figure}[htb]
+        \begin{center}
+                                 \includegraphics{../Images/#2}
+        \end{center}   
+			\caption{#3}
+			\label{#1} 
+			\end{figure}}
+
+%\newcommand{\dessin}[3]{\begin{figure}[htb] 
+%	\centerline{\psfig{figure=#2}}
+%				\caption{#3}
+%				\label{#1} 
+%				\end{figure}}
+
+\newcommand{\nand}{\ nand\ }
+
+
+
+
+
+
+
+
+
+
+
+
