@@ -1,0 +1,15 @@
+/*
+  En l'absence de bordure pour les tables, le fond des cases
+  est légèrement grisé.
+*/ 
+td, th {
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	background-color: #FEFEFE;
+}
+
+div.sourceCode {
+	padding: 10px;
+	border: solid 1px silver;
+	background-color: #EFE;
+}

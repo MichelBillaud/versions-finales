@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Michel Billaud (michel.billaud@u-bordeaux.fr, michel.billaud@laposte.net)" />
+  <title>Systèmes d’exploitation, introduction</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">a.sourceLine {
+display: inline-block;
+line-height: 1.25;
+}
+a.sourceLine {
+pointer-events: none;
+color: inherit;
+text-decoration: inherit;
+}
+a.sourceLine:empty {
+height: 1.2em;
+}
+.sourceCode {
+overflow: visible;
+}
+code.sourceCode {
+white-space: pre;
+position: relative;
+}
+div.sourceCode {
+margin: 1em 0;
+}
+pre.sourceCode {
+margin: 0;
+}
+@media screen {
+div.sourceCode {
+overflow: auto;
+}
+}
+@media print {
+code.sourceCode {
+white-space: pre-wrap;
+}
+a.sourceLine {
+text-indent: -1em;
+padding-left: 1em;
+}
+}
+pre.numberSource a.sourceLine {
+position: relative;
+left: -4em;
+}
+pre.numberSource a.sourceLine::before {
+content: attr(title);
+position: relative;
+left: -1em;
+text-align: right;
+vertical-align: baseline;
+border: none;
+pointer-events: all;
+display: inline-block;
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+padding: 0 4px;
+width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource {
+margin-left: 3em;
+border-left: 1px solid #aaaaaa;
+padding-left: 4px;
+}
+div.sourceCode {}
+@media screen {
+a.sourceLine::before {
+text-decoration: underline;
+}
+}
+code span.al {
+color: #ff0000;
+font-weight: bold;
+}
+
+code span.an {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+code span.at {
+color: #7d9029;
+}
+
+code span.bn {
+color: #40a070;
+}
+
+code span.bu {}
+
+code span.cf {
+color: #007020;
+font-weight: bold;
+}
+
+code span.ch {
+color: #4070a0;
+}
+
+code span.cn {
+color: #880000;
+}
+
+code span.co {
+color: #60a0b0;
+font-style: italic;
+}
+
+code span.cv {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+code span.do {
+color: #ba2121;
+font-style: italic;
+}
+
+code span.dt {
+color: #902000;
+}
+
+code span.dv {
+color: #40a070;
+}
+
+code span.er {
+color: #ff0000;
+font-weight: bold;
+}
+
+code span.ex {}
+
+code span.fl {
+color: #40a070;
+}
+
+code span.fu {
+color: #06287e;
+}
+
+code span.im {}
+
+code span.in {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+code span.kw {
+color: #007020;
+font-weight: bold;
+}
+
+code span.op {
+color: #666666;
+}
+
+code span.ot {
+color: #007020;
+}
+
+code span.pp {
+color: #bc7a00;
+}
+
+code span.sc {
+color: #4070a0;
+}
+
+code span.ss {
+color: #bb6688;
+}
+
+code span.st {
+color: #4070a0;
+}
+
+code span.va {
+color: #19177c;
+}
+
+code span.vs {
+color: #4070a0;
+}
+
+code span.wa {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+
+:root {
+--title-color: #202080;
+--source-bg-color: rgb(240, 240, 255);
+}
+h1, h2, h3, h4, h5, h6 {
+border-bottom: solid 1px silver;
+color: var(--title-color);
+}
+body {
+font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+div.sourceCode {
+background-color: var(--source-bg-color);
+padding: 1em;
+}
+#TOC {
+padding: 0.5em;
+border: solid 1px silver;
+}
+#TOC ul {
+list-style-type: none;
+padding-left: 1em;
+}
+nav:before {
+text-indent: 2em;
+content: "Sommaire";
+color: var(--title-color);
+font-weight: bold;
+font-size: large;
+}
+#TOC a {
+text-decoration: none;
+}
+header {
+text-align: center;
+}
+.title {
+}
+.author, .date {
+font-style: italic;
+}
+table, th, td {
+border-collapse: collapse;
+border: solid black 1px;
+padding: 0.5em;
+}
+</style>
+</head>
+<body>
+<header>
+<h1 class="title">Systèmes d’exploitation, introduction</h1>
+<p class="author">Michel Billaud (<a href="mailto:michel.billaud@u-bordeaux.fr">michel.billaud@u-bordeaux.fr</a>, <a href="mailto:michel.billaud@laposte.net">michel.billaud@laposte.net</a>)</p>
+<p class="date">31 juillet 2020</p>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#introduction-aux-systèmes-dexploitation"><span class="toc-section-number">1</span> Introduction aux systèmes d’exploitation</a><ul>
+<li><a href="#fonctions-dun-système-dexploitation"><span class="toc-section-number">1.1</span> Fonctions d’un système d’exploitation</a></li>
+<li><a href="#évolution-conjointes-des-matériels-et-des-systèmes"><span class="toc-section-number">1.2</span> Évolution conjointes des matériels et des systèmes</a></li>
+</ul></li>
+<li><a href="#fonctionnement-dun-processeur"><span class="toc-section-number">2</span> Fonctionnement d’un processeur</a><ul>
+<li><a href="#base-le-cycle-fetch-decode-and-execute"><span class="toc-section-number">2.1</span> Base : le cycle “fetch, decode and execute”</a></li>
+<li><a href="#les-interruptions"><span class="toc-section-number">2.2</span> Les interruptions</a><ul>
+<li><a href="#les-exceptions-arithmétiques-de-lunivac-1"><span class="toc-section-number">2.2.1</span> Les exceptions arithmétiques de l’UNIVAC 1</a></li>
+<li><a href="#interruptions-matérielles"><span class="toc-section-number">2.2.2</span> Interruptions matérielles</a></li>
+<li><a href="#programmer-avec-des-interruptions-illustration-arduino"><span class="toc-section-number">2.2.3</span> Programmer avec des interruptions : illustration Arduino</a></li>
+<li><a href="#masquage-et-priorités"><span class="toc-section-number">2.2.4</span> Masquage et priorités</a></li>
+<li><a href="#interruptions-logicielles"><span class="toc-section-number">2.2.5</span> Interruptions logicielles</a></li>
+<li><a href="#exemple-dappels-systèmes"><span class="toc-section-number">2.2.6</span> Exemple d’appels systèmes</a></li>
+</ul></li>
+<li><a href="#modes-de-fonctionnement"><span class="toc-section-number">2.3</span> Modes de fonctionnement</a><ul>
+<li><a href="#motivation-protection-système-processus"><span class="toc-section-number">2.3.1</span> Motivation : protection système / processus</a></li>
+<li><a href="#modes-normal-et-privilégié"><span class="toc-section-number">2.3.2</span> Modes normal et privilégié</a></li>
+</ul></li>
+<li><a href="#protection-mémoire-teaser"><span class="toc-section-number">2.4</span> Protection mémoire (teaser)</a></li>
+</ul></li>
+<li><a href="#résumé"><span class="toc-section-number">3</span> Résumé</a></li>
+<li><a href="#glossaire"><span class="toc-section-number">4</span> Glossaire</a></li>
+</ul>
+</nav>
+<h1 id="introduction-aux-systèmes-dexploitation"><span class="header-section-number">1</span> Introduction aux systèmes d’exploitation</h1>
+<p>Un système d’exploitation est un logiciel qui agit comme intermédiaire entre</p>
+<ul>
+<li>le matériel d’un ordinateur (processeur, mémoire, disque, réseau…),</li>
+<li>les programmes d’application que fait tourner l’utilisateur.</li>
+</ul>
+<h2 id="fonctions-dun-système-dexploitation"><span class="header-section-number">1.1</span> Fonctions d’un système d’exploitation</h2>
+<p>Le système d’exploitation fournit un “environnement” dans lesquels les programmes d’application peuvent s’exécuter de façon</p>
+<ul>
+<li>sûre : les programmes sont protégés les uns des autres,</li>
+<li>commode : le système s’occupe des opérations de bas niveau,</li>
+<li>et efficace : l’utilisation des ressources est optimisée.</li>
+</ul>
+<p>Le système d’exploitation fournit une API (<em>Application Programming Interface</em>), une bibliothèque d’appels de fonctions par lesquels les programmes d’application lui demandent d’exécuter une action.</p>
+<p>Illustration, pendant l’<strong>exécution du programme</strong> C suivant</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb1-1" title="1"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
+<a class="sourceLine" id="cb1-2" title="2"></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="dt">int</span> main() {</a>
+<a class="sourceLine" id="cb1-4" title="4">   printf(<span class="st">&quot;Hello, world</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
+<a class="sourceLine" id="cb1-5" title="5">   <span class="cf">return</span> <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb1-6" title="6">}</a></code></pre></div>
+<p>l’appel de <code>printf</code> demande l’écriture d’une chaîne sur la “sortie standard” associée au processus, ce qui conduira (peut-être) le système d’exploitation à demander au “gestionnaire d’interface graphique” d’afficher des caractères dans une fenêtre, ce qui passera par des demandes d’accès au pilote de la carte graphique.</p>
+<p>Ensuite, en retournant la valeur 0, la fonction <code>main</code> signale au système la fin du programme, en fournissant le code de retour qui par convention signifie une fin normale.</p>
+<p><strong>Précision</strong> : <code>printf()</code> est définie dans la <em>bibliothèque standard</em> du langage C*. Elle fait appel à la fonction <code>write</code> qui fait partie de l’API du noyau du système d’exploitation. De même, le <code>return</code> du <code>main</code> entraîne l’exécution de l’appel système <code>_exit()</code>.</p>
+<p>Mais avant cette exécution, le système d’exploitation aura <strong>chargé le programme</strong>, c’est-à-dire :</p>
+<ul>
+<li>trouvé l’exécutable du programme,</li>
+<li>réservé de la place suffisante en mémoire,</li>
+<li>copié le fichier exécutable à cet endroit,</li>
+<li>créé un nouveau processus,</li>
+<li>démarré ce processus.</li>
+</ul>
+<h2 id="évolution-conjointes-des-matériels-et-des-systèmes"><span class="header-section-number">1.2</span> Évolution conjointes des matériels et des systèmes</h2>
+<p>Le matériel, les besoins des utilisateurs, et les systèmes d’exploitation ont évolué conjointement.</p>
+<p>Dans les premiers ordinateurs, on ne pouvait charger qu’un programme à la fois dans une mémoire de quelques milliers d’octets.</p>
+<p>On constate alors que, lorsqu’un programme exécute une opération d’entrée/sortie (sur bande magnétique, sur un terminal, …), le processeur doit attendre le résultat pour continuer : des milliers de “cycles” sont gaspillés pendant ces temps morts.</p>
+<p>Avec une mémoire plus grande, on peut envisager d’avoir <strong>plusieurs</strong> tâches (programmes). Quand une tâche est <strong>bloquée</strong> en attente d’une réponse, le processeur peut faire avancer une autre tâche.</p>
+<p>Le système d’exploitation est alors chargé de réveiller/endormir les tâches en fonction des requêtes d’entrée-sortie soumises par les tâches, et de l’arrivée des résultats, et de choisir une des tâches pour l’activer.</p>
+<p>Ce “multitraitement” est facilité par l’introduction de mécanismes matériels spécifiques dans la conception des processeurs.</p>
+<h1 id="fonctionnement-dun-processeur"><span class="header-section-number">2</span> Fonctionnement d’un processeur</h1>
+<h2 id="base-le-cycle-fetch-decode-and-execute"><span class="header-section-number">2.1</span> Base : le cycle “fetch, decode and execute”</h2>
+<p>Dans une approche très simplifiée, le processeur d’un ordinateur “classique” possède un <strong>compteur de programme</strong> (PC = <em>program counter</em>), registre qui contient l’adresse de la prochaine instruction à exécuter.</p>
+<p>Les circuits du processeur exécutent un cycle</p>
+<ul>
+<li>aller chercher en mémoire (<em>fetch</em>), à l’adresse indiquée par le PC, l’instruction à exécuter,</li>
+<li>décoder l’instruction,</li>
+<li>l’exécuter,</li>
+<li>modifier le PC pour passer à la suivante.</li>
+</ul>
+<p>“Passer à la suivante” consiste</p>
+<ul>
+<li>généralement à incrémenter le PC, qui désignera alors l’instruction qui est <em>physiquement</em> la suivante,</li>
+<li>dans le cas des <strong>instructions de branchement</strong> (sauts, appels de sous-programme,…), à mettre dans le PC l’adresse de destination.</li>
+</ul>
+<h2 id="les-interruptions"><span class="header-section-number">2.2</span> Les interruptions</h2>
+<p>Les interruptions ont été introduites initialement pour traiter les “<strong>exceptions arithmétiques</strong>” (débordements et autres).</p>
+<h3 id="les-exceptions-arithmétiques-de-lunivac-1"><span class="header-section-number">2.2.1</span> Les exceptions arithmétiques de l’UNIVAC 1</h3>
+<p>Lorsque l’unité arithmétique détecte un débordement, un signal électrique est “<strong>levé</strong>”.</p>
+<p>En présence de ce signal, la valeur 0 est chargée dans le PC. A cette adresse se trouve le code à exécuter en cas de débordement arithmétique.</p>
+<p>L’exécution normale est donc interrompue, “détournée” vers une “<strong>routine de traitement</strong> de l’exception”.</p>
+<p>A la fin de cette routine se trouve une instruction “retour d’interruption” qui permettra de revenir au code qui a été interrompu.</p>
+<p>Il faut pour cela que le PC ait été sauvegardé lors de l’interruption, soit dans un registre spécial, soit dans une pile.</p>
+<h3 id="interruptions-matérielles"><span class="header-section-number">2.2.2</span> Interruptions matérielles</h3>
+<p>Une première idée, pour un système de multitraitement, serait d’interroger périodiquement (<em>polling</em>) les périphériques pour savoir si ils ont terminé le travail qu’on leur a demandé.</p>
+<p>Mais il est beaucoup plus efficace que le périphérique lui-même indique qu’il requiert l’intervention du système d’exploitation (frappe sur un clavier, arrivée d’une trame sur une interface réseau, réponse d’un contrôleur de disques à qui on a demandé de lire un bloc, signal envoyé par un <strong>timer</strong> après un délai programmé, …).</p>
+<p>Pour cela le périphérique “lève” un signal électrique qui représente une <strong>interruption matérielle</strong>, traitée comme précédemment.</p>
+<p>En pratique, ces signaux sont reçus par un circuit “contrôleur d’interruptions”, qui transmettra au processeur un <em>numéro</em> d’interruption. Ce numéro permettra au processeur de trouver l’adresse du code à exécuter dans une “table de vecteurs d’interruption”<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>.</p>
+<h3 id="programmer-avec-des-interruptions-illustration-arduino"><span class="header-section-number">2.2.3</span> Programmer avec des interruptions : illustration Arduino</h3>
+<p>Un exemple sur la plateforme Arduino pour micro-contrôleurs. Sur cette plateforme</p>
+<ul>
+<li>la fonction <code>setup()</code> est appelée au démarrage du programme,</li>
+<li>le fonction <code>loop()</code> est ensuite exécutée en boucle.</li>
+<li>la fonction <code>attachInterrupt()</code> permet d’“armer” une interruption : elle indique quelle fonction sera exécutée quand l’évènement indiqué se produira.</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode cxx"><code class="sourceCode cpp"><a class="sourceLine" id="cb2-1" title="1"><span class="co">/*</span></a>
+<a class="sourceLine" id="cb2-2" title="2"><span class="co"> * Utilisation des interruptions sous Arduino.</span></a>
+<a class="sourceLine" id="cb2-3" title="3"><span class="co"> * </span></a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="co"> * Objectif :  quand on appuie sur le bouton, l'état de la LED Change.</span></a>
+<a class="sourceLine" id="cb2-5" title="5"><span class="co"> * </span></a>
+<a class="sourceLine" id="cb2-6" title="6"><span class="co"> * Fonctionnement :</span></a>
+<a class="sourceLine" id="cb2-7" title="7"><span class="co"> * - dans setup(), la fonction changeState est associée à la montée du signal</span></a>
+<a class="sourceLine" id="cb2-8" title="8"><span class="co"> * provenant du bouton</span></a>
+<a class="sourceLine" id="cb2-9" title="9"><span class="co"> * - la fonction changeState() inverse (true &lt;-&gt; false) l'indicateur &quot;on&quot;.</span></a>
+<a class="sourceLine" id="cb2-10" title="10"><span class="co"> * - la fonction loop() reflète l'état de cet indicateur sur la LED.</span></a>
+<a class="sourceLine" id="cb2-11" title="11"><span class="co"> */</span> </a>
+<a class="sourceLine" id="cb2-12" title="12"></a>
+<a class="sourceLine" id="cb2-13" title="13"><span class="at">const</span> <span class="dt">int</span> ledPin = <span class="dv">13</span>;    </a>
+<a class="sourceLine" id="cb2-14" title="14"><span class="at">const</span> <span class="dt">int</span> buttonPin = <span class="dv">2</span>;  </a>
+<a class="sourceLine" id="cb2-15" title="15"></a>
+<a class="sourceLine" id="cb2-16" title="16">boolean on = <span class="kw">true</span>;</a>
+<a class="sourceLine" id="cb2-17" title="17"></a>
+<a class="sourceLine" id="cb2-18" title="18"><span class="dt">void</span> changeState() {</a>
+<a class="sourceLine" id="cb2-19" title="19">  on = ! on;</a>
+<a class="sourceLine" id="cb2-20" title="20">}</a>
+<a class="sourceLine" id="cb2-21" title="21"></a>
+<a class="sourceLine" id="cb2-22" title="22"><span class="dt">void</span> setup() {</a>
+<a class="sourceLine" id="cb2-23" title="23">  pinMode(ledPin, OUTPUT);</a>
+<a class="sourceLine" id="cb2-24" title="24">  pinMode(buttonPin, INPUT);</a>
+<a class="sourceLine" id="cb2-25" title="25">  attachInterrupt(digitalPinToInterrupt(buttonPin), changeState, RISING);</a>
+<a class="sourceLine" id="cb2-26" title="26">}</a>
+<a class="sourceLine" id="cb2-27" title="27"></a>
+<a class="sourceLine" id="cb2-28" title="28"><span class="dt">void</span> loop() {</a>
+<a class="sourceLine" id="cb2-29" title="29">  <span class="cf">if</span> (on) {</a>
+<a class="sourceLine" id="cb2-30" title="30">    digitalWrite(ledPin, HIGH);</a>
+<a class="sourceLine" id="cb2-31" title="31">  } </a>
+<a class="sourceLine" id="cb2-32" title="32">  <span class="cf">else</span> {</a>
+<a class="sourceLine" id="cb2-33" title="33">    digitalWrite(ledPin, LOW);</a>
+<a class="sourceLine" id="cb2-34" title="34">  }</a>
+<a class="sourceLine" id="cb2-35" title="35">}</a></code></pre></div>
+<h3 id="masquage-et-priorités"><span class="header-section-number">2.2.4</span> Masquage et priorités</h3>
+<p>En pratique, on veut souvent éviter d’interrompre le déroulement d’une routine de traitement. Pour cela on introduit un “masque d’interruptions”. Quand une interruption est masquée, elle est mise en attente, et sera prise en compte quand l’exécution de l’instruction <code>RTI</code> “démasquera” les interruptions.</p>
+<p>Plus généralement, il peut exister des <strong>niveaux</strong> d’interruptions : au niveau N, le processeur ne peut être interrompu que par une interruption de niveau plus élevé.</p>
+<h3 id="interruptions-logicielles"><span class="header-section-number">2.2.5</span> Interruptions logicielles</h3>
+<p>Enfin, il existe des instructions machine qui, quand elles s’exécutent, déclenchent une interruption. (<code>SYSCALL</code>, <code>SYSENTER</code>, <code>TRAP</code>, <code>int xxx</code>, …)</p>
+<p>Ces instructions sont utilisées en particulier pour faire des “appels systèmes”.</p>
+<h3 id="exemple-dappels-systèmes"><span class="header-section-number">2.2.6</span> Exemple d’appels systèmes</h3>
+<p><strong>Pour faire un appel système</strong>, le processus demandeur, qui s’exécute en mode normal (non privilégié) :</p>
+<ul>
+<li>met dans des registres les paramètres de l’appel, et le le numéro du service voulu.</li>
+<li>exécute une instruction d’appel (interruption logicielle).</li>
+</ul>
+<p>Exemple, en assembleur x86 sous MS-DOS 2.0 16 bits</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode asm"><code class="sourceCode fasm"><a class="sourceLine" id="cb3-1" title="1">    <span class="bu">org</span><span class="bn">  0x100         </span><span class="co">; adresse de chargement </span></a>
+<a class="sourceLine" id="cb3-2" title="2">    </a>
+<a class="sourceLine" id="cb3-3" title="3">    <span class="bu">mov</span>  <span class="kw">dx</span>,msg         <span class="co">; adresse chaine</span></a>
+<a class="sourceLine" id="cb3-4" title="4">    <span class="bu">mov</span>  <span class="kw">cx</span>,<span class="dv">13</span>          <span class="co">; longueur chaine</span></a>
+<a class="sourceLine" id="cb3-5" title="5">    <span class="bu">mov</span>  <span class="kw">bx</span>,<span class="dv">1</span>           <span class="co">; sortie standard</span></a>
+<a class="sourceLine" id="cb3-6" title="6">    <span class="bu">mov</span><span class="bn">  ah,0x40        </span><span class="co">; service = &quot;write device&quot;</span></a>
+<a class="sourceLine" id="cb3-7" title="7">    <span class="bu">int</span><span class="bn">  0x21</span></a>
+<a class="sourceLine" id="cb3-8" title="8">    </a>
+<a class="sourceLine" id="cb3-9" title="9">    <span class="bu">mov</span><span class="bn">  ah,0x4C        </span><span class="co">; service = &quot;terminer le programme&quot;</span></a>
+<a class="sourceLine" id="cb3-10" title="10">    <span class="bu">int</span><span class="bn">  0x21</span></a>
+<a class="sourceLine" id="cb3-11" title="11">    </a>
+<a class="sourceLine" id="cb3-12" title="12">msg <span class="dt">db</span> <span class="st">&quot;Hello, world!&quot;</span></a></code></pre></div>
+<p><strong>L’exécution de l’instruction</strong> <code>int 0x21</code> provoque une interruption logicielle qui</p>
+<ul>
+<li>sauve quelques registres sur une pile (PC, registre d’état, …),</li>
+<li><strong>passe en mode privilégié</strong> (“anneau de protection” 0, sur x86, qui a 4 modes),</li>
+<li>détourne l’exécution vers l’adresse définie pour l’interruption numéro 33 (<code>0x21</code> en hexadécimal) dans la table de vecteurs d’interruption. Cette interruption regroupe les services d’entrée-sortie sous DOS.</li>
+</ul>
+<p>À partir de là, le système d’exploitation exécute les actions nécessaires (écriture sur l’écran) et relance l’exécution de la tâche interrompue en revenant au mode normal (ou pas, si il s’agissait d’arrêter le programme).</p>
+<p>Note : UNIX comportait au départ 80 appels système. les systèmes actuels en ont plusieurs centaines.</p>
+<h2 id="modes-de-fonctionnement"><span class="header-section-number">2.3</span> Modes de fonctionnement</h2>
+<h3 id="motivation-protection-système-processus"><span class="header-section-number">2.3.1</span> Motivation : protection système / processus</h3>
+<p>Un système d’exploitation fournit des <strong>services</strong> aux programmes qui tournent dessus. Pour le programmeur d’application, ces services simplifient l’accès aux ressources.</p>
+<p>Par exemple, quand un programmeur veut faire afficher quelque chose à l’écran, il écrit <code>System.out.println(&quot;Coucou&quot;)</code> sans avoir besoin de connaître le type de carte écran, ou de carte réseau. Le système d’exploitation fournit une <strong>abstraction</strong> du matériel à travers une API.</p>
+<p>Mais pour que ça se passe bien, il ne ne fait pas que les programmes utilisateurs puissent agir eux-mêmes directement sur le matériel en contournant l’API.</p>
+<p>Les programmes d’application devront passer par des <strong>appels système</strong>, qui donneront la main au système d’exploitation, qui agira sur le matériel après avoir vérifié que ce qu’on lui demande est acceptable.</p>
+<h3 id="modes-normal-et-privilégié"><span class="header-section-number">2.3.2</span> Modes normal et privilégié</h3>
+<p>Pour cela, les processeurs<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> ont (au moins) deux modes de fonctionnement<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
+<ul>
+<li>un <strong>mode normal</strong> pour l’exécution des programmes d’application,</li>
+<li>un <strong>mode privilégié</strong> pour l’exécution du système.</li>
+</ul>
+<p>Certaines instructions (accès aux périphériques par exemple) ne peuvent être exécutées qu’en mode privilégié. En mode normal, toute tentative d’exécuter de telles instructions provoquent une exception “instruction illégale”.</p>
+<p>En mode normal, certaines instructions (<code>int</code>, <code>sysenter</code>, …) déclenchent une interruption logicielle qui fait repasser en mode privilégié. Elles servent à réaliser des “appels système”.</p>
+<h2 id="protection-mémoire-teaser"><span class="header-section-number">2.4</span> Protection mémoire (teaser)</h2>
+<p>Nous verrons plus loin les <strong>mécanismes de protection mémoire</strong> qui font qu’une tâche qui s’exécute en mode normal ne pourra accéder qu’à la partie de la mémoire qui lui est affectée.</p>
+<p>Les instructions (et les données) du système d’exploitation sont dans une zone mémoire inaccessible aux programmes “normaux”.</p>
+<p>C’est l’exécution d’une interruption logicielle qui fait basculer le processeur en mode privilégié, et le dirige vers un “guichet d’entrée”, où sont vérifiés les paramètres qui indiquent le service voulu.</p>
+<h1 id="résumé"><span class="header-section-number">3</span> Résumé</h1>
+<p>Un système d’exploitation est un ensemble de logiciels destiné à faciliter l’utilisation (l’exploitation) d’une machine par les programmes d’application.</p>
+<p>Le système d’exploitation prend en charge l’accès aux ressources matérielles (mémoire, périphériques etc.).</p>
+<p>Un système multi-tâches fait tourner plusieurs programmes présents en mémoire simultanément.</p>
+<p>Pour tenir ce rôle avec efficacité, des mécanismes matériels ont été introduits dans la conception des processeurs dans les années 50-60 :</p>
+<ul>
+<li>les interruptions,</li>
+<li>les modes de fonctionnement,</li>
+<li>et enfin, des mécanismes de protection mémoire que nous verrons le moment venu.</li>
+</ul>
+<p>Ces mécanismes permettent de faire respecter des principes :</p>
+<ol type="1">
+<li>Le programmeur d’application souhaite écrire des programmes qui fonctionnent sur des machines diverses, avec des périphériques de types différents, etc. Le système d’exploitation fournit une <strong>couche d’abstraction</strong> qui libère le programmeur d’application des détails spécifiques d’une machine. C’est le même code pour lire un fichier sur disque, sur clé USB ou situé sur un serveur.</li>
+<li>Les programmes d’application n’ont accès qu’aux ressources (mémoire, fichiers, …) dont ils ont strictement besoin. Le <strong>cloisonnement</strong> restreint les conséquences d’un “comportement inattendu”.</li>
+<li>En raison du <strong>principe de moindre privilège</strong>, les programmes d’application s’exécutent dans un mode non-privilégié. Ils invoquent des <strong>appels système</strong> qui donnent la main au noyau du système d’exploitation, qui tourne en mode privilégié, et - après vérification de la légitimité des demandes - exécuté pour eux l’action demandée.</li>
+</ol>
+<p>Lecture : <a href="https://www.ssi.gouv.fr/guide/recommandations-pour-la-mise-en-place-de-cloisonnement-systeme/" class="uri">https://www.ssi.gouv.fr/guide/recommandations-pour-la-mise-en-place-de-cloisonnement-systeme/</a></p>
+<h1 id="glossaire"><span class="header-section-number">4</span> Glossaire</h1>
+<ul>
+<li><strong>Appel système</strong> : séquence d’instructions exécutée par un programme d’application pour demander au système d’accomplir une certaine fonctionnalité. Charge les paramètres et le numéro de fonctionnalité dans des registres, et exécute une interruption logicielle spécifique.</li>
+<li><strong>Exception</strong> (<em>trap</em>, <em>fault</em>) : interruption synchrone déclenchée par une condition exceptionnelle. Exemple <em>exception arithmétique</em> en cas de division par zéro, passage sur un point d’arrêt (breakpoint), …</li>
+<li><strong>Interruption</strong>, au sens large, évènement qui provoque une suspension du cycle normal d’exécution des instructions dans un processeur. L’état interne du processeur est partiellement sauvé dans une pile système, et l’exécution est détournée vers une <em>routine de traitement</em> de l’interruption.</li>
+<li><strong>Interruption logicielle</strong> (IRQ = interrupt request), est déclenchée par l’exécution d’une instruction spéciale (<code>INT</code>, <code>SYSENTER</code>, …)</li>
+<li><strong>Interruption matérielle</strong>, asynchrone, est émise par un périphérique.</li>
+<li><strong>Masquage</strong> : possibilité, en mode privilégié, d’ignorer provisoirement l’arrivée de certaines interruptions, qui seront prises en compte quand elles sertont *démasquées**.</li>
+<li><strong>Mode normal</strong> : dans ce mode (destiné aux programmes “normaux”) le processeur ne peut utiliser que certains instructions.</li>
+<li><strong>Mode privilégié</strong> : dans ce mode (en principe réservé pour le système) le processeur peut exécuter toutes les instructions existantes.</li>
+<li><strong>Privilège</strong> : permet à un composant logiciel (système, programme d’application) qui en dispose de mener légitimement à bien une action sur une ressource.</li>
+<li><strong>Routine de traitement d’interruption</strong> : séquence d’instructions à exécuter lorsqu’une interruption spécifique se produit.</li>
+<li><strong>Vecteur d’interruption</strong> : structure qui décrit l’action à effectuer lorsqu’une interruption est traitée : adresse du code, etc. Dans sa forme la plus simple, contient une simple instruction : retour d’interruption ou branchement vers une routine de traitement.</li>
+</ul>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Un <strong>vecteur d’interruption</strong> est une structure de données qui contient en particulier l’adresse d’une routine de traitement d’interruption.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>quand ils sont destinés aux systèmes mutitâches. Ce n’est pas le cas des micro-contrôleurs des cartes Arduino “de base”.<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>Sur l’architecture x86 des PC, il y a 4 modes, appelés “anneaux de protection” (<em>rings</em>). La plupart des systèmes d’exploitation n’en utilisent que 2.<a href="#fnref3" class="footnote-back">↩</a></p></li>
+</ol>
+</section>
+</body>
+</html>

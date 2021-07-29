@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Michel Billaud (michel.billaud@u-bordeaux.fr, michel.billaud@laposte.net)" />
+  <title>Stockage Permanent</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <style type="text/css">a.sourceLine {
+display: inline-block;
+line-height: 1.25;
+}
+a.sourceLine {
+pointer-events: none;
+color: inherit;
+text-decoration: inherit;
+}
+a.sourceLine:empty {
+height: 1.2em;
+}
+.sourceCode {
+overflow: visible;
+}
+code.sourceCode {
+white-space: pre;
+position: relative;
+}
+div.sourceCode {
+margin: 1em 0;
+}
+pre.sourceCode {
+margin: 0;
+}
+@media screen {
+div.sourceCode {
+overflow: auto;
+}
+}
+@media print {
+code.sourceCode {
+white-space: pre-wrap;
+}
+a.sourceLine {
+text-indent: -1em;
+padding-left: 1em;
+}
+}
+pre.numberSource a.sourceLine {
+position: relative;
+left: -4em;
+}
+pre.numberSource a.sourceLine::before {
+content: attr(title);
+position: relative;
+left: -1em;
+text-align: right;
+vertical-align: baseline;
+border: none;
+pointer-events: all;
+display: inline-block;
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+padding: 0 4px;
+width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource {
+margin-left: 3em;
+border-left: 1px solid #aaaaaa;
+padding-left: 4px;
+}
+div.sourceCode {}
+@media screen {
+a.sourceLine::before {
+text-decoration: underline;
+}
+}
+code span.al {
+color: #ff0000;
+font-weight: bold;
+}
+
+code span.an {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+code span.at {
+color: #7d9029;
+}
+
+code span.bn {
+color: #40a070;
+}
+
+code span.bu {}
+
+code span.cf {
+color: #007020;
+font-weight: bold;
+}
+
+code span.ch {
+color: #4070a0;
+}
+
+code span.cn {
+color: #880000;
+}
+
+code span.co {
+color: #60a0b0;
+font-style: italic;
+}
+
+code span.cv {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+code span.do {
+color: #ba2121;
+font-style: italic;
+}
+
+code span.dt {
+color: #902000;
+}
+
+code span.dv {
+color: #40a070;
+}
+
+code span.er {
+color: #ff0000;
+font-weight: bold;
+}
+
+code span.ex {}
+
+code span.fl {
+color: #40a070;
+}
+
+code span.fu {
+color: #06287e;
+}
+
+code span.im {}
+
+code span.in {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+code span.kw {
+color: #007020;
+font-weight: bold;
+}
+
+code span.op {
+color: #666666;
+}
+
+code span.ot {
+color: #007020;
+}
+
+code span.pp {
+color: #bc7a00;
+}
+
+code span.sc {
+color: #4070a0;
+}
+
+code span.ss {
+color: #bb6688;
+}
+
+code span.st {
+color: #4070a0;
+}
+
+code span.va {
+color: #19177c;
+}
+
+code span.vs {
+color: #4070a0;
+}
+
+code span.wa {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+
+:root {
+--title-color: #202080;
+--source-bg-color: rgb(240, 240, 255);
+}
+h1, h2, h3, h4, h5, h6 {
+border-bottom: solid 1px silver;
+color: var(--title-color);
+}
+body {
+font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+div.sourceCode {
+background-color: var(--source-bg-color);
+padding: 1em;
+}
+#TOC {
+padding: 0.5em;
+border: solid 1px silver;
+}
+#TOC ul {
+list-style-type: none;
+padding-left: 1em;
+}
+nav:before {
+text-indent: 2em;
+content: "Sommaire";
+color: var(--title-color);
+font-weight: bold;
+font-size: large;
+}
+#TOC a {
+text-decoration: none;
+}
+header {
+text-align: center;
+}
+.title {
+}
+.author, .date {
+font-style: italic;
+}
+table, th, td {
+border-collapse: collapse;
+border: solid black 1px;
+padding: 0.5em;
+}
+</style>
+</head>
+<body>
+<header>
+<h1 class="title">Stockage Permanent</h1>
+<p class="subtitle">Systèmes d’exploitation</p>
+<p class="author">Michel Billaud (<a href="mailto:michel.billaud@u-bordeaux.fr">michel.billaud@u-bordeaux.fr</a>, <a href="mailto:michel.billaud@laposte.net">michel.billaud@laposte.net</a>)</p>
+<p class="date">14 octobre 2020</p>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#système-de-fichiers"><span class="toc-section-number">1</span> Système de fichiers</a><ul>
+<li><a href="#api-des-fichiers"><span class="toc-section-number">1.1</span> API des fichiers :</a></li>
+<li><a href="#api-sur-larborescence"><span class="toc-section-number">1.2</span> API sur l’arborescence</a></li>
+<li><a href="#exemple"><span class="toc-section-number">1.3</span> Exemple</a></li>
+</ul></li>
+<li><a href="#stockage-aspects-matériels"><span class="toc-section-number">2</span> Stockage, aspects matériels</a><ul>
+<li><a href="#disque-magnétique"><span class="toc-section-number">2.1</span> Disque magnétique</a><ul>
+<li><a href="#principe"><span class="toc-section-number">2.1.1</span> Principe</a></li>
+<li><a href="#plateaux"><span class="toc-section-number">2.1.2</span> Plateaux</a></li>
+<li><a href="#temps-daccès-localité"><span class="toc-section-number">2.1.3</span> Temps d’accès, localité</a></li>
+</ul></li>
+<li><a href="#stockage-en-mémoire-flash-solid-state-drive"><span class="toc-section-number">2.2</span> Stockage en mémoire flash (Solid State Drive)</a><ul>
+<li><a href="#cellules-pages-et-blocs"><span class="toc-section-number">2.2.1</span> Cellules, pages et blocs</a></li>
+<li><a href="#comparaison-avec-disque-magnétique"><span class="toc-section-number">2.2.2</span> Comparaison avec disque magnétique</a></li>
+</ul></li>
+<li><a href="#ordonnancement-des-requêtes"><span class="toc-section-number">2.3</span> Ordonnancement des requêtes</a><ul>
+<li><a href="#stratégie-fifo"><span class="toc-section-number">2.3.1</span> Stratégie FIFO</a></li>
+<li><a href="#stratégie-au-plus-proche-dabord"><span class="toc-section-number">2.3.2</span> Stratégie “au plus proche d’abord”</a></li>
+<li><a href="#stratégie-de-lascenseur"><span class="toc-section-number">2.3.3</span> Stratégie de l’ascenseur</a></li>
+<li><a href="#ordonnancement-sur-échéance-deadline-scheduling"><span class="toc-section-number">2.3.4</span> Ordonnancement sur échéance (Deadline Scheduling)</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#architecture-dune-unité-de-stockage"><span class="toc-section-number">3</span> Architecture d’une unité de stockage</a><ul>
+<li><a href="#protocoles-de-communication-avec-lordinateur-hôte"><span class="toc-section-number">3.1</span> Protocoles de communication avec l’ordinateur hôte</a></li>
+<li><a href="#utilisation-de-mémoire-dans-le-contrôleur."><span class="toc-section-number">3.2</span> Utilisation de mémoire dans le contrôleur.</a></li>
+<li><a href="#disques-hybrides-sshd-solid-state-hybrid-drive"><span class="toc-section-number">3.3</span> Disques hybrides (SSHD, Solid State Hybrid Drive)</a></li>
+</ul></li>
+<li><a href="#virtualisation-du-stockage"><span class="toc-section-number">4</span> Virtualisation du stockage</a><ul>
+<li><a href="#agrégation-de-données"><span class="toc-section-number">4.1</span> Agrégation de données</a></li>
+<li><a href="#raid-0-agrégation-par-bande"><span class="toc-section-number">4.2</span> RAID 0 : agrégation par bande</a></li>
+<li><a href="#raid-1-miroir"><span class="toc-section-number">4.3</span> RAID 1 : miroir</a></li>
+<li><a href="#reconstruction-spare-disks"><span class="toc-section-number">4.4</span> Reconstruction, spare disks</a></li>
+<li><a href="#raid-4-agrégation-par-blocs-avec-parité"><span class="toc-section-number">4.5</span> RAID 4 : agrégation par blocs avec parité</a></li>
+<li><a href="#raid-5-agrégation-par-blocs-à-parité-répartie"><span class="toc-section-number">4.6</span> RAID 5 : agrégation par blocs à parité répartie</a></li>
+<li><a href="#exemple-de-combinaison-raid-51"><span class="toc-section-number">4.7</span> Exemple de combinaison : RAID 5+1</a></li>
+</ul></li>
+<li><a href="#système-de-fichiers-1"><span class="toc-section-number">5</span> Système de fichiers</a><ul>
+<li><a href="#définition"><span class="toc-section-number">5.1</span> Définition</a></li>
+<li><a href="#couches"><span class="toc-section-number">5.2</span> Couches</a></li>
+<li><a href="#questions-abordées"><span class="toc-section-number">5.3</span> Questions abordées</a></li>
+<li><a href="#blocs"><span class="toc-section-number">5.4</span> Blocs</a></li>
+<li><a href="#extent-domaine"><span class="toc-section-number">5.5</span> Extent, domaine</a></li>
+<li><a href="#exemple-simple-le-système-de-fichiers-de-cpm"><span class="toc-section-number">5.6</span> Exemple simple : le système de fichiers de CP/M</a></li>
+<li><a href="#exemple-simple-le-système-de-fichiers-fat"><span class="toc-section-number">5.7</span> Exemple simple : Le système de fichiers FAT</a></li>
+<li><a href="#ntfs"><span class="toc-section-number">5.8</span> NTFS</a></li>
+</ul></li>
+</ul>
+</nav>
+<p>L’ordinateur comporte des périphériques de stockage permanents (disques magnétiques, mémoire flash, etc.).</p>
+<p>Pour le stockage et le manipulation des données enregistrées sur ces supports, le système d’exploitation implémente la notion de <strong>système de fichiers</strong>.</p>
+<h1 id="système-de-fichiers"><span class="header-section-number">1</span> Système de fichiers</h1>
+<p>Abstraction selon laquelle (en général), pour le programmeur d’applications</p>
+<ul>
+<li>les données sont stockées dans des <em>fichiers</em>,</li>
+<li>ces fichiers sont contenus dans une structure arborescente (répertoires, dossiers, ).</li>
+</ul>
+<h2 id="api-des-fichiers"><span class="header-section-number">1.1</span> API des fichiers :</h2>
+<ul>
+<li>ouvrir un fichier (<code>open</code>) : le système d’exploitation fournit au programme d’application un identifiant (<em>file descriptor</em>) qui correspond à un fichier.</li>
+<li>lire/écrire (<code>read</code>, <code>write</code>) des données (un certain nombre d’octets, à partir de la position courante</li>
+<li>connaître/changer la position (<code>lseek</code>),</li>
+<li>verrouiller le fichier (<code>flock</code>) pour s’assurer qu’aucun autre processus n’y accès en même temps,</li>
+<li>fermer (<code>close</code>) : mettre fin à cette correspondance.</li>
+<li>…</li>
+</ul>
+<h2 id="api-sur-larborescence"><span class="header-section-number">1.2</span> API sur l’arborescence</h2>
+<ul>
+<li>supprimer (<code>unlink</code>) un fichier</li>
+<li>le déplacer (<code>rename</code>)</li>
+<li>créer un <em>lien</em> symbolique (<code>symlink</code>) ou matériel (<code>link</code>) sur un fichier existant</li>
+<li>parcourir un répertoire (<code>opendir</code>, etc.).</li>
+<li>consulter les <em>caractéristiques</em> d’un fichier/répertoire (<code>stat</code>, …),</li>
+<li>modifier les droits d’accès (<code>chmod</code>)</li>
+<li>…</li>
+</ul>
+<h2 id="exemple"><span class="header-section-number">1.3</span> Exemple</h2>
+<p>Programme en C (sous UNIX) qui montre ce qu’il y a dans le répertoire courant. Une barre de fraction est ajoutée après les noms de répertoires.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode c"><code class="sourceCode c"><a class="sourceLine" id="cb1-1" title="1"><span class="pp">#include </span><span class="im">&lt;dirent.h&gt;</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="pp">#include </span><span class="im">&lt;stdbool.h&gt;</span></a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></a>
+<a class="sourceLine" id="cb1-5" title="5"><span class="pp">#include </span><span class="im">&lt;sys/stat.h&gt;</span></a>
+<a class="sourceLine" id="cb1-6" title="6"><span class="pp">#include </span><span class="im">&lt;sys/types.h&gt;</span></a>
+<a class="sourceLine" id="cb1-7" title="7"><span class="pp">#include </span><span class="im">&lt;assert.h&gt;</span></a>
+<a class="sourceLine" id="cb1-8" title="8"></a>
+<a class="sourceLine" id="cb1-9" title="9"><span class="dt">int</span> main()         </a>
+<a class="sourceLine" id="cb1-10" title="10">{</a>
+<a class="sourceLine" id="cb1-11" title="11">  DIR* dir = opendir(<span class="st">&quot;.&quot;</span>);</a>
+<a class="sourceLine" id="cb1-12" title="12">  assert(dir != NULL);</a>
+<a class="sourceLine" id="cb1-13" title="13"></a>
+<a class="sourceLine" id="cb1-14" title="14">  <span class="cf">while</span> (true) {</a>
+<a class="sourceLine" id="cb1-15" title="15">    <span class="kw">struct</span> dirent* entry = readdir(dir);</a>
+<a class="sourceLine" id="cb1-16" title="16">    <span class="cf">if</span> (entry == NULL) <span class="cf">break</span>;</a>
+<a class="sourceLine" id="cb1-17" title="17"></a>
+<a class="sourceLine" id="cb1-18" title="18">    printf(<span class="st">&quot;%s&quot;</span>, entry-&gt;d_name);</a>
+<a class="sourceLine" id="cb1-19" title="19"></a>
+<a class="sourceLine" id="cb1-20" title="20">    <span class="co">// si c'est un répertoire, afficher un / à la fin</span></a>
+<a class="sourceLine" id="cb1-21" title="21">    <span class="kw">struct</span> stat entry_stat;</a>
+<a class="sourceLine" id="cb1-22" title="22">    <span class="dt">int</span> r = stat(entry-&gt;d_name, &amp;entry_stat);</a>
+<a class="sourceLine" id="cb1-23" title="23">    assert(r == <span class="dv">0</span>);</a>
+<a class="sourceLine" id="cb1-24" title="24">    <span class="cf">if</span> ((entry_stat.st_mode &amp; S_IFMT) == S_IFDIR) {</a>
+<a class="sourceLine" id="cb1-25" title="25">      printf(<span class="st">&quot;/&quot;</span>);</a>
+<a class="sourceLine" id="cb1-26" title="26">    }</a>
+<a class="sourceLine" id="cb1-27" title="27">    printf(<span class="st">&quot;</span><span class="sc">\t</span><span class="st">&quot;</span>);</a>
+<a class="sourceLine" id="cb1-28" title="28">  }</a>
+<a class="sourceLine" id="cb1-29" title="29">  </a>
+<a class="sourceLine" id="cb1-30" title="30">  printf(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>);</a>
+<a class="sourceLine" id="cb1-31" title="31">  <span class="cf">return</span> <span class="dv">0</span>;</a>
+<a class="sourceLine" id="cb1-32" title="32">}</a></code></pre></div>
+<p><strong>Note</strong> : le traitement des erreurs est sommaire. La macro <code>assert</code> arrête le programme si la condition est fausse.</p>
+<p><strong>Exemple d’exécution</strong></p>
+<pre><code>$ ./dir 
+dir .vscode/    dir.c   Makefile    ../ ./  </code></pre>
+<h1 id="stockage-aspects-matériels"><span class="header-section-number">2</span> Stockage, aspects matériels</h1>
+<h2 id="disque-magnétique"><span class="header-section-number">2.1</span> Disque magnétique</h2>
+<p>Dit “disque dur” (Hard disk)</p>
+<h3 id="principe"><span class="header-section-number">2.1.1</span> Principe</h3>
+<ul>
+<li>plateau (verre, céramique, …) couvert d’un enduit ferro-magnétique, en rotation rapide autour d’un axe,</li>
+<li>tête de lecture et enregistrement, portée par un bras mobile.</li>
+</ul>
+<p>Quand le disque est en fonction, il tourne constamment (3600-15000 tours/minute). Pour une position donnée du bras, la tête de lecture parcourt donc (relativement) une <strong>piste</strong> circulaire découpée en secteurs (angulaires) sur lesquels sont enregistrés des blocs d’octets (typiquement 4K octets).</p>
+<p>Un bloc est repéré par</p>
+<ul>
+<li>son numéro de piste</li>
+<li>un numéro de secteur</li>
+</ul>
+<p>Pour accéder à un bloc, il faut</p>
+<ul>
+<li>déplacer le bras pour l’amener sur la piste voulue,</li>
+<li>attendre que la rotation fasse passer le bloc voulu sous la tête.</li>
+</ul>
+<h3 id="plateaux"><span class="header-section-number">2.1.2</span> Plateaux</h3>
+<p>En réalité, l’axe d’unité de disque modernes entraîne plusieurs plateaux, et le bras mobile porte une tête pour chaque face.</p>
+<p>Les blocs décrits pour un position du bras s’appellent un <strong>cylindre</strong>.</p>
+<h3 id="temps-daccès-localité"><span class="header-section-number">2.1.3</span> Temps d’accès, localité</h3>
+<p>Le temps d’accès est donc lié à des facteurs mécaniques. Il peut donc varier considérablement, selon qu’on doit ou non changer de piste/cylindre, et qu’on lit/écrit plusieurs blocs d’une piste consécutivement.</p>
+<p>Quand un programme traite un fichier, il est assez probable qu’il le fasse séquentiellement. Pour ces raisons, un système d’exploitation essaiera (principe de localité) de “loger” les blocs d’un même fichier dans une même région du disque (avec des numéros de blocs voisins), pour éviter d’avoir à bouger le bras qui porte la tête de lecture.</p>
+<p>Quand un programme demande à lire un bloc, on en profitera pour lire d’autres blocs du même cylindre, que l’on stockera dans des tampons mémoire , au cas où on en aura besoin ensuite (lectures anticipées).</p>
+<p>Le temps d’accès moyen, de nos jours, est de l’ordre de 10 ms, soit environ 100 IOPS (Input-Output operations Per Second). Le débit est de l’ordre de 260 Mo/s.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
+<p>Prix grand public 2020 : environ 50 € pour 2 To. 500 € pour 12 To.</p>
+<h2 id="stockage-en-mémoire-flash-solid-state-drive"><span class="header-section-number">2.2</span> Stockage en mémoire flash (Solid State Drive)</h2>
+<p>Technologie complètement différente, utilise des mémoires à semi-conducteurs.</p>
+<h3 id="cellules-pages-et-blocs"><span class="header-section-number">2.2.1</span> Cellules, pages et blocs</h3>
+<p>L’élément de base est une <strong>cellule</strong> qui mémorise (comme un condensateur) un niveau de tension, et peut représenter quelques bits (1 à 4 ?).</p>
+<p>Une <strong>page</strong> regroupe des cellules, avec une capacité typique de 512, 2048 ou 4096 octets. Les pages sont regroupées en <strong>blocs</strong><a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> de 32-128 pages. Un circuit mémoire contient des blocs etc.</p>
+<p>Les opérations de lecture/écriture se font par page. Mais l’écriture ne peut se faire que dans une page qui a été préalablement effacée, et l’effacement se fait par bloc complet.<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a></p>
+<p>La vitesse de lecture/écriture est bien plus élevée (jusqu’à 3 Go/s) et le temps de latence beaucoup plus court, qui ne dépend pas de la localité des données. Il faut noter aussi que le nombre d’écritures par cellule est limité, ce qui réduit la durée de vie.</p>
+<p>Les problématiques de gestion sont donc très différentes de celles des disques durs. On essaie de répartir l’usure sur les différents blocs de pages, en minimisant le nombre d’effacements. On tient donc une comptabilité des pages occupées, libres (effacées) et périmées (que l’on peut effacées) et défectueuses.</p>
+<h3 id="comparaison-avec-disque-magnétique"><span class="header-section-number">2.2.2</span> Comparaison avec disque magnétique</h3>
+<p>Avantages :</p>
+<ul>
+<li>beaucoup plus rapide,</li>
+<li>accès aléatoire en temps constant.</li>
+</ul>
+<p>Inconvénients par rapport au disque magnétique :</p>
+<ul>
+<li>prix beaucoup plus élevé (en 2020 : 2To pour 500 €)</li>
+<li>durée de vie moindre</li>
+</ul>
+<h2 id="ordonnancement-des-requêtes"><span class="header-section-number">2.3</span> Ordonnancement des requêtes</h2>
+<p>Contexte : plusieurs processus demandent au système d’exploitation de faire des requêtes d’entrées-sorties sur un disque. L’unité de disque ne peut en traiter qu’une à la fois.</p>
+<p>Le système d’exploitation a donc un stock de requête à faire traiter par le disque. Une<strong>stratégie d’ordonnancement</strong> indique comment choisir la prochaine requête à exécuter.</p>
+<p>Dans le cas des disques magnétiques, la durée d’exécution d’une requête dépend fortement de la distance à parcourir par le bras qui porte les têtes de lectures. Plusieurs stratégies sont présentées ci-dessous.</p>
+<p>Plusieurs critères pour juger d’une stratégie</p>
+<ul>
+<li>traiter un maximum de requêtes par seconde (utilisation efficace du disque),</li>
+<li>ne pas trop différer l’exécution des requêtes (équitabilité).</li>
+</ul>
+<h3 id="stratégie-fifo"><span class="header-section-number">2.3.1</span> Stratégie FIFO</h3>
+<p>Consiste à exécuter les requêtes dans l’ordre où elles sont arrivées.</p>
+<p>Exemple : 4 processus A, B, C, D qui lisent des données sur disque. A demandera des blocs consécutifs à partir de la piste 0, B à partir de la piste 100, C à partir de 10, D à partir de 110.</p>
+<p>En les traitant dans cet ordre on aura des déplacements de tête de la piste 0 à 100 puis 10 puis 110, puis 1, 101, 11, 111, etc.</p>
+<p>C’est une stratégie équitable, mais peu performante, le temps de déplacement du bras étant proportionnel au nombre de pistes traversées.</p>
+<h3 id="stratégie-au-plus-proche-dabord"><span class="header-section-number">2.3.2</span> Stratégie “au plus proche d’abord”</h3>
+<p>Pour minimiser les mouvement du bras, une idée est de choisir la requête qui demandera le moins de déplacement. Après avoir lu la piste 0, on choisira la requête concernant la piste 10, qui est la plus proche.</p>
+<p>Mais si, pendant cette lecture, le processus A a eu le temps d’émettre une autre requête, on reviendra à la piste 1. Puis 11, 2, 12, 3, etc. : les requêtes des processus C et D sont remises à plus tard, parce qu’elles sont “trop loin”.</p>
+<p>Cette stratégie est donc plus performante en nombre d’entrées-sorties, mais moins équitable.</p>
+<h3 id="stratégie-de-lascenseur"><span class="header-section-number">2.3.3</span> Stratégie de l’ascenseur</h3>
+<p>Dans cette stratégie, on traite les requêtes dans une direction (numéros de pistes montants, ou descendants), puis on change de direction, à la manière d’un ascenseur qui “ramasse” les passagers en montant, puis en descendant.</p>
+<p>En partant de la piste 0, on passe à 10, puis 100, puis 110. On change alors de direction : 101, 21, 1. On change encore : 22, 102, 202, etc.</p>
+<p>Ainsi on a un compromis qui réduit le nombre de mouvements du bras, tout en garantissant une certaine équitabilité.</p>
+<h3 id="ordonnancement-sur-échéance-deadline-scheduling"><span class="header-section-number">2.3.4</span> Ordonnancement sur échéance (Deadline Scheduling)</h3>
+<p>Dans cette stratégie, on fixe un délai après lequel une requête est considérée comme devenue urgente<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>.</p>
+<p>On choisit alors</p>
+<ul>
+<li>la plus ancienne des requêtes urgentes, si il en existe</li>
+<li>sinon celle qui demande le moins de déplacement.</li>
+</ul>
+<h1 id="architecture-dune-unité-de-stockage"><span class="header-section-number">3</span> Architecture d’une unité de stockage</h1>
+<p>Interopérabilité des matériels, Communication uniformisée avec l’ordinateur, standards SATA, SCSI, …</p>
+<p>L’unité de stockage comporte (en plus du dispositif matériel) un contrôleur avec une interface hôte, de la mémoire RAM (pour les tampons) et l’électronique de commande.</p>
+<p>L’électronique de commande peut assurer des fonctions qui étaient autrefois prises en charge par le système d’exploitation (gestion des blocs défectueux, lectures anticipées, tampons, …), et qui sont donc décentralisées dans l’unité de disque.</p>
+<h2 id="protocoles-de-communication-avec-lordinateur-hôte"><span class="header-section-number">3.1</span> Protocoles de communication avec l’ordinateur hôte</h2>
+<p>Nécessité d’avoir un standard pour interconnecter des matériels de constructeurs différents.</p>
+<ul>
+<li>ATA : Advanced Technology Attachment</li>
+<li>PATA : parallel ATA. Autrefois IDE Integrated Device Electronics. Obsolète.</li>
+<li>SATA : serial ATA</li>
+<li>SCSI : Small Computer System Interface</li>
+<li>SAS : Serial attached SCSI</li>
+</ul>
+<p>https://en.wikipedia.org/wiki/List_of_interface_bit_rates</p>
+<table>
+<thead>
+<tr class="header">
+<th>techno</th>
+<th>année</th>
+<th>type</th>
+<th>débit</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>PATA</td>
+<td>1986</td>
+<td>parallèle (16 bits)</td>
+<td>8.3 MB/s</td>
+</tr>
+<tr class="even">
+<td>ATA 7 / UDMA 133</td>
+<td>2002</td>
+<td></td>
+<td>133 MB/s</td>
+</tr>
+<tr class="odd">
+<td>SATA 1.0</td>
+<td>2003</td>
+<td>série</td>
+<td>150 MB/s</td>
+</tr>
+<tr class="even">
+<td>SATA 2.0</td>
+<td>2004</td>
+<td></td>
+<td>300 MB/s</td>
+</tr>
+<tr class="odd">
+<td>SATA 3.0</td>
+<td>2008</td>
+<td></td>
+<td>600 MB/s</td>
+</tr>
+<tr class="even">
+<td>SCSI-1</td>
+<td>1986</td>
+<td>parallèle (8 bits)</td>
+<td>5 MB/s</td>
+</tr>
+<tr class="odd">
+<td>Fast SCSI</td>
+<td>1994</td>
+<td>parallèle (16 bits)</td>
+<td>10 MB/s</td>
+</tr>
+<tr class="even">
+<td>Ultra 640 SCSI</td>
+<td>2003</td>
+<td>parallèle (16 bits)</td>
+<td>640 MB/s</td>
+</tr>
+<tr class="odd">
+<td>SAS-1</td>
+<td>2004</td>
+<td>série</td>
+<td>300 MB/s</td>
+</tr>
+<tr class="even">
+<td>SAS-4</td>
+<td>2017</td>
+<td></td>
+<td>2.4 GB/s</td>
+</tr>
+</tbody>
+</table>
+<p>Le débit indiqué concerne la vitesse de communication entre le contrôleur et la machine hôte, qui peut être bien supérieure au débit de lecture/écriture sur disque.</p>
+<p>Chacune de ces normes contient des commandes, pour</p>
+<ul>
+<li>identifier le matériel qui est connecté</li>
+<li>transmettre des requêtes d’entrée-sortie (lecture, écriture, formattage, etc).</li>
+</ul>
+<h2 id="utilisation-de-mémoire-dans-le-contrôleur."><span class="header-section-number">3.2</span> Utilisation de mémoire dans le contrôleur.</h2>
+<p>Définition : Une mémoire cache ou antémémoire est une mémoire qui enregistre temporairement des copies de données provenant d’une source, afin de diminuer la durée d’un accès ultérieur (en lecture) à ces données.</p>
+<p>La mémoire vive du contrôleur a plusieurs usages : mémoire tampon pour les écritures, et mémoire cache pour les lectures.</p>
+<ul>
+<li>Le résultat d’une lecture physique est mis dans un tampon du contrôleur avant d’être transmis à l’hôte.</li>
+<li>Si une demande de lecture concerne un bloc déjà lu et encore présent (en cache), le contrôleur peut répondre immédiatement sans lancer une lecture physique.</li>
+<li>Lorsque l’hôte envoie une requête d’écriture, le bloc à écrire est copié dans une zone tampon du contrôleur, en attente d’une écriture effective sur le disque physique, qui peut être donc différée. Le contrôleur peut les réordonner pour minimiser les déplacements.</li>
+</ul>
+<p>La mémoire tampon améliore nettement les performances. Mais elle est en quantité limitée<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>, le contrôleur la gère avec des algorithmes d’éviction (similarité avec la mémoire virtuelle).</p>
+<h2 id="disques-hybrides-sshd-solid-state-hybrid-drive"><span class="header-section-number">3.3</span> Disques hybrides (SSHD, Solid State Hybrid Drive)</h2>
+<p>Les fabricants proposent divers compromis prix/performance/capacité. Depuis 2007, on trouve dans le commerce des unités de stockage hybrides, avec trois niveaux</p>
+<ul>
+<li>stockage sur disque magnétique (permanent, faible coût)</li>
+<li>stockage en mémoire flash (permanent, rapide)</li>
+<li>mémoire RAM utilisée comme cache (très rapide).</li>
+</ul>
+<p>Le contrôleur fait en sorte que la mémoire flash contienne une copie des blocs les plus fréquemment utilisés. Il assure la synchronisation avec ces trois supports, et l’interface avec le système hôte.</p>
+<p>L’intérêt est de regrouper ces deux types de stockage (SSD rapide, HD avec grande capacité) dans une seule unité physique, ce qui a un intérêt pour les portables où il n’y a de place que pour une unité (et où les disques durs à 5400 t/mn sont relativement lents).</p>
+<p>Exemple : grand public pour environ 60 € (2020), Disque dur hybride Seagate FireCuda SSHD 500 Go (ST500LX025) Disque dur 2.5&quot; 500 Go (5400 t/mn), 8 Go NAND, 128 Mo Mémoire.</p>
+<p>En réalité cette technologie a connu un succès relatif, à cause de l’évolution des prix des composants : on trouve des unités SSD de même capacité pour quasiment le même prix, et de performances bien supérieures.</p>
+<h1 id="virtualisation-du-stockage"><span class="header-section-number">4</span> Virtualisation du stockage</h1>
+<p>Dans cette partie on regarde les techniques employées pour virtualiser le stockage, c’est-à-dire simuler un “disque virtuel” qui soit</p>
+<ul>
+<li>plus gros</li>
+<li>plus fiable (redondance)</li>
+<li>plus performant</li>
+</ul>
+<p>(pas forcément les 3 à la fois !) , à partir de plusieurs disques physiques.</p>
+<p>Depuis 1987, c’est ce qu’on appelle les technologies RAID (<em>Redundant Array of Independant Disks</em>).</p>
+<h2 id="agrégation-de-données"><span class="header-section-number">4.1</span> Agrégation de données</h2>
+<p>À partir de plusieurs disques D1, D2, … (on parle de “grappe de disques”) on forme un disque virtuel DV plus gros en considérant</p>
+<ul>
+<li>que les premiers blocs de DV se trouvent sur D1</li>
+<li>les blocs suivants sont sur D2,</li>
+<li>etc.</li>
+</ul>
+<p>Par exemple, avec un disque de 2 To et un autre de 1 To, on aura un disque virtuel de 3 To.</p>
+<p>Évaluation :</p>
+<ul>
+<li>la taille est augmentée</li>
+<li>les opérations peuvent être effectuées en parallèle si elles concernent des blocs appartenant à des disques différents.</li>
+</ul>
+<h2 id="raid-0-agrégation-par-bande"><span class="header-section-number">4.2</span> RAID 0 : agrégation par bande</h2>
+<p>Objectif : mieux répartir la charge.</p>
+<p>On utilise des disques de même taille. Chaque disque est considéré comme une succession de “bandes” (strips)<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>. Le disque virtuel est constitué des premières bandes des disques, puis des secondes etc.</p>
+<table>
+<thead>
+<tr class="header">
+<th>D1</th>
+<th>D2</th>
+<th>D3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>b1</td>
+<td>b2</td>
+<td>b3</td>
+</tr>
+<tr class="even">
+<td>b4</td>
+<td>b5</td>
+<td>b6</td>
+</tr>
+<tr class="odd">
+<td>b7</td>
+<td>b8</td>
+<td>b9</td>
+</tr>
+<tr class="even">
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Évaluation</p>
+<ul>
+<li>la capacité du disque virtuel est la somme des capacités.</li>
+<li>temps d’accès amélioré : la charge de travail est répartie de façon homogène entre les disques physiques, qui travaillent en parallèle.</li>
+</ul>
+<h2 id="raid-1-miroir"><span class="header-section-number">4.3</span> RAID 1 : miroir</h2>
+<p>Objectif : une redondance par duplication des données.</p>
+<p>On utilise (au moins) deux disques de même taille. Chaque disque contient une copie des informations.</p>
+<table>
+<thead>
+<tr class="header">
+<th>D1</th>
+<th>D2</th>
+<th>D3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>b1</td>
+<td>b1</td>
+<td>b1</td>
+</tr>
+<tr class="even">
+<td>b2</td>
+<td>b2</td>
+<td>b2</td>
+</tr>
+<tr class="odd">
+<td>b3</td>
+<td>b3</td>
+<td>b3</td>
+</tr>
+<tr class="even">
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+<tr class="odd">
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fonctionnement</strong></p>
+<ul>
+<li>Chaque écriture sur le disque virtuel se traduit par une écriture simultanée sur chaque disque physique.</li>
+<li>Les lectures sont réparties sur les disques.</li>
+</ul>
+<p><strong>Évaluation</strong></p>
+<ul>
+<li>amélioration de la fiabilité : on peut récupérer les informations tant qu’il y reste au moins un disque en état de fonctionner.</li>
+<li>performances meilleures en lecture que les disques physiques (du fait de la répartition)</li>
+</ul>
+<p><strong>Exercice</strong> : soit des disques ayant 5% de chances de tomber en panne dans l’année qui vient. Quelle est la probabilité de perdre ses données avec un système RAID 0 à 2 disques ? À 3 disques ? (On suppose des pannes indépendants).</p>
+<h2 id="reconstruction-spare-disks"><span class="header-section-number">4.4</span> Reconstruction, spare disks</h2>
+<p><strong>Panne</strong> : Lorsqu’un système RAID détecte des anomalies sur un disque, le disque est mis hors service, et une notification est envoyée à l’administrateur de le remplacer. Pendant ce temps, le travail peut continuer, avec un disque en moins, et des conditions dégradées.</p>
+<p><strong>Remplacement</strong> : Quand l’administrateur remplace le disque défaillant, le contrôleur RAID “reconstruit” automatiquement le contenu de ce disque à partir des données qui sont sur les autres, et le remet en fonction.</p>
+<p><strong>Spare disks</strong>: dans les matériels professionnels, une “baie de disques RAID” contient aussi des disques de rechange, qui sont immédiatement mis en service dès qu’un disque tombe en panne. Ceci minimise la durée de fonctionnement en mode dégradé. Le rôle de l’administrateur est alors de remplacer dès que possible les disques défectueux par des disques neufs.</p>
+<h2 id="raid-4-agrégation-par-blocs-avec-parité"><span class="header-section-number">4.5</span> RAID 4 : agrégation par blocs avec parité</h2>
+<p>Objectif : redondance sans duplication.</p>
+<p><strong>Parité et détection d’erreur</strong> : Si on transmet un octet (ex 01101101), 1 bit supplémentaire permet de contrôler que la transmission s’est faite correctement. Par exemple, on peut convenir qu’il y aura en tout un nombre pair de bits à 1. On adjoindra donc un 1<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a>, et on transmettra 011011011.</p>
+<p>À la réception, on détectera un problème si, parmi les 9 bits reçus, ceux qui sont à 1 sont en nombre impair.</p>
+<p><strong>Parité et correction</strong> : ce bit de parité permet aussi de corriger un bit manquant. Si on reçoit 01101x011, il est facile de voir que le bit x doit être à 1. On reconstitue l’information manquante.</p>
+<p>C’est parce qu’avec un système de parité paire, le “ou exclusif” de tous les bits (y compris bit de parité) vaut 0. Et donc, la valeur d’un bit est le ou-exclusif de tous les autres.</p>
+<p><strong>Application au RAID</strong> Dans un système RAID 4 à 4 disques par exemple, on constituera une agrégation par blocs de 3 disques, et le dernier disque contiendra le ou-exclusif des bandes de même niveau. En cas de panne d’un disque, on pourra reconstituer son contenu.</p>
+<p><strong>Fonctionnement</strong></p>
+<ul>
+<li>lecture : similaire au RAID 0</li>
+<li>pour chaque écriture, il faut recalculer les informations de parité pour les stocker sur le disque supplémentaire.</li>
+</ul>
+<p><strong>Évaluation</strong></p>
+<ul>
+<li>capacité : avec N disques de capacité C, on a une capacité de (N-1)C.</li>
+<li>fiabilité : on peut encore accéder à toutes les données si un disque est en panne.</li>
+<li>répartition de la charge pour la lecture</li>
+<li>ralentissement de l’écriture, qui mobilise toujours le disque de parité.</li>
+</ul>
+<h2 id="raid-5-agrégation-par-blocs-à-parité-répartie"><span class="header-section-number">4.6</span> RAID 5 : agrégation par blocs à parité répartie</h2>
+<p>C’est une variation du RAID 4, pour éviter le goulet d’étranglement que constitue un disque dédié à la parité.</p>
+<p>Les blocs de parité sont répartis sur les disques.</p>
+<table>
+<thead>
+<tr class="header">
+<th>D1</th>
+<th>D2</th>
+<th>D3</th>
+<th>D4</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>b1</td>
+<td>b2</td>
+<td>b3</td>
+<td>p(b1,b2,b3)</td>
+</tr>
+<tr class="even">
+<td>b4</td>
+<td>b5</td>
+<td>p(b4,b5,b6)</td>
+<td>b6</td>
+</tr>
+<tr class="odd">
+<td>b7</td>
+<td>p(b7,b8,b9)</td>
+<td>b8</td>
+<td>b9</td>
+</tr>
+<tr class="even">
+<td>p(b10,b11,b12)</td>
+<td>b10</td>
+<td>b11</td>
+<td>b12</td>
+</tr>
+<tr class="odd">
+<td>b13</td>
+<td>b14</td>
+<td>b15</td>
+<td>p(b12,b14,b15)</td>
+</tr>
+<tr class="even">
+<td>…</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="exemple-de-combinaison-raid-51"><span class="header-section-number">4.7</span> Exemple de combinaison : RAID 5+1</h2>
+<p>Pour améliorer à la fois les performances et la capacité, on réalise des combinaisons :</p>
+<p>Par exemple, le RAID 5+1 (ou 51) consiste à utiliser plusieurs systèmes RAID 5, montés en “miroir” RAID 1.</p>
+<p>Ceci utilise évidemment beaucoup de disques, mais la sécurité a un coût.</p>
+<p><strong>Exercice</strong></p>
+<ul>
+<li>quel est le nombre minimum de disques pour réaliser un système RAID 51 ?</li>
+<li>combien faut-il de disques défaillants simultanément pour que le système soit en panne ?</li>
+</ul>
+<h1 id="système-de-fichiers-1"><span class="header-section-number">5</span> Système de fichiers</h1>
+<h2 id="définition"><span class="header-section-number">5.1</span> Définition</h2>
+<p>Avant les ordinateurs, le terme <strong>système de fichiers</strong> désignait une méthode pour stocker et retrouver des documents en papier. Au début des années 60, il s’est étendu au stockage informatisé.</p>
+<p><strong>Définition</strong> : Un système de fichiers (<em>File System</em>) est une façon de stocker les informations et de les organiser dans des fichiers sur des mémoires secondaires (disque dur, CD-ROM, etc)</p>
+<p>Il offre à l’utilisateur une vue abstraite sur ses données (fichiers, répertoires, …) et permet de les localiser à partir d’un chemin d’accès.</p>
+<h2 id="couches"><span class="header-section-number">5.2</span> Couches</h2>
+<p>Un système de fichiers comporte au moins deux couches</p>
+<ul>
+<li>la <strong>couche logique</strong> qui interagit avec l’utilisateur, et fournit une interface de programmation (API) avec <code>open()</code>, <code>read()</code>, <code>write()</code>, <code>close()</code> etc.</li>
+<li>la <strong>couche physique</strong> qui s’occupe de la lecture et l’écriture des données sur le support physique. Elle fait appel pour cela aux pilotes (drivers) qui agissent sur le matériel.</li>
+</ul>
+<h2 id="questions-abordées"><span class="header-section-number">5.3</span> Questions abordées</h2>
+<ul>
+<li>représentation des métadonnées</li>
+<li>représentation des données du fichier</li>
+<li>représentation des fichiers et répertoires</li>
+</ul>
+<h2 id="blocs"><span class="header-section-number">5.4</span> Blocs</h2>
+<p>La plupart des périphériques de stockage sont “orientés blocs”. C’est à dire que les informations contenues sur le périphérique sont accessibles par zones de même taille.</p>
+<p>Physiquement, les informations sont enregistrées sur des <strong>secteurs</strong>, habituellement 512 octets (disques), 2Kio (CD et DVD), 4Ki (disques Advanced Format). Dans un secteur on trouve des “données utiles” et des codes correcteurs d’erreur.</p>
+<p>Le terme “bloc” est utilisé de façon large. Dans le contexte des périphériques, il peut désigner la taille des informations échangées entre l’ordinateur et le contrôleur du disque, par exemple un bloc de 2Kio correspond à 4 enregistrements consécutifs sur disque. En principe consécutifs, parce que le contrôleur du disque, qui est intelligent, peut utiliser une table de “secteurs de remplacement” pour les zones défectueuses : le disque est alors vu comme une suite numérotée de blocs de 2kio.</p>
+<p>Le bloc peut être aussi une unité de taille pour le système de fichiers : par exemple paramétré pour stocker les fichiers dans des zones d’une taille multiple de 4kio (qui correspondront à 2 blocs du disque, soit 8 secteurs).</p>
+<h2 id="extent-domaine"><span class="header-section-number">5.5</span> Extent, domaine</h2>
+<p>Un <em>extent</em> (ou domaine) est une zone de stockage <strong>contiguë</strong> réservée pour un fichier sur le système de fichiers d’un ordinateur.</p>
+<p>En allouant un extent à un fichier, les écritures qui suivent se font à proximité les unes des autres, ce qui limite la fragmentation qui est un problème pour les supports magnétiques dont le temps d’accès n’est pas uniforme.</p>
+<h2 id="exemple-simple-le-système-de-fichiers-de-cpm"><span class="header-section-number">5.6</span> Exemple simple : le système de fichiers de CP/M</h2>
+<p>http://www.informit.com/articles/article.aspx?p=25878&amp;seqNum=3</p>
+<p>CP/M est un système d’exploitation du début des 80’s. Équipement typique : processeur 8 bits Intel 8080, 4Kio de RAM et un lecteur de disquette 8 pouces de capacité 160 Kio.</p>
+<p>Le système de fichiers contient un seul répertoire (mais qui aurait besoin de plusieurs répertoires, sur 160 Ko ?), une table avec des éléments de 32 octets. Les fichiers sont alloués par blocs de 1ko (8 secteurs physiques de 128 octets).</p>
+<p>Quand la disquette est “montée” , le système d’exploitation lit le répertoire et calcule une table des blocs occupés (160 bits) qui tient sur 23 octets.</p>
+<p>Pour chaque entrée de la table on a (dans le désordre)</p>
+<ul>
+<li>le nom de fichier : 8 caractères pour le préfixe, 3 pour l’extension qui indique son type (idée reprise par MS-DOS)</li>
+<li>une table avec 16 numéros de <strong>blocs</strong>, ce qui limite la taille d’un fichier à 16K. Chaque numéro de bloc codé sur un octet</li>
+<li>le nombre de <strong>secteurs</strong> utilisés, sur un octet</li>
+</ul>
+<p>Pour les fichiers de taille supérieure à 16Ko, il y a plusieurs entrées dans le répertoire, qui donnent donc les 16 premiers blocs, puis les 16 suivants, etc. Un champ supplémentaire indique l’ordre des entrées d’un même fichier.</p>
+<h2 id="exemple-simple-le-système-de-fichiers-fat"><span class="header-section-number">5.7</span> Exemple simple : Le système de fichiers FAT</h2>
+<p>Système de fichiers conçu pour les disquettes en 1977 par par Bill Gates et Marc McDonald, utilisé dans QDOS, MS-DOS, et Windows jusqu’à Windows 9x. Trois variantes : FAT12, FAT16 et FAT32. Windows repose maintenant sur NTFS mais reconnaît toujours FAT. De nombreux appareils électroniques (appareils photos, téléphones, etc) l’utilisent.</p>
+<p>Voir <a href="https://fr.wikipedia.org/wiki/File_Allocation_Table" class="uri">https://fr.wikipedia.org/wiki/File_Allocation_Table</a></p>
+<p>Un disque FAT contient essentiellement</p>
+<ul>
+<li>une zone avec les blocs de données des fichiers (leur contenu) proprement dits</li>
+<li>une zone réservée (File Allocation Table) indiquant, pour chaque bloc de données, le numéro du bloc suivant.</li>
+<li>le répertoire racine</li>
+</ul>
+<p>Un répertoire est une table qui contient, pour chacun de ses éléments (fichier ou répertoire) :</p>
+<ul>
+<li>son nom (et son extension), 8+3</li>
+<li>son taille, son type (fichier ou répertoire)</li>
+<li>un index donnant la position de son premier bloc</li>
+</ul>
+<p>Les blocs sont des “clusters” (groupes de secteurs) dont la taille est choisie au formattage.</p>
+<p>Pour des raisons de sécurité, la FAT est dupliquée.</p>
+<p>Les versions :</p>
+<ul>
+<li>FAT 12 (utilisé sur les disquettes), les numéros de blocs sont sur 12 bits et les clusters vont de 512 octets à 4 Kio. La capacité maximale est donc de 4086 x 4 Kio, soit 16 Mio.</li>
+<li>En FAT 16, numéros sur 16 bits, soit 65536 clusters de 2 à 64 Kio. Capacité max = 6 Gio</li>
+<li>FAT 32 : 2^28 (pas 32…) clusters de 2 à 32 Ko. Capacité maximale : 16 Tio avec des secteurs de 4KB).</li>
+</ul>
+<h2 id="ntfs"><span class="header-section-number">5.8</span> NTFS</h2>
+<p>New Technology FileSystem, développé par Microsoft Corporation pour Windows NT.</p>
+<p>Apporte de nombreuses améliorations techniques par rapport à la FAT</p>
+<ul>
+<li>support amélioré des métadonnées,</li>
+<li>structures de données avancées ( <a href="https://fr.wikipedia.org/wiki/Arbre_B#Variantes">B+ trees</a>) pour améliorer les performances et la fiabilité,</li>
+<li>listes de contrôles d’accès (ACL),</li>
+<li>journalisation (assure l’intégrité des données en cas d’arrêt brutal ou de problème matériel).</li>
+</ul>
+<p>Voir par exemple <a href="https://fr.wikipedia.org/wiki/NTFS_(Microsoft)" class="uri">https://fr.wikipedia.org/wiki/NTFS_(Microsoft)</a></p>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Ne pas confondre avec la vitesse de transfert (SATA, SCSI, …) entre le contrôleur du disque et la carte mère.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>Attention aux conflits de terminologie, <strong>bloc</strong> désigne ici un bloc de pages.<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>Par envoi d’une tension plus élevée qui efface toute une région du circuit.<a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>Valeurs typiques sous Linux : 500 ms pour une lecture, 5000 ms pour une écriture.<a href="#fnref4" class="footnote-back">↩</a></p></li>
+<li id="fn5"><p>La mémoire vive coûte beaucoup plus cher, au méga-octet, que l’espace sur disque.<a href="#fnref5" class="footnote-back">↩</a></p></li>
+<li id="fn6"><p>Typiquement, 16KB à 256KB.<a href="#fnref6" class="footnote-back">↩</a></p></li>
+<li id="fn7"><p>On le calcule en faisant le “ou-exclusif” des bits de l’octet.<a href="#fnref7" class="footnote-back">↩</a></p></li>
+</ol>
+</section>
+</body>
+</html>

@@ -1,4 +1,3 @@
-
 OUTDIR = ../Output
 
 ALL = $(OUTDIR)/circuits-logiques.pdf
@@ -27,8 +26,6 @@ $(OUTDIR)/circuits-logiques.pdf: $(SRC) $(IMG)
 clean:
 	$(RM) *~
 	(cd $(OUTDIR);  $(RM) *.log *.toc *.lof *.aux)
-
-
 
 
 

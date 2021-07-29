@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Michel Billaud (michel.billaud@u-bordeaux.fr, michel.billaud@laposte.net)" />
+  <title>Systèmes d’exploitation en temps partagé</title>
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">a.sourceLine {
+display: inline-block;
+line-height: 1.25;
+}
+a.sourceLine {
+pointer-events: none;
+color: inherit;
+text-decoration: inherit;
+}
+a.sourceLine:empty {
+height: 1.2em;
+}
+.sourceCode {
+overflow: visible;
+}
+code.sourceCode {
+white-space: pre;
+position: relative;
+}
+div.sourceCode {
+margin: 1em 0;
+}
+pre.sourceCode {
+margin: 0;
+}
+@media screen {
+div.sourceCode {
+overflow: auto;
+}
+}
+@media print {
+code.sourceCode {
+white-space: pre-wrap;
+}
+a.sourceLine {
+text-indent: -1em;
+padding-left: 1em;
+}
+}
+pre.numberSource a.sourceLine {
+position: relative;
+left: -4em;
+}
+pre.numberSource a.sourceLine::before {
+content: attr(title);
+position: relative;
+left: -1em;
+text-align: right;
+vertical-align: baseline;
+border: none;
+pointer-events: all;
+display: inline-block;
+-webkit-touch-callout: none;
+-webkit-user-select: none;
+-khtml-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+padding: 0 4px;
+width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource {
+margin-left: 3em;
+border-left: 1px solid #aaaaaa;
+padding-left: 4px;
+}
+div.sourceCode {}
+@media screen {
+a.sourceLine::before {
+text-decoration: underline;
+}
+}
+code span.al {
+color: #ff0000;
+font-weight: bold;
+}
+
+code span.an {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+code span.at {
+color: #7d9029;
+}
+
+code span.bn {
+color: #40a070;
+}
+
+code span.bu {}
+
+code span.cf {
+color: #007020;
+font-weight: bold;
+}
+
+code span.ch {
+color: #4070a0;
+}
+
+code span.cn {
+color: #880000;
+}
+
+code span.co {
+color: #60a0b0;
+font-style: italic;
+}
+
+code span.cv {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+code span.do {
+color: #ba2121;
+font-style: italic;
+}
+
+code span.dt {
+color: #902000;
+}
+
+code span.dv {
+color: #40a070;
+}
+
+code span.er {
+color: #ff0000;
+font-weight: bold;
+}
+
+code span.ex {}
+
+code span.fl {
+color: #40a070;
+}
+
+code span.fu {
+color: #06287e;
+}
+
+code span.im {}
+
+code span.in {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+code span.kw {
+color: #007020;
+font-weight: bold;
+}
+
+code span.op {
+color: #666666;
+}
+
+code span.ot {
+color: #007020;
+}
+
+code span.pp {
+color: #bc7a00;
+}
+
+code span.sc {
+color: #4070a0;
+}
+
+code span.ss {
+color: #bb6688;
+}
+
+code span.st {
+color: #4070a0;
+}
+
+code span.va {
+color: #19177c;
+}
+
+code span.vs {
+color: #4070a0;
+}
+
+code span.wa {
+color: #60a0b0;
+font-weight: bold;
+font-style: italic;
+}
+
+
+:root {
+--title-color: #202080;
+--source-bg-color: rgb(240, 240, 255);
+}
+h1, h2, h3, h4, h5, h6 {
+border-bottom: solid 1px silver;
+color: var(--title-color);
+}
+body {
+font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+div.sourceCode {
+background-color: var(--source-bg-color);
+padding: 1em;
+}
+#TOC {
+padding: 0.5em;
+border: solid 1px silver;
+}
+#TOC ul {
+list-style-type: none;
+padding-left: 1em;
+}
+nav:before {
+text-indent: 2em;
+content: "Sommaire";
+color: var(--title-color);
+font-weight: bold;
+font-size: large;
+}
+#TOC a {
+text-decoration: none;
+}
+header {
+text-align: center;
+}
+.title {
+}
+.author, .date {
+font-style: italic;
+}
+table, th, td {
+border-collapse: collapse;
+border: solid black 1px;
+padding: 0.5em;
+}
+</style>
+</head>
+<body>
+<header>
+<h1 class="title">Systèmes d’exploitation en temps partagé</h1>
+<p class="author">Michel Billaud (<a href="mailto:michel.billaud@u-bordeaux.fr">michel.billaud@u-bordeaux.fr</a>, <a href="mailto:michel.billaud@laposte.net">michel.billaud@laposte.net</a>)</p>
+<p class="date">23 juillet 2020</p>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#tâches-et-processus"><span class="toc-section-number">1</span> Tâches et processus</a><ul>
+<li><a href="#problématique-des-systèmes-multi-tâches"><span class="toc-section-number">1.1</span> Problématique des systèmes multi-tâches</a></li>
+<li><a href="#programmation-dans-un-langage-de-haut-niveau"><span class="toc-section-number">1.2</span> Programmation dans un langage de haut niveau</a></li>
+</ul></li>
+<li><a href="#le-fonctionnement-multi-tâches-partage-du-temps"><span class="toc-section-number">2</span> Le fonctionnement multi-tâches : partage du temps</a><ul>
+<li><a href="#table-des-processus"><span class="toc-section-number">2.1</span> Table des processus</a></li>
+<li><a href="#états-dun-processus"><span class="toc-section-number">2.2</span> États d’un processus</a></li>
+<li><a href="#états-et-transitions"><span class="toc-section-number">2.3</span> États et transitions</a></li>
+<li><a href="#exercices"><span class="toc-section-number">2.4</span> Exercices</a></li>
+<li><a href="#temps-partagé"><span class="toc-section-number">2.5</span> Temps partagé</a><ul>
+<li><a href="#utilisation-dun-timer"><span class="toc-section-number">2.5.1</span> Utilisation d’un timer</a></li>
+<li><a href="#choix-du-quantum-de-temps"><span class="toc-section-number">2.5.2</span> Choix du quantum de temps</a></li>
+</ul></li>
+<li><a href="#politiques-dordonnancement"><span class="toc-section-number">2.6</span> Politiques d’ordonnancement</a><ul>
+<li><a href="#tourniquet-first-in-first-out"><span class="toc-section-number">2.6.1</span> Tourniquet (<em>first-in, first-out</em>)</a></li>
+<li><a href="#niveaux-de-priorité-fixes"><span class="toc-section-number">2.6.2</span> Niveaux de priorité fixes</a></li>
+<li><a href="#niveaux-de-priorité-variable"><span class="toc-section-number">2.6.3</span> Niveaux de priorité variable</a></li>
+<li><a href="#classes-de-processus"><span class="toc-section-number">2.6.4</span> Classes de processus</a></li>
+</ul></li>
+<li><a href="#résumé"><span class="toc-section-number">2.7</span> Résumé</a></li>
+<li><a href="#glossaire"><span class="toc-section-number">2.8</span> Glossaire</a></li>
+</ul></li>
+<li><a href="#le-partage-de-lespace"><span class="toc-section-number">3</span> Le partage de l’espace</a><ul>
+<li><a href="#linéaire"><span class="toc-section-number">3.1</span> Linéaire</a><ul>
+<li><a href="#allocationlibération"><span class="toc-section-number">3.1.1</span> Allocation/libération</a></li>
+<li><a href="#une-idée-pour-la-protection-registres-limite"><span class="toc-section-number">3.1.2</span> Une idée pour la protection : registres limite</a></li>
+<li><a href="#autre-idée-espace-logique"><span class="toc-section-number">3.1.3</span> Autre idée : espace logique</a></li>
+<li><a href="#déplacement-des-programmes-en-mémoire"><span class="toc-section-number">3.1.4</span> Déplacement des programmes en mémoire</a></li>
+</ul></li>
+<li><a href="#espace-paginé"><span class="toc-section-number">3.2</span> Espace paginé</a><ul>
+<li><a href="#pages-et-cadres"><span class="toc-section-number">3.2.1</span> Pages et cadres</a></li>
+<li><a href="#table-de-pages-génération-dadresses"><span class="toc-section-number">3.2.2</span> Table de pages, génération d’adresses</a></li>
+<li><a href="#possibilité-de-partage"><span class="toc-section-number">3.2.3</span> Possibilité de partage</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#mémoire-virtuelle"><span class="toc-section-number">4</span> Mémoire virtuelle</a><ul>
+<li><a href="#principe"><span class="toc-section-number">4.1</span> Principe</a></li>
+<li><a href="#éviction-critères"><span class="toc-section-number">4.2</span> Éviction : critères</a></li>
+<li><a href="#déterminer-lâge-des-pages-stratégie-lru"><span class="toc-section-number">4.3</span> Déterminer l’âge des pages, stratégie LRU</a></li>
+<li><a href="#trouver-les-pages-non-modifiées"><span class="toc-section-number">4.4</span> Trouver les pages non-modifiées</a></li>
+<li><a href="#résumé-1"><span class="toc-section-number">4.5</span> Résumé</a></li>
+<li><a href="#glossaire-1"><span class="toc-section-number">4.6</span> Glossaire</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="tâches-et-processus"><span class="header-section-number">1</span> Tâches et processus</h1>
+<p>On appelle <strong>processus</strong>, ou <strong>tâche</strong>, un programme qui est <em>en cours d’exécution</em> sous le contrôle du système d’exploitation.</p>
+<p>Ce cours s’intéresse aux systèmes <strong>multi-tâches</strong> qui font tourner plusieurs processus présents en mémoire en même temps. De nos jours, ces systèmes multi-tâches sont présents dans tous les ordinateurs grands et petits (smartphones).<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>.</p>
+<p>On parlera indifféremment de multi-tâches ou de “temps partagé” (<em>time sharing</em>), même si les puristes réservent ce dernier terme aux systèmes multi-utilisateurs.</p>
+<h2 id="problématique-des-systèmes-multi-tâches"><span class="header-section-number">1.1</span> Problématique des systèmes multi-tâches</h2>
+<p>Un système multi-tâches “fait tourner” plusieurs processus à la fois, même sur une machine qui n’a qu’un seul processeur, grâce la technique de “temps partagé” (<em>time slicing</em>).</p>
+<p>En réalité, le processeur fait avancer chaque tâche pendant pendant un petit laps de temps (de l’ordre de 10-100ms), puis passe à la suivante, etc. Ce laps de temps étant très court, ceci donne, à notre échelle, une <em>illusion</em> d’avancement simultané, tout comme la projection rapide d’images fixes successive donne une illusion de continuité.</p>
+<p>Comme plusieurs processus sont présents, il se pose plusieurs problèmes :</p>
+<ul>
+<li>contrôler l’usage des périphériques par les processus,</li>
+<li>partager équitablement le temps,</li>
+<li>partager la mémoire disponible entre les processus, pour éviter que l’un accède à l’espace mémoire de l’autre</li>
+</ul>
+<h2 id="programmation-dans-un-langage-de-haut-niveau"><span class="header-section-number">1.2</span> Programmation dans un langage de haut niveau</h2>
+<p>Pour pouvoir faire tourner des programmes écrits dans des langages de haut niveau, il faut que les compilateurs convertissent les appels aux “fonctions système” en appels à une bibliothèque “runtime” d’exécution, qui fera les appels systèmes en se conformant à l’<strong>ABI</strong> (<em>Application Binary Interface</em>) du système, c’est-à-dire aux conventions fixées pour les numéros de service, les registres utilisés etc.</p>
+<h1 id="le-fonctionnement-multi-tâches-partage-du-temps"><span class="header-section-number">2</span> Le fonctionnement multi-tâches : partage du temps</h1>
+<p>La notion d’interruption permet de voir l’ordinateur comme un “système réactif”, dont l’état évolue par exécution des instructions, mais qui répond aussi à l’arrivée d’évènements extérieurs.</p>
+<h2 id="table-des-processus"><span class="header-section-number">2.1</span> Table des processus</h2>
+<p>La table des processus est une structure de données centrale d’un système d’exploitation.</p>
+<p>Elle contient la description des divers processus présents en mémoire, avec pour chacun :</p>
+<ul>
+<li>son état (en cours d’exécution ? bloqué ?…)</li>
+<li>un bloc de contexte qui sauvegarde le contenu des registres,</li>
+<li>une description de l’espace mémoire qu’il utilise,</li>
+<li>son propriétaire, les droits dont il dispose,</li>
+<li>etc.</li>
+</ul>
+<h2 id="états-dun-processus"><span class="header-section-number">2.2</span> États d’un processus</h2>
+<p>Situation banale : vous avez plusieurs fenêtre ouvertes à l’écran. Dans un navigateur web, vous cliquez sur un lien, qui tarde à répondre. Vous en profitez pour continuer à faire autre chose dans une autre fenêtre.</p>
+<p><strong>Que s’est-il passé ? </strong></p>
+<ul>
+<li>En cliquant sur le lien, le navigateur a envoyé (via la couche réseau) une requête HTTP, et il s’est mis en attente d’une réponse.</li>
+<li>Mais il ne passe pas son temps à surveiller activement l’arrivée de cette réponse.</li>
+<li>Au contraire, le navigateur (ou du moins le processus qui s’occupe de l’onglet) est <strong>bloqué</strong> jusqu’à l’arrivée de la réponse (ou l’expiration d’un délai jugé trop long).</li>
+</ul>
+<p>Maintenant, le système peut activer une des autres tâches présentes.</p>
+<p><strong>Que se passe-t-il ensuite ?</strong></p>
+<ul>
+<li>Lorsque la carte réseau reçoit un paquet, elle signale au système d’exploitation qu’une trame est arrivée est arrivé.</li>
+<li>le système d’exploitation (la pile TCP/IP) examine cette trame, en extrait un paquet IP, constate que c’est un paquet TCP, et qu’il fait partie d’une connexion ouverte par le navigateur.</li>
+<li>le contenu du paquet est donc transmis au navigateur web, qui est débloqué, et pourra alors traiter la réponse.</li>
+</ul>
+<h2 id="états-et-transitions"><span class="header-section-number">2.3</span> États et transitions</h2>
+<p>On voit donc 3 états possibles pour les processus</p>
+<ul>
+<li><strong>actif</strong> : le processeur est en train d’exécuter une des instructions de la tâche,</li>
+<li><strong>bloqué</strong> : la tâche ne peut pas être activée, elle attend un événement pour pouvoir continuer,</li>
+<li><strong>prêt</strong> : la tâche n’est pas bloquée, elle pourrait être activée.</li>
+</ul>
+<p>Des changements d’état ont lieu, sous le contrôle du système d’exploitation :</p>
+<ol type="1">
+<li>Un processus <strong>actif</strong> appelle un service qui prend du temps (par exemple, aller chercher des données sur un disque). Le processus est alors mis à l’état <strong>bloqué</strong>.</li>
+<li>Lorsque la réponse arrive (interruption), le processus demandeur qui est <strong>bloqué</strong> est mis à l’état <strong>prêt</strong> (il se peut aussi que le processus qui est <strong>actif</strong> à ce moment là soit mis à l’état <strong>prêt</strong>).</li>
+<li>Quand un processeur/coeur est libre, le système choisit un des processus <strong>prêts</strong> pour le rendre <strong>actif</strong>.</li>
+</ol>
+<pre><code>                ACTIF 
+              ^     _\
+             /        \
+ activation /          \  envoi
+           /            \ requête
+          /              v
+      PRÊT  &lt;--------- BLOQUÉ
+               requête
+               terminée</code></pre>
+<p>Ceci entraîne des <strong>commutations de contexte</strong></p>
+<ul>
+<li>quand on processus <strong>sort</strong> de l’état actif, dans lequel un processeur exécutait ses instructions, le contenu des registres du processeur est sauvé dans le “bloc de contexte” du processus</li>
+</ul>
+<p>Quand un processus est <strong>activé</strong>, les informations du bloc de contexte sont placées dans les registres, et l’exécution reprend là où elle en était arrêtée.</p>
+<h2 id="exercices"><span class="header-section-number">2.4</span> Exercices</h2>
+<p><strong>TODO</strong>.</p>
+<p>Reprendre quelques classiques, pour montrer</p>
+<ul>
+<li>qu’on peut profiter des temps morts d’une tâche pour en faire avancer une autre</li>
+<li>qu’on y gagne en rendement (par rapport à l’exécution des tâches en séquence)</li>
+</ul>
+<p>Par exemple tâches qui font quelques cycles calcul/entrée sortie.</p>
+<p>Voir aussi cohabitation de tâches “IO-bound” et “CPU-bound”.</p>
+<h2 id="temps-partagé"><span class="header-section-number">2.5</span> Temps partagé</h2>
+<p>Avec le système expliqué ci-dessus, si un processus ne fait que du calcul et aucun appel système (par exemple parce que le programmeur a fait une boucle sans fin), il reste actif et donc monopolise la machine indéfiniment.</p>
+<p>On souhaite évidemment éviter cette situation, que l’on retrouvait dans les systèmes d’exploitation à “<strong>ordonnancement coopératif</strong>” (MacOs jusqu’à la version 9, Windows jusqu’à 3.11),, dans lesquels on compte sur la bonne volonté et la compétence des programmeurs d’application pour que tout se passe bien.</p>
+<h3 id="utilisation-dun-timer"><span class="header-section-number">2.5.1</span> Utilisation d’un timer</h3>
+<p>La solution est d’utiliser un <strong>timer</strong> (circuit d’horloge) qui émet une interruption au bout d’un certain temps (typiquement 20-100 ms).</p>
+<p>Ce timer</p>
+<ul>
+<li>est armé (programmé pour un certain délai) quand un processus est activé</li>
+<li>interrompt le processus actif à échéance du délai (<em>timeout</em>).</li>
+</ul>
+<p>Le processus actif est alors mis à l’état <strong>prêt</strong>, et un autre processus prêt est choisi pour être activé.</p>
+<pre><code>                ACTIF 
+              ^     _\
+             //       \
+ activation //         \  envoi
+           // timeout   \ requête
+          /v             v
+      PRÊT  &lt;--------- BLOQUÉ
+               requête
+               terminée</code></pre>
+<p>Ainsi, on évite que le “temps de processeur” soit monopolisé par un programme qui boucle (ou qui calcule très longtemps).</p>
+<h3 id="choix-du-quantum-de-temps"><span class="header-section-number">2.5.2</span> Choix du quantum de temps</h3>
+<p>On appelle “quantum” la durée accordée à un processus actif avant qu’il soit interrompu par le timer. Compromis à trouver :</p>
+<ul>
+<li>si il est long, les processus qui “mangent du temps de calcul” vont “charger” la machine et laisser aux autres processus peu d’occasions d’être activés.</li>
+<li>si il est court, le système d’exploitation sera sollicité plus souvent, et consommera une part plus importante du temps. Les commutations de contexte ont un coût….</li>
+</ul>
+<p>Dans la mesure où c’est très dépend de ce qu’on donne à faire à la machine, solution pragmatique : essayer, mesurer, ajuster.</p>
+<h2 id="politiques-dordonnancement"><span class="header-section-number">2.6</span> Politiques d’ordonnancement</h2>
+<p>Il reste un petit détail à régler concernant l’<strong>ordonnancement</strong>, c’est-à-dire la manière de choisir un processus prêt pour l’activer, sachant qu’il peut y en avoir plusieurs.</p>
+<p>On peut imaginer plusieurs façons de faire. On les compare sur des critères</p>
+<ul>
+<li>de sûreté (le fait que tous les processus avancent),</li>
+<li>d’équitabilité,</li>
+<li>d’efficacité (profiter au maximum des ressources),</li>
+<li>…</li>
+</ul>
+<p>qui dans la réalité sont évidemment contradictoires.</p>
+<h3 id="tourniquet-first-in-first-out"><span class="header-section-number">2.6.1</span> Tourniquet (<em>first-in, first-out</em>)</h3>
+<ul>
+<li>Les processus prêts forment une file d’attente.</li>
+<li>Choix du processus le plus ancien de la file.</li>
+</ul>
+<p>Sûr et équitable, mais ne permet pas d’avoir des processus plus prioritaires que d’autres.</p>
+<h3 id="niveaux-de-priorité-fixes"><span class="header-section-number">2.6.2</span> Niveaux de priorité fixes</h3>
+<ul>
+<li>On affecte à chaque processus un niveau de priorité. À chaque niveau correspond une file d’attente.</li>
+<li>On active le processus le plus ancien de la file la plus prioritaire.</li>
+</ul>
+<p>Efficace, mais risque : si les processus du niveau le plus élevé bouclent, situation de <strong>monopole</strong> ou de <strong>coalition</strong> qui empêche les autres processus de s’exécuter.</p>
+<h3 id="niveaux-de-priorité-variable"><span class="header-section-number">2.6.3</span> Niveaux de priorité variable</h3>
+<ul>
+<li>la priorité d’un processus varie au cours du temps. La priorité d’un processus qui arrive au bout de son quantum baisse. Elle remonte quand il demande des entrées-sorties.</li>
+</ul>
+<p>Les tâches courtes sont favorisées, ce qui est agréable pour l’utilisation interactive. Quand un calcul se met à durer, il devient moins prioritaires.</p>
+<p>Problème : deux processus qui bouclent en communiquant par un pipe conservent une priorité élevée.</p>
+<h3 id="classes-de-processus"><span class="header-section-number">2.6.4</span> Classes de processus</h3>
+<p>(Multi-level feedback queues)</p>
+<ul>
+<li>On définit plusieurs files d’attente.</li>
+<li>On choisit “aléatoirement” une file dont on active le processus le plus ancien.</li>
+</ul>
+<p>En pondérant (par exemple files choisies à 70%, 20% et 10%) on favorise certains processus, sans risque de monopole.</p>
+<h2 id="résumé"><span class="header-section-number">2.7</span> Résumé</h2>
+<p>Les systèmes multi-tâches, inventés à la fin des années 50, ont été rendus possibles pratiquement par l’introduction dans les processeurs de divers dispositifs matériels : interruptions, modes, protection mémoire, etc.</p>
+<p>Dans la machine, un seul programme peut être actif à la fois, par processeur. Dans le système d’exploitation, les programmes présents en mémoire sont répertoriés dans une table des processus, qui contient leur état (actif, prêt, bloqué), et les informations nécessaires pour pouvoir les “activer”.</p>
+<p>L’état des processus change par le biais des interruptions :</p>
+<ul>
+<li>quand ils provoquent des exceptions,</li>
+<li>lors d’un appel système (interruption logicielle), qui peut conduire à la fin d’un processus ou son blocage,</li>
+<li>à la fin d’un quantum de temps (interruption horloge), sur les systèmes modernes qui sont <em>préemptifs</em>,</li>
+<li>à l’arrivée d’un évènement extérieur (interruption matérielle) attendu par un processus bloqué (qui redevient prêt).</li>
+</ul>
+<p>Lorsqu’un processeur se libère, l’ordonnanceur (<em>scheduler</em>) choisit, parmi les processus qui sont prêts, celui qui sera activé.</p>
+<p>Ce choix se fait selon une politique d’ordonnancement où rentrent en compte divers facteurs, parmi lesquels l’équitabilité, des priorités voulues, l’impossibilité de monopoliser les processeurs, etc.</p>
+<h2 id="glossaire"><span class="header-section-number">2.8</span> Glossaire</h2>
+<ul>
+<li><strong>Actif</strong> : état d’un processus, indique qu’un des processeurs est en train d’exécuter ses instructions.</li>
+<li><strong>Bloc de contexte</strong> : structure de données du système qui contient les informations (contenu des registres, adresse en mémoire….) qui permettront de faire reprendre l’exécution d’un processus là où en était arrêté.</li>
+<li><strong>Bloqué</strong> : état d’un processus qui attend un évènement extérieur pour pouvoir continuer son exécution.</li>
+<li><strong>Coopératif</strong> : type de système d’exploitation multi-tâche dans lequel les programmes doivent être écrits de façon à ne pas monopoliser le processeur.</li>
+<li><strong>Commutation de contexte</strong> : sauvegarde / restauration du contexte du processus actif (registres, …) dans le “bloc de contexte” du processus (dans la table des processus).</li>
+<li><strong>État</strong> d’un processus : Voir Actif, Prêt, Bloqué</li>
+<li><strong>Multi-tâche</strong> : se dit d’un système d’exploitation qui permet d’exécuter plusieurs programmes en donnant une illusion de simultanéité. Voir Préemptif et Coopératif.</li>
+<li><strong>Multi-traitement</strong> : se dit d’un système d’exploitation où plusieurs programmes peuvent être présents en mémoire</li>
+<li><strong>Ordonnanceur</strong> : composant d’un système d’exploitation qui choisit, quand un processeur est libre, un processus à l’état prêt pour l’activer.</li>
+<li><strong>Préemptif</strong> (système multi-tâches) : lors de l’activation d’une tâche, arme une horloge qui l’interrompra automatiquement après un certain délai (quantum).</li>
+<li><strong>Prêt</strong> : état d’un processus qui continuera son exécution quand il sera activé par l’ordonnanceur.</li>
+<li><strong>Processus</strong> : abstraction qui décrit “un programme en cours d’exécution”.</li>
+<li><strong>Quantum</strong> : dans un système multitâche préemptif, le délai (de l’ordre de 10-100ms) au terme duquel le processus actif est automatiquement interrompu pour (éventuellement) activer un autre processus.</li>
+<li><strong>Scheduler</strong> : voir <em>ordonnanceur</em>.</li>
+<li><strong>Table des processus</strong> : structure de données du système qui contient les informations relatives aux processus : état, bloc de contexte, droits d’accès, etc.</li>
+<li><strong>Tâche</strong>, voir processus.</li>
+<li><strong>Temps partagé</strong> : voir système d’exploitation <em>multi-tâche</em>.</li>
+</ul>
+<h1 id="le-partage-de-lespace"><span class="header-section-number">3</span> Le partage de l’espace</h1>
+<p>Dans la mémoire de l’ordinateur vont se retrouver le code et les données des processus, ainsi que du système d’exploitation.</p>
+<p>Comment se répartir cet espace, et surtout le protéger contre les erreurs des programmes ?</p>
+<h2 id="linéaire"><span class="header-section-number">3.1</span> Linéaire</h2>
+<p>Dans un système mono-tâche, le système d’exploitation est chargé au démarrage (typiquement au fond de la mémoire), et y reste jusqu’à l’arrêt de la machine. Et les programmes d’applications sont ensuite chargés au début de l’espace restant.</p>
+<p>En passant à un système multi-tâches, on peut imaginer placer les programmes d’applications les uns après les autres. Chaque programme occupera une plage d’adresses (adresse de début / adresse de fin)</p>
+<h3 id="allocationlibération"><span class="header-section-number">3.1.1</span> Allocation/libération</h3>
+<p>Comme les programmes apparaissent et disparaissent au gré des chargements et fin d’exécution, le système tient une comptabilité des espaces disponibles.</p>
+<p>Le chargement d’un programme sera possible uniquement si on peut lui allouer un espace suffisamment grand pour le loger. Mais il ne suffit pas que le total des espaces libre excède la taille du programme, il faut aussi que cet espace soit contigu (en un seul morceau),</p>
+<p>Exemple : on a chargé successivement des programmes A, B, C, D de tailles respectives 20, 10, 20, 30 KiB dans une mémoire de 64 KiB. Les programmes A et C se terminent, ce qui laisse 40 KiB octets disponibles. Mais on ne pourra pas lancer un programme de 25KiB, parce que le plus grand bloc libre est de 20 KiB seulement. La mémoire est trop <strong>fragmentée</strong>.</p>
+<p>Le <strong>mécanisme</strong> d’<strong>allocation</strong> consiste à chercher un bloc assez grand pour y loger le programme. Diverses stratégies sont possibles :</p>
+<ul>
+<li>la plus simple <strong>first fit</strong> consiste à regarder les blocs libres dans l’ordre des adresses, et de prendre le premier qui soit assez grand. Ce bloc libre est découpé, entre la partie qui est allouée, et le reste qui est remis dans la liste de blocs libres.</li>
+<li>la stratégie <strong>best fit</strong> est légèrement meilleure. Elle consiste à prendre le plus petit bloc qui soit assez grand, ce qui évite d’entamer de grands blocs quand on peut faire avec les petits.</li>
+</ul>
+<p>Dans tous les cas, lors de la <strong>libération</strong>, le bloc qui se libère est fusionné si possible avec les blocs libres voisins pour en former un plus gros.</p>
+<p><strong>Exercice</strong> : La stratégie <em>best-fit</em> est une heuristique<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> qui ne résout pas complètement le problème. Trouvez des scénarios (suite d’allocations et de libérations) pour lesquels</p>
+<ol type="1">
+<li><em>first-fit</em> réussit, alors que <em>best-fit</em> échoue,</li>
+<li>l’inverse.</li>
+</ol>
+<h3 id="une-idée-pour-la-protection-registres-limite"><span class="header-section-number">3.1.2</span> Une idée pour la protection : registres limite</h3>
+<p>Lorsqu’un programme d’application s’exécute, le matériel doit l’empêcher d’accéder à autre chose que son propre espace mémoire.</p>
+<p>Une solution simple est d’équiper le processeur de “registres limite” dans lesquels le système mettra les adresses de début et de fin de cet espace. Des comparateurs<a href="#fn3" class="footnote-ref" id="fnref3"><sup>3</sup></a> connectés aux registres et au bus d’adresse détecteront toute tentative d’accéder en dehors de cette plage, et déclencheront une interruption “accès mémoire illégal”.</p>
+<p>Ces registres ne sont manipulables qu’en mode privilégié.</p>
+<p><strong>En pratique</strong>, cette idée a été peu utilisée. En effet, a priori les programmes d’applications peuvent être chargés n’importe où, en fonction de ce qui a été chargé avant. Or les programmes contiennent des instructions de branchements, avec des adresses calculées à la compilation. Il devient compliqué de charger des programmes qui contiennent des adresses absolues. De même si on veut les déplacer pour “dé-fragmenter” la mémoire.</p>
+<h3 id="autre-idée-espace-logique"><span class="header-section-number">3.1.3</span> Autre idée : espace logique</h3>
+<p>Une idée plus intéressante est de considérer que chaque processus dispose d’un espace mémoire, qu’il voit à travers des “<strong>adresses logiques</strong>” qui - pour lui- commencent à 0.</p>
+<p>Cet espace logique correspond à une plage d’<strong>adresses physiques</strong>. En additionnant une adresse logique et l’adresse de début de la plage, on obtient l’adresse physique correspondante.</p>
+<p>Dans le processeur on intègre quelques circuits pour effectuer la <strong>génération d’adresses</strong> physiques :</p>
+<ul>
+<li>un registre “base” qui contient l’adresse physique de début de la plage,</li>
+<li>un additionneur qui calcule une adresse physique en ajoutant le contenu de ce registre les adresses logiques produites par le programme en cours d’exécution.</li>
+</ul>
+<p>et pour la <strong>protection</strong> :</p>
+<ul>
+<li>un registre qui contient la taille de la plage,</li>
+<li>un comparateur entre ce registre et l’adresse logique, qui lève une interruption en cas de débordement.</li>
+</ul>
+<p>Ceci introduit une distinction conceptuelle entre deux espaces d’adressage :</p>
+<ul>
+<li>“espace logique”, avec des adresses logiques qui vont de 0 à taille-1. Ces adresses logiques sont internes au processeur.</li>
+<li>“espace physique”, avec des adresses physiques qui vont de base à base + taille - 1. Ces adresses sont utilisées pour les accès à la mémoire.</li>
+</ul>
+<h3 id="déplacement-des-programmes-en-mémoire"><span class="header-section-number">3.1.4</span> Déplacement des programmes en mémoire</h3>
+<p>Cette indépendance permet au système d’exploitation de déplacer un programme, en copiant ailleurs son “image mémoire” et en faisant pointer le registre de base vers le nouvel emplacement. C’est une stratégie curative pour le problème de <strong>fragmentation</strong>.</p>
+<p>Malheureusement, c’est une opération qui prend du temps.</p>
+<p>Et on doit aussi le faire quand un programme demande à disposer de plus d’espace mémoire pendant son exécution<a href="#fn4" class="footnote-ref" id="fnref4"><sup>4</sup></a>, alors que son espace mémoire est suivi par un autre espace occupé.</p>
+<h2 id="espace-paginé"><span class="header-section-number">3.2</span> Espace paginé</h2>
+<p>Une approche radicalement différente apporte une solution à ces problèmes, et conduira à la notion de “mémoire virtuelle” (voir plus loin).</p>
+<h3 id="pages-et-cadres"><span class="header-section-number">3.2.1</span> Pages et cadres</h3>
+<p><strong>Découpage de l’espace logique</strong> : L’espace logique d’un processus est maintenant considéré comme une succession de “pages” de même taille (une puissance de 2, dépendant de l’architecture de la machine).</p>
+<p><strong>Par exemple</strong>, sur une machines à pages de 4Kib (<span class="math inline">2<sup>12</sup> = 4094</span>), un processus de 10354 octets occupe 3 pages. La page 0 correspond aux adresses logiques 0 à 4095, la page 1 aux adresses de 4096 à 8191, et la page 2, qui n’est pas complètement occupée, de 8192 à 12287.</p>
+<p>Calculer le calcul du numéro de page correspondant à une adresse logique n’est pas compliqué : c’est le quotient de l’adresse logique (par exemple 9876) par la taille de page (4096), soit 2. Et le reste donne l’<strong>offset</strong> (position dans la page).</p>
+<p>Aucun circuit de calcul n’est nécessaire : l’offset est dans les 12 bits de droite de l’adresse, le numéro de page dans les bits de gauche.</p>
+<pre><code>                            binaire            décimal
+---------------------  ------------------    ----------
+              adresse  0010 0110 1001 0100   = 9876 
+       numéro de page  0010                  = 2
+position dans la page       0110 1001 0100   = 1688</code></pre>
+<p><strong>L’espace d’adressage physique</strong> est, de la même façon, découpé en “cadres” (de page) la même taille<a href="#fn5" class="footnote-ref" id="fnref5"><sup>5</sup></a>.</p>
+<p>Bien évidemment, les pages logiques correspondront à des cadres.</p>
+<h3 id="table-de-pages-génération-dadresses"><span class="header-section-number">3.2.2</span> Table de pages, génération d’adresses</h3>
+<p>La correspondance est assurée par un groupe de registres appelé <strong>table des pages</strong>, qui fait partie de la MMU (<strong>memory management unit</strong>), un composant du processeur.</p>
+<p>Ces registres établissent une correspondance entre</p>
+<ul>
+<li>le numéro de page extrait d’une adresse logique,</li>
+<li>le numéro du cadre qui contient cette page.</li>
+</ul>
+<p><strong>Exemple</strong>, avec une table des pages qui contient</p>
+<table>
+<thead>
+<tr class="header">
+<th>page</th>
+<th>cadre</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>10</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<p>l’adresse logique 5100, qui est à la position 1006 de la page 1, (parce que <span class="math inline">5100 = 1 × 4096 + 1006</span>) se trouve en mémoire à la position 1006 du cadre 10 (qui correspond à la page 1), soit l’adresse physique <span class="math inline">10 × 4096 + 1006 = 41966</span>.</p>
+<p>La table est consultée à chaque accès à la mémoire pour générer l’adresse physique. Pour un accès rapide (en temps élémentaire), elle utilise un indexage matériel (multiplexage, registres associatifs…).</p>
+<p>La table est chargée par le système d’exploitation quand un processus est activé. Dans la table des processus, on trouve donc une copie de la table des pages du processus.</p>
+<h3 id="possibilité-de-partage"><span class="header-section-number">3.2.3</span> Possibilité de partage</h3>
+<p>Les tables de page permettent d’avoir des espaces mémoires communs à plusieurs processus. Exemple, avec les tables de pages ci-dessous, les processus P1 et P2 ont tous deux accès aux octets du cadre n°6,</p>
+<pre><code>P1      P2
+---     ---     
+0 4     0 1
+1 2     1 0
+2 6     2 3
+        3 6</code></pre>
+<p>mais ils ne le voient pas avec les mêmes adresses logiques.</p>
+<p><strong>Note</strong> : les droits d’accès à des pages communes peuvent être différents. Pour faire respecter ces droits d’accès, la MMU contiendra aussi des indicateurs de permissions (lire, modifier, faire exécuter).</p>
+<h1 id="mémoire-virtuelle"><span class="header-section-number">4</span> Mémoire virtuelle</h1>
+<p>Si on observe ce qui se passe dans la machine, on constate qu’en fait la plupart des pages qui ont été chargées ne sont pas “actives”. Par exemple, le début d’un programme a été chargé et exécuté, et on ne revient pas dessus ensuite.</p>
+<p>Qui plus est, les adresses utilisées par un processus sur une courte période de temps sont souvent voisines les unes des autres (principe de <strong>localité</strong>).</p>
+<p>Ce qu’on appelle l’<strong>ensemble de travail</strong>, c’est-à-dire les pages dont se sert effectivement un processus à un moment donné, est nettement plus petit que l’espace d’adressage du processus.</p>
+<p>On peut donc envisager de retirer les pages inactives de la mémoire, pour faire de la place à d’autres programmes.</p>
+<p>Mais a priori, on ne sait pas si une page inactive va resservir dans le futur ou pas. Une idée naturelle est donc de les sauvegarder sur disque<a href="#fn6" class="footnote-ref" id="fnref6"><sup>6</sup></a>, pour pouvoir les récupérer au besoin.</p>
+<p>Ceci conduit à la notion de <strong>mémoire virtuelle</strong>, qui contient à la fois les pages présentes en mémoire centrale (<strong>mémoire réelle</strong>), et celles qui ont été sauvegardées sur disque.</p>
+<p>Nous allons voir maintenant comment la conjonction du matériel et du système d’exploitation permet de donner aux programmes l’illusion qu’ils fonctionnent comme en mémoire, mais dans un espace qui est beaucoup plus grand.</p>
+<h2 id="principe"><span class="header-section-number">4.1</span> Principe</h2>
+<p><strong>Matériel</strong></p>
+<ul>
+<li>la MMU contient une table des pages <strong>présentes en mémoire réelle</strong>,</li>
+<li>quand le programme utilise une page dont le numéro n’y figure pas, la MMU produit une interruption “défaut de page”<a href="#fn7" class="footnote-ref" id="fnref7"><sup>7</sup></a>, ce qui active une routine du système d’exploitation.</li>
+</ul>
+<p><strong>Le système d’exploitation</strong></p>
+<ul>
+<li>bloque alors le processus qui était en cours d’exécution,</li>
+<li>trouve un cadre de page disponible,</li>
+<li>va chercher la page manquante sur le disque</li>
+</ul>
+<p>Quand cette page finit par arriver (le disque est un périphérique relativement lent) :</p>
+<ul>
+<li>le système copie la page dans ce cadre,</li>
+<li>ajuste la table des pages du processus,</li>
+<li>et le remet à l’état prêt.</li>
+</ul>
+<p>Le principe est donc relativement simple. La difficulté est de trouver un cadre de page disponible. Quand toute la mémoire est occupée, il faut “sortir” une page présente (<em>paging out</em>) pour pouvoir ramener (<em>paging in</em>) celle dont le processus a besoin.</p>
+<h2 id="éviction-critères"><span class="header-section-number">4.2</span> Éviction : critères</h2>
+<p>Les performances de la machine dépendront de la qualité de l’<strong>algorithme d’éviction</strong> utilisé pour choisir la page présente que l’on va remplacer.</p>
+<p>Les facteurs qui rentrent en compte</p>
+<ul>
+<li>Il faut éviter d’évincer une page dont on va avoir bientôt besoin,</li>
+<li>On ne peut pas prédire l’avenir, mais il est probable qu’une page récemment utilisée le sera encore prochainement (principe de localité).</li>
+<li>Sauvegarder une page sur disque prend du temps.</li>
+<li>Si une page avait été chargée depuis le disque, et n’a pas été modifiée depuis en mémoire réelle, il est inutile de la sauvegarder.</li>
+</ul>
+<p>Et donc : les pages qui n’ont pas servi depuis longtemps et/ou qui n’ont pas été modifiées depuis longtemps sont de “bons candidats” pour l’éviction.</p>
+<h2 id="déterminer-lâge-des-pages-stratégie-lru"><span class="header-section-number">4.3</span> Déterminer l’âge des pages, stratégie LRU</h2>
+<p>Une petite modification de la MMU permet de connaître les pages qui n’ont pas été utilisées depuis longtemps.</p>
+<p>Un indicateur R est ajouté pour chaque page, il indique si la page a été accédée (R = referenced).</p>
+<ul>
+<li>le bit R est mis à 0 au départ,</li>
+<li>il passe à 1 quand il y a un accès en lecture ou écriture.</li>
+</ul>
+<p>Et dans les tables du système, un entier est aussi ajouté pour coder l’“âge” de chaque page :</p>
+<ul>
+<li>l’âge est initialisé à 0 quand la page est chargé en mémoire réelle,</li>
+<li>Périodiquement, le système interroge la MMU. Si le bit R d’une page est à 0, son âge est incrémenté, sinon il revient à 0. Les bits R sont tous remis à 0 ensuite.</li>
+</ul>
+<p>Ceci permet de mettre en place la stratégie dite “LRU” (<em>least recently used</em>) où on choisit d’évincer une des pages les plus âgées, qui n’a pas servi depuis longtemps.</p>
+<h2 id="trouver-les-pages-non-modifiées"><span class="header-section-number">4.4</span> Trouver les pages non-modifiées</h2>
+<p>Dans la MMU, on ajoute un bit M (M = <em>modified</em>) pour chaque page.</p>
+<ul>
+<li>ce bit est mis à 0 lors du chargement de la page,</li>
+<li>il passe à 1 chaque fois que le processus modifie quelque chose dans la page.</li>
+</ul>
+<p>Il indique donc si la page a été modifiée depuis son chargement.</p>
+<p>Le système interrogera la MMU pour récupérer la liste des pages modifiées.</p>
+<p>En prenant en compte cette information, on obtient une stratégie du type :</p>
+<blockquote>
+<p>choisir une des pages les plus âgées, non modifiée de préférence</p>
+</blockquote>
+<p><strong>Exercice</strong>: Dans la littérature, on trouve une version de cette stratégie sous le nom “NRU” (<em>not recently used</em>). Elle n’utilise que les bits R et M, et pas l’âge. Ces bits définissent 4 classes de pages. Dans quel ordre sont-elles choisies ?</p>
+<h2 id="résumé-1"><span class="header-section-number">4.5</span> Résumé</h2>
+<p>La <strong>mémoire virtuelle</strong> permet une meilleure utilisation de la mémoire primaire, en libérant la place occupée par les pages inactives.</p>
+<p>Les pages inactives sont transférées (évincées) en mémoire secondaire, d’où elles peuvent être récupérées en cas de besoin (défaut de page détecté par la MMU lors de la génération d’adresses).</p>
+<p>Les échanges entre mémoires primaire et secondaire étant lents, la qualité de l’algorithme d’éviction (choix d’une page à sauvegarder pour la remplacer par une autre qui est nécessaire) est primordiale. Ces algorithmes se basent essentiellement sur deux considérations</p>
+<ul>
+<li>une page qui n’a pas été modifiée depuis son chargement en mémoire primaire n’a pas besoin d’être sauvegardée ;</li>
+<li>les pages dont on aura besoin prochainement sont probablement celles qui ont été référencées récemment (principe de localité).</li>
+</ul>
+<p>Il est donc préférable de choisir d’évincer une page qui n’a été référencée depuis longtemps, et qui n’a pas été modifiée.</p>
+<p>Note: lorsqu’une machine est “chargée” avec des processus qui n’ont pas ce comportement “local”, les défauts de page devient trop nombreux, et les transferts entre mémoire primaire et secondaire deviennent un goulot d’étranglement qui cause un <strong>écroulement</strong> des performances (<strong>thrashing</strong>).</p>
+<h2 id="glossaire-1"><span class="header-section-number">4.6</span> Glossaire</h2>
+<ul>
+<li><strong>Défaut de page</strong> : se produit quand la MMU détecte qu’une adresse logique ne correspond pas à un cadre de page présent en mémoire primaire.</li>
+<li><strong>Écroulement du système</strong> (ou <em>thrashing</em>), se produit quand les défauts de page générés par les processus provoquent un trafic trop important entre mémoires primaire et secondaire.</li>
+<li><strong>Ensemble de travail</strong> (<em>working set</em>), les pages utilisées par un processus pendant un certain temps. En raison du principe de localité, cet ensemble peut être nettement plus petit que l’espace d’adressage.</li>
+<li><strong>Espace d’adressage</strong> d’un processus : les adresses valides que manipule un processus.</li>
+<li><strong>Éviction</strong> : choix du cadre de page dans lequel charger la page manquante lors du traitement d’un défaut de page. Voir LRU.</li>
+<li><strong>Génération d’adresses</strong> : détermination (par le circuit MMU) de l’adresse physique qui correspond à une adresse logique.</li>
+<li><strong>Localité</strong> (principe de) : énonce que l’exécution d’un processus met en jeu, le plus souvent, des accès à des adresses logiques voisines.</li>
+<li><strong>LRU</strong> (least recently used), heuristique pour l’éviction de pages dans un système à pagination.</li>
+<li><strong>Mémoire paginée</strong> : technique consistant à découper l’espace logique d’adressage d’un processus en <strong>pages</strong>, la mémoire réelle en <strong>cadres</strong> de page, la correspondance étant établie par une table des pages.</li>
+<li><strong>Mémoire primaire</strong> : les “barrettes mémoire” d’un ordinateur.</li>
+<li><strong>Mémoire secondaire</strong> : dispositif (en général une partition d’un disque) ou sont sauvegardées les pages mémoire d’un processus.</li>
+<li><strong>Mémoire virtuelle</strong> : dispositif par lequel un processus s’exécute dans un espace d’adressage virtuel qui n’est pas directement celui de la mémoire réelle (les barrettes mémoire).</li>
+<li><strong>MMU (memory management unit)</strong>, circuit chargé de la <em>génération d’adresses</em> d’<strong>adresses logiques</strong> et d’une <strong>table des pages</strong>. Détecte les <strong>défauts de page</strong> et la violation des permissions d’accès.</li>
+<li><strong>Pagination</strong> (système à) : système à mémoire paginée dans lequel les pages d’un processus ne sont pas toutes présentes en mémoire primaire, mais peuvent être stockées en mémoire secondaire (<strong>swap</strong>).</li>
+<li><strong>Swap</strong> : espace réservé sur disque pour servir de <strong>mémoire secondaire</strong></li>
+<li><strong>Thrashing</strong>, voir <em>Écroulement du système</em></li>
+<li><strong>Working set</strong>, voir <em>Ensemble de travail</em></li>
+</ul>
+<section class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Les systèmes mono-tâches existent dans les petits dispositifs d’informatique embarquée qui ne font qu’une chose à la fois. Par exemple une centrale météo qui relève la température, la pression, etc. et transmet les données périodiquement à un serveur.<a href="#fnref1" class="footnote-back">↩</a></p></li>
+<li id="fn2"><p>technique susceptible de fournir une solution approchée à un problème (mais pas toujours).<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn3"><p>Un comparateur est un soustracteur, dont on utilise le signe du résultat.<a href="#fnref3" class="footnote-back">↩</a></p></li>
+<li id="fn4"><p>par exemple parce qu’ils font de l’<strong>allocation dynamique</strong> (instruction <code>new</code> en C++, Java, etc).<a href="#fnref4" class="footnote-back">↩</a></p></li>
+<li id="fn5"><p>pour éviter les confusions, on parle de “page” pour les adresses logiques, et de “cadre” pour les adresses physiques.<a href="#fnref5" class="footnote-back">↩</a></p></li>
+<li id="fn6"><p>Une ressource plus abondante, moins chère, mais aussi d’accès plus lent que la mémoire centrale (on ne peut pas tout avoir).<a href="#fnref6" class="footnote-back">↩</a></p></li>
+<li id="fn7"><p>dans le sens de “faire défaut”, c’est-a-dire <em>manquer</em>.<a href="#fnref7" class="footnote-back">↩</a></p></li>
+</ol>
+</section>
+</body>
+</html>
