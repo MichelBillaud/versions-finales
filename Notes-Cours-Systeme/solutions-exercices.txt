@@ -1,0 +1,129 @@
+Solutions des exercices ASR2
+
+
+================================================================
+
+Ordinateurs et systèmes d'exploitation
+
+1 Pendant les deux étapes, les données passent par le même bus 
+(de données 8 bit). Alors ça ne peut pas se faire en même temps.
+
+----------------------------------------------------------------
+2  Probablement trop dur, ne pas faire en TD ?
+
+Algo  (C): 
+       somme = 0
+       while ( n > 0) { 
+            somme += n
+            n --
+       }
+
+     ------------ 
+Idée: à cause du jeu d'instruction tordu, on
+travaille à la fois sur n et son opposé
+
+
+
+       ldn  zero
+       sto  somme
+       ldn n 
+       sto oppn
+
+boucle:
+	ldn n      ;  Acc = -n
+	sto oppn
+	ldn oppn     ;  Acc = n
+	cmp
+	hlt
+	ldn somme
+	sub n
+        sto tmp
+        ldn tmp
+        sto somme
+
+	ldn oppn    
+	sub un
+	sto n
+        jmp addr-boucle
+n       val   ...
+zero    val 0
+un      val 1 
+addr-boucle val 1  (pour aller en 2...)
+
+              
+-----------------------------------------------------------------
+3
+3.1 Temps de service avec FIFO
+- J arrive à 8h00, boulot commence à 8h00 fin du boulot à 8h40, TS = 40
+- G arrive à 8h10 .................. 8h40 fin ..........  9h10, TS = 60
+- A ........ 8h20 .................. 9h10 fin............10h15, TS= 115
+- N......... 8h40 ..................10h15 fin............10h40, TS= 120
+
+TS moyen = 335/4 = 86,25 min
+
+3.2 Plus court temps d'exécution
+
+à 8h00 on choisit J parce que c'est le seul, mais à 8h40 les 3 autres
+sont là, on choisira dans l'ordre N, G et A
+- J arrive à 8h00, boulot commence à 8h00 fin du boulot à 8h40, TS = 40
+- N......... 8h40 .................. 8h40 fin............ 9h05, TS=  25
+- G arrive à 8h10 .................. 9h05 fin ..........  9h35, TS = 85
+- A ........ 8h20 .................. 9h35 fin............10h40, TS= 140
+
+TS moyen = 290.4/5 = 72,25 min
+
+-----------------------------------------------------------------
+4
+dans l'ordre, fin des travaux à 9h, 9h30 et 10h15. 
+temps d'attente 60, 90, et 135 => moyenne 95 min
+
+Dans l'ordre inverse
+fin à 8h45, 9h15 et 10h15
+temps d'attente 45, 75 et 135 => moyenne 85 min
+
+dans l'ordre optimal (durées croissantes)
+fin a 8h30, 9h15 et 10h15
+temps d'attente 30, 65, 135, moyenne 76,6.. min
+ 
+
+
+-----------------------------------------------------------------
+5 
+le lecteur de carte a travaillé 30 secondes sur 170 = 17,6 % du temps
+l'imprimante 90 secondes = 0,53 %
+
+----------------------------------------------------------------
+6
+processeur  50/140 = 36 %
+lecteur 30 / 140 = 21,4 %
+imprimante 90 /140 = 64%
+
+en commençant par B : même chose
+
+avec une tache supplementaire (enchainement)
+duree 230
+lecteur 20+10+10 = 40 /230  175 %
+calcul 30+20+20 = 70/230    30%
+impression 60+60+30= 150/230  65%
+
+
+avec une tache supplémentaire (multitache)
+duree 170
+lecteur 20+10+10 = 40 /170  23,5 %
+calcul 30+20+20 = 70/170    41%
+impression 60+60+30= 150/170  88%
+
+
+------------------------------------------------------------
+7 effet psychologique : l'utilisateur ne raisonne pas globalement,
+il préfère avoir l'impression que _son_ travail avance, et ne pas
+se sentir bloqué par l'attente des travaux des autres.
+
+C'est rationnel pour un travail interactif, pour un calcul sans
+interaction ça l'est beaucoup moins. Le temps d'attente (si il est connu)
+pourrait être mis à profit pour faire autre chose (si l'utilisateur
+est assez évolué pour fonctionner en multitache !)
+
+------------------------------------------------------------ 
+9 A partir du moment où c'est un système modulaire, avec des applis qu'on
+ajoute, oui.

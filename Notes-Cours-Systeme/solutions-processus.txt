@@ -1,0 +1,65 @@
+Solutions des exercices du livrt "processus"
+
+Questions 1 et 2 : livret précédent
+
+Question 3 : ça dépend. Si les utilisateurs ont une vision égoiste,
+par exemple parce qu'ils n'ont pas conscience du fait qu'ils
+utilisent un outil partagé, ou qu'il en surestiment la puissance, seul
+compte leur propre temps de réponse.
+
+Bons critères : ça dépend ce qu'on fait. Si c'est pour une utilisation
+interactive, les utilisateurs sont parfaitement satisfaits quand une
+réponse attendue comme "immédiate" arrive dans la demi-seconde qui
+suit.
+
+
+Question 4
+
+En supposant que les trois taches utilisent le même périphérique et
+que les e/s sont sérialisées : voir schéma
+
+En continuant le schéma on s'aperçoit qu'après une periode de mise en place,
+les situations se reproduisent (régime stationnaire).
+En étudiant la période qui se répète, on peut en tirer des conclusions générales.
+
+Sur [65..130]  CPU active 100 %, périph occupé 60/65 = 92% du temps
+
+Ave l'algo préemptif, il faudrait aller plus loin, mais le
+periphérique a l'air occupé tout le temps.
+
+Interprétation : il y a deux catégories de processus : A et B font peu
+de calcul, C peu d'E/S.  En "fractionnant" C, on donne a A et B
+davantage d'occasions de lancer des E/S. Le périphérique est donc mieux
+exploité.
+
+
+
+
+
+Exercice 5
+(dans le cas sans preemption)
+si ils font tous les deux plus de calcul que d'E/S  da,db > des
+
+
+
+Exercice 6 
+J'ai pas le courage de me refaire les graphiques.
+
+
+Exercice 7
+Deux processus Pu (utilisateur) et Pb (base)
+
+Pu demande un truc à Pb via le pipe, pour le système il est donc
+bloqué en attente d'une E/S
+Pb répond de suite, contrairement à une E/S sur un périph physique
+le système débloque  Pu en montant sa priorité.
+Pu est donc activé,
+Pu recommence
+...
+au bout de quelques tours de ce petit jeu, sa priorité a dépassé celle des
+autres processus. Pu et Pb se mettent à monopoliser le temps de calcul.
+
+Conséquence : le système se met à ramer abominablement (il fallait un quart d'heure
+pour taper son login et son mot de passe)
+
+

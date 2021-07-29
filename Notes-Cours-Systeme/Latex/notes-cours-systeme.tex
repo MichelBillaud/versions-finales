@@ -1,0 +1,44 @@
+\documentclass[10pt,twoside]{report}
+
+\usepackage{Style/bouquin}
+\usepackage{fancyhdr}
+% \usepackage{hyperref}
+\usepackage{multicol}
+
+\formation{IUT - Département Informatique}
+\matiere{M3.101}
+\sigle{SYSTEME}
+\titre{Principes des Systèmes d'Exploitation}
+\basdepage{M3101 Système - M Billaud - novembre 2014}
+
+\begin{document}  
+
+\maketitle
+
+\begin{center}
+Michel Billaud \url{michel.billaud@u-bordeaux.fr} \\
+Département Informatique - IUT - Université de Bordeaux \\
+Novembre 2014
+\end{center}
+\vfill
+
+\licence
+
+%\begin{multicols}{2}
+{\scriptsize
+\tableofcontents
+}
+%\end{multicols}
+
+
+
+\input{partie-ordinateurs-et-systemes}
+\newpage
+\input{partie-processus}
+\newpage
+\input{partie-memoire}
+\newpage
+\input{partie-fichiers}
+
+
+\end{document}
