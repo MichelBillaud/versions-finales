@@ -1,6 +1,10 @@
 OUTDIR = ../Output
 
-ALL = $(OUTDIR)/circuits-logiques.pdf
+MAINS = circuits-logiques
+
+PDF = $(addsuffix .pdf, $(addprefix $(OUTDIR)/, $(MAINS)))
+
+# PDF = $(OUTDIR)/circuits-logiques.pdf
 
 SRC=circuits-logiques.tex abrev.tex elements.tex codages.tex techno.tex \
 	 boole.tex sequ.tex combi.tex
@@ -12,11 +16,14 @@ EPS=fig1.eps fig2.eps fig3.eps fig4.eps fig5.eps fig6.eps fig7.eps \
 
 IMG = $(addprefix ../Images/, $(EPS))
 
-all:	$(ALL)
+all:	$(PDF)
 
-$(OUTDIR)/%.pdf: %.tex
-	xelatex -output-directory $(OUTDIR)  $<
-	xelatex -output-directory $(OUTDIR)  $<
+%.pdf: %.tex
+	rubber -d $<
+
+
+$(OUTDIR)/%.pdf: %.pdf
+	mv $< $@
 
 # dépendances
 
@@ -25,7 +32,8 @@ $(OUTDIR)/circuits-logiques.pdf: $(SRC) $(IMG)
 
 clean:
 	$(RM) *~
-	(cd $(OUTDIR);  $(RM) *.log *.toc *.lof *.aux)
+	for d in $(MAINS); do rubber --clean $$d ; done
+
 
 
 
