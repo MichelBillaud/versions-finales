@@ -1,6 +1,6 @@
 % Pour en finir avec les pointeurs en C
 % Michel Billaud 
-% 17-07-2021
+% 07-05-2022
 
 
 **Pourquoi ce document ?**
@@ -15,19 +15,18 @@ au mauvais moment, et en mélangeant différents aspects :
 - ce que c'est, 
 - les opérations qu'on peut faire dessus en C,
 - l'usage qu'on en a pour constituer des structures de données
-(chaînages),
+(chaînages en particulier),
 - les difficultés d'ordre algorithmique qui s'en suivent.
 
 En réalité, les pointeurs ne sont pas intrinsèquement "difficiles". La
 définition, c'est simplement 
 
-> un pointeur est une donnée qui contient l'adresse d'une autre
-> donnée.
+> un pointeur est une **donnée qui contient l'adresse d'une autre
+> donnée**.
 
-Le problème, c'est qu'on s'en sert pour faire beaucoup de choses
-(presque tout, en fait, quand on programme en C), et donc qu'il faut
-toucher à pas mal de choses qui font usage des pointeurs.  C'est un
-sujet *riche*.
+Le problème, c'est qu'on se sert des pointeurs pour faire beaucoup de
+choses. Presque tout, en fait, quand on programme en C.  C'est
+un sujet *riche*.
 
 **Orientation** : Je n'ai pas voulu faire un cours de C pour débutants
 complets. Je suppose que le lecteur a commencé à apprendre C
@@ -59,12 +58,13 @@ Amusez-vous bien !
 - corrections typos : 3-4 février 2019
 - corrections : 29 décembre 2020
 - corrections : 24 juin 2021 (remerciements à Valentin Morel).
+- typos et améliorations légères : 6 mai 2022.
 
 # Les bases : adresses, pointeurs et indirection
 
 ## Notion d'adresse
 
-Vous comprenez certainement le programme suivant
+Vous comprenez certainement le programme suivant :
 
 ~~~C
 #include <stdio.h>
@@ -75,32 +75,35 @@ int main()
 	int age;
 	scanf("%d", & age);
 
-    int annee = 2018 - age;
+    int annee = 2022 - age;
 	printf("vous etes né en %d\n", annee);
 
     return 0;
 }
 ~~~
 
-Si ce n'est pas le cas, désolé, ce document n'est pas fait pour vous.
-Ne perdez pas votre temps, trouvez-vous un cours d'initiation à la
-programmation en C (ou mieux sur un langage avec lequel la
-programmation est plus facile à apprendre).
-
-Vous savez donc que `scanf` sert à lire des données, et `printf` à
-afficher leur valeur. Et on vous a dit qu'il fallait mettre `&` pour
-les variables lues par `scanf` (sauf si ce sont des chaînes), et ne
-pas en mettre dans la liste d'arguments de `printf`. C'est tout-à-fait
-vrai, on ne vous a pas menti.
+dans le cas contraire, désolé, ce document n'est pas fait pour vous.
+Lisez d'abord un cours d'initiation à la programmation en C. Et si
+vous êtes un débutant complet, je vous conseille honnêtement de
+commencer la programmation avec un langage moins pénible.
 
 
-Pour être plus précis, `printf` prend comme arguments une chaîne de
-caractères (le *format*) et une liste de *valeurs* à afficher.
+Donc, si vous êtes encore là, vous savez que `scanf` sert à lire des
+données, et `printf` à afficher leur valeur. Et on vous a dit qu'il
+fallait mettre `&` pour les variables lues par `scanf` (sauf si ce
+sont des chaînes), et ne pas en mettre dans la liste d'arguments de
+`printf`. C'est tout-à-fait vrai, on ne vous a pas menti.
 
-Du reste on aurait pu se passer de la variable et écrire directement :
+
+Pour être plus précis, `printf` prend comme arguments 
+
+- une chaîne de caractères (le *format*),
+- et des *valeurs* à afficher.
+
+Du reste on aurait pu se passer de la variable, et écrire directement :
 
 ~~~C
-    printf("vous êtes né en %d\n", 2018 - age);
+    printf("vous êtes né en %d\n", 2022 - age);
 ~~~
 
 parce qu'on fournirait directement la valeur calculée.
@@ -110,16 +113,12 @@ la  *valeur* à lire, puisque cette valeur est fournie par
 l'utilisateur qui tape la réponse. Ce qu'on indique, c'est l'*endroit* où
 il faut la mettre. Pour cela, on transmet l'**adresse** de cet endroit.
 
-Et la notation `& age` désigne exactement ceci : l'adresse de la zone
-mémoire qui correspond à la variable `age`.
-
-Parce que, comme vous le savez aussi, quand on déclare une variable
-dans une fonction, ça veut dire que quand on exécutera cette fonction,
-il y aura un petit bout de mémoire réservé pour cette variable.
+Et la notation `& age` désigne exactement ceci : l'adresse de la
+partie de la mémoire qui correspond à la variable `age`.
 
 Donc résumons :
 
-1. Vous avez déjà vu, et utilisé dans vos programmes, des adresses
+1. Vous avez déjà vu, et utilisé dans vos programmes, des adresses.
 2. Une variable correspond à un emplacement dans la mémoire de
    l'ordinateur. Par exemple pour un `int`, on aura une zone de 4 ou 8
    octets, sur les machines actuelles. Un `char` occupera un octet.
@@ -146,18 +145,20 @@ ce qui fait afficher l'**adresse** (pas la valeur) de la variable `age`.
 ~~~
 quel est votre âge ?
 12
-vous etes né en 2006
+vous etes né en 2010
 adresse de age =  0x7ffdef4accf8
 ~~~
 
 L'expression `& age`, si vous préférez, c'est la **valeur de
-l'adresse**. Une adresse, c'est une position en mémoire, c'est-à-dire
+l'adresse**. Une adresse, ça indique une position en mémoire, c'est
 un numéro d'octet (la mémoire est composée d'octets repérés par leur
 numéro).
 
 Ici, comme on a utilisé la spécification de format `"%p"` (avec un `p`
 comme pointeur), l'adresse (qui est un nombre) est affichée en
-hexadécimal, sous la forme "`0x.....`".  On aurait pu l'afficher en
+hexadécimal, sous la forme "`0x.....`".  
+
+On aurait pu l'afficher en
 décimal `"%ld"`, mais en général, quand on s'intéresse à ce genre de
 choses, l'hexadécimal est plus pratique à utiliser.
 
@@ -173,8 +174,8 @@ il faudrait écrire
 pour *transtyper* explicitement l'adresse en "pointeur sur `void`".
 
 Explication : c'est nécessaire parce que la conversion de type
-pointeur ne se fait pas automatiquement avec la fonction `printf`,
-parce qu'elle est *variadique*.  
+pointeur ne se fait pas automatiquement avec la fonction `printf`, qui 
+est *variadique*.
 
 Conseil : ne vous inquiétez pas si vous ne
 comprenez rien au paragraphe précédent. C'est une formule magique qui me
@@ -187,9 +188,9 @@ apparaîtra mieux) plus loin dans ce document.
 ## Et les pointeurs ?
 
 **Définition :** Un pointeur, c'est une variable (ou une donnée) qui
-contient une adresse. Ou plutôt, *peut* en contenir, parce que si le
-pointeur n'est pas initialisé, il contient n'importe quoi, qui n'est
-pas forcément une adresse *valide*.
+contient l'adresse d'une donnée. Ou plutôt, *peut* en contenir, parce
+que si le pointeur n'est pas initialisé, il contient a priori
+n'importe quoi, qui n'est pas forcément une adresse *valide*.
 
 On déclare un pointeur en précédant son nom par le symbole `*`.
 Exemple
@@ -217,7 +218,7 @@ Ci-dessous une représentation des deux variables :
 ![Deux variables](../Images/pointeur_age.png)
 
 Les rectangles figurent les emplacements occupés par des variables,
-et leur valeur est marquée de dedans.  Pour le pointeur, au lieu d'y
+et leur valeur est marquée à l'intérieur.  Pour le pointeur, au lieu d'y
 mettre le nombre `0x7ffdef4accf` qui n'aura pas de grande
 signification pour nous, on dessine une flèche vers l'emplacement
 qu'il désigne (l'emplacement numéro  `0x7ffdef4accf`, justement).
@@ -225,10 +226,11 @@ qu'il désigne (l'emplacement numéro  `0x7ffdef4accf`, justement).
 On dit alors que la variable `adresse_age` **pointe sur** `age`. Ça
 veut dire qu'elle contient son adresse.
 
-## A quoi vont me servir les pointeurs ?
+## À quoi vont me servir les pointeurs ?
 
-Un premier usage, c'est pour écrire des fonctions qui modifient des
-données.  Pour cela, ces fonctions reçoivent l'adresse de la donnée à
+Un premier usage, c'est pour écrire des **fonctions qui modifient des
+données**.  Pour cela, on donne à ces 
+fonctions **l'adresse** de la donnée à
 modifier.
 
 Par exemple, une fonction qui demande à taper un entier compris entre
@@ -251,7 +253,7 @@ void demander_entier(char message[], int *adr_variable, int min, int max);
 //                                   ----^------------
 ~~~
 
-Il ne reste plus qu'à écrire cette fonction. Une première version
+Il ne reste plus qu'à écrire cette fonction. Une première version :
 
 ~~~C
 void demander_entier(char message[], int *adr_variable, int min, int max)
@@ -280,11 +282,11 @@ variable.
 C'est ce qu'on appelle 
 faire une **indirection**.
 On ne veut pas faire afficher la valeur du pointeur, mais *la valeur
-de la donnée dont le pointeur contient l'adresse.*
+de la donnée pointée* (par ce pointeur).
 
 **Exercice** : modifiez la fonction précédente pour qu'elle
 
-- vérifie que le nombre tapé est bien compris dans les valeurs
+- vérifie que le nombre tapé est bien compris entre les valeurs
 limites,
 - repose la question tant que ce n'est pas le cas.
 
@@ -294,25 +296,29 @@ Indication : on mettra `*adr_variable` là où on aurait mis un entier.
 ## Relation entre usage et déclaration de variable
 
 Un principe fondamental de C (et C++) est que 
-**la déclaration d'une
-variable ressemble à la manière de l'employer**.
+**la déclaration d'une variable ressemble à la manière de l'employer**.
 
 Quand on compare la variable, on écrit quelque chose comme  :
 
 ~~~C
     if ( *adr_variable < min ) {
     //   ^------------
-       printf("erreur ...");
+       printf("c'est trop petit ...");
     }
 ~~~
 
-on y emploie `*adr_variable` qui est un `int`. Donc elle est
-déclarée ainsi : `int *adr_variable`. C'est simple, finalement, quand on 
-connaît le principe.
+on y emploie `*adr_variable` qui est un `int`, et qui est
+donc déclarée ainsi : 
 
-Si on avait un tableau `t` de 10 adresses d'entiers, `t[2]`
-désignerait une adresse d'entiers, et `*t[2]` un entier. Donc le
-tableau serait déclaré
+~~~C
+    int *adr_variable`. 
+~~~
+
+C'est simple, finalement, quand on connaît le principe.
+
+Autre exemple : si on avait un tableau `t` de 10 adresses d'entiers,
+`t[2]` contiendrait l'adresse d'un entier, et donc `*t[2]`
+contiendrait un entier. Donc le tableau serait déclaré
 
 ~~~C
     int *t[10];
@@ -349,22 +355,29 @@ int *a;
 int b;
 ~~~
 
-En réalitén le compilateur ne s'intéresse pas à savoir si c'est collé à
-gauche ou à droite, ça lui est complètement égal. Le nombre d'espaces
-n'est pas significatif. Si on met des espaces, c'est pour faciliter la vie de
-celui qui doit relire le programme. Et l'heureux gagnant qui bénéficie
-de votre délicate attention, ça risque d'être vous un certain temps,
-tant que votre programme ne marche pas. Et aussi plus tard quand il
-faudra le modifier.
 
+En réalité, C est un langage en "syntaxe libre", le compilateur ne
+s'intéresse pas à savoir si c'est collé à gauche ou à droite, ou si il
+y a des espaces.
+
+Si on met des espaces, c'est pour faciliter la vie de ceux qui 
+vont relire le programme. Attention : la personne qui va probablement
+bénéficier de votre délicate attention d'écrire proprement les choses,
+ça risque d'être vous un certain temps, pour le corriger tant qu'il ne
+marche pas, et aussi plus tard quand il faudra le modifier.
+
+Donc écrire les choses proprement, ça a un gros impact. C'est pas un
+truc décoratif à garder pour plus tard quand ça marchera, au contraire
+c'est à faire au plus tôt **pour que ça marche** le plus vite
+possible.
 
 ## La constante `NULL`
 
 Un pointeur sert à contenir l'adresse d'une donnée.  Parfois on a
-besoin de savoir que le pointeur ne contient **pas encore** (ou ne
-contient plus) une adresse valide.
+besoin de savoir que le pointeur ne contient **pas** une adresse valide.
 
-Une constante spéciale, appelée `NULL` sert à représenter "l'adresse
+Pour cela, on lui met une valeur spéciale, la constante `NULL`
+Une constante spéciale, appelée `NULL` sert qui représente "l'adresse
 de rien du tout".  C'est utile par exemple pour initialiser un
 pointeur.
 
@@ -382,7 +395,8 @@ Bien entendu, les choses se passeront mal si on tente de
 "déréférencer" (faire une indirection avec) un pointeur `NULL`. En
 général, le programme s'arrête avec une "violation mémoire".
 
-Nous aurons l'usage de `NULL` avec les structures de données chaînées.
+Nous aurons l'usage de cette constante `NULL` lorsque nous réaliserons
+des structures de données chaînées.
 
 
 ## Petits exercices
@@ -484,7 +498,7 @@ Par exemple, pour normaliser une fraction, il faut d'abord ramener le
 dénominateur à une valeur positive. On peut écrire
 
 ~~~C
-void normaliser(struct Fraction *pf)    // pointeur de fraction
+void normaliser(struct Fraction *pf)    // pf = pointeur de fraction
 {
    // rectification éventuelle des signes
    if (pf->denominateur < 0) {
@@ -534,14 +548,14 @@ du système (comme `fork`, `pipe`, `signal`, ...).
 
 ## La logique
 
-En fait, c'est assez logique, en appliquant les principes déjà vus. Il
+En fait, c'est une application assez logique des principes déjà vus. Il
 n'y a pas grand chose de nouveau.
 
-Voyons sur un exemple : une fonction qui applique une même fonction à tous
-les éléments d'un tableau. 
+Voyons sur un exemple : nous allons développer une fonction qui
+applique une même fonction à tous les éléments d'un tableau.
 
-1. Pour afficher les éléments d'un tableau
-d'entiers, on peut faire comme ceci
+1. D'habitude, pour afficher les éléments d'un tableau
+d'entiers, on écrit quelque chose comme ça :
 
 ~~~C
 int main()
@@ -555,15 +569,9 @@ int main()
 }
 ~~~
 
-2. soyons sérieux, remplaçons l'action 1 par un appel de
-fonction. Pour cela on définit une fonction, appelée dans le `main()`
+2. Maintenant, remplaçons l'action 1 par un appel de fonction :
 
 ~~~C
-void afficher(int n)
-{
-   	printf("%d\n", n);
-}
-
 int main()
 {
 	...
@@ -574,25 +582,41 @@ int main()
 }
 ~~~
 
+à la fonction qui est définie ainsi
+
+~~~C
+void afficher(int n)
+{
+   	printf("%d\n", n);
+}
+~~~
+
+Jusque là, tout va bien ?
+
 3. Imaginons que nous ayons réussi de mettre l'adresse de la fonction
-`afficher` dans un pointeur de fonction.  Il serait cohérent avec les
+`afficher` dans un pointeur de fonction :
+
+~~~C
+adr_fonction = & afficher;                // déclaration plus loin
+~~~
+
+il serait cohérent avec les
 épisodes précédents de remplacer `afficher` par `*adr_fonction` dans
 la boucle :
 
 ~~~C
-adr_fonction = & afficher;
-
 for (int i=0; i<3; i++) {
 	(*adr_fonction)(tableau[i]);    // 2
 }
 ~~~
 
-4. Maintenant, rappelez-vous que la déclaration d'une variable ressemble
-à son utilisation.  Puisque `(*adr_fonction)` a pour but de remplacer
-`afficher` qui a comme prototype
+4. Maintenant, la déclaration de la variable. Rappelez-vous leprincipe : la déclaration d'une variable ressemble
+à son utilisation.  
+
+Comme `(*adr_fonction)` remplace `afficher` qui a comme prototype
 
 ~~~C
-void afficher(int n);
+void     afficher  (int n);
 ~~~
 
 la variable peut être déclarée
@@ -602,7 +626,9 @@ void (*adr_fonction)(int n);
 ~~~
 
 5. En pratique, dans un prototype de fonction, on indique les types
-des paramètres mais pas forcément leur nom.
+des paramètres, mais on peut se passer des noms.
+
+
 Et voila le code qui en résulte :
 
 ~~~C
@@ -613,22 +639,29 @@ adr_fonction = & afficher;    // adresse du code d' afficher
 for (int i = 0; i < 3; i++) {
 	(*adr_fonction)(tableau[i]);        // appel
 }	
-~~~	
+~~~
 
 **Note** on peut aussi écrire
 
 
 ~~~C
-	adr_fonction =  afficher;       // sans le &     
+	adr_fonction =  afficher;       // 1. sans le &     
 	for (int i = 0; i < 3; i++) {
-		adr_fonction(tableau[i]);   // sans l'étoile 
+		adr_fonction(tableau[i]);   // 2. sans l'étoile 
 	}
 ~~~
 
-Dans le premier cas, c'est une histoire de compatibilité entre
-plusieurs compilateurs avant l'établissement d'un standard pour C.  Du
-coup, `afficher` ou `& afficher`, ce sont des expressions qui retournent
-une adresse de fonction, qu'on peut affecter dans un pointeur.
+Dans le premier cas, c'est une vieille histoire. Le premier standard du
+langage C (en 1989) est sorti très tard. Il existait de nombreux
+compilateurs, qui ne traitaient pas les adresses de fonctions de la
+même façon. Le but du comité de standardisation n'était pas de se
+fâcher avec la moitié des gens qui écrivaient (et vendaient) des
+compilateurs - et faisaient partie du comité - en décrếtant que ce
+qu'ils faisaient était illégal.
+
+Du coup, la comité a décidé que `afficher` ou `& afficher`, ce sont
+deux manières légales de désigner l'adresse de la fonction `afficher`,
+avec ou sans "`&`".
 
 Dans le second cas, c'est que la forme d'un appel de fonction est plus
 générale que ce à quoi vous êtes habitué.
@@ -643,8 +676,9 @@ En fait la forme générale, c'est
 *expression_qui_retourne_une_fonction(paramètre, paramètre, ....)*
 
 
-Jusqu'icin on mettait "`&`" et les "`*`" dans les utilisations de
+Jusqu'ici, on mettait "`&`" et les "`*`" dans les utilisations de
 pointeurs de fonctions parce que ça permet de bien en voir la logique.
+
 Maintenant que vous avez compris comment ça marche, on va laisser
 tomber ces opérateurs superflus.
 
@@ -679,9 +713,12 @@ La ligne
 typedef  void (* ActionEntier)(int);
 ~~~
 
-définit le type `ActionEntier` : les fonctions qui prennent comme
-paramètre un `int` et ne retournent rien.  Et on utilise ce type
-pour un des paramètres de `appliquer_action` :
+définit le type `ActionEntier` : les fonctions qui 
+
+- prennent comme paramètre un `int` 
+- ne retournent rien.  
+
+Et on utilise ce type pour un des paramètres de `appliquer_action` :
 
 ~~~C
 void appliquer_action(int tableau[], int taille, ActionEntier action)
@@ -772,10 +809,13 @@ void aller_au_boulot()
 	printf("Bof\n");
 }
 
-void (*actions[3])()                // tableau de 3 fonctions
-      = { aller_au_restaurant, 
-		  aller_au_boulot, 
-		  retourner_dormir };
+typedef void (*Action)();
+
+Action[3] = {                 // tableau de 3 fonctions
+	aller_au_restaurant, 
+	aller_au_boulot, 
+	retourner_dormir 
+};
 
 int main()
 {
@@ -815,7 +855,8 @@ La raison, c'est que `a`, ce n'est pas vraiment une variable
 
 Quand vous écrivez `a = b;`, vous demandez
 de mettre une adresse dans une autre. Ce n'est pas vraiment
-ce que vous voulez faire.
+ce que vous voulez faire. C'est pas l'adresse que vous voulez
+copier, c'est le contenu.
 
 
 
@@ -906,14 +947,13 @@ Autrement dit, si `pointeur` désignait une case d'un tableau,
 maintenant il désigne la case suivante.
 
 
-
 Il faut comprendre un peu ce qui se passe en dessous : si un pointeur
 `p` contient l'adresse d'un objet de type `T`, et que `k` est un
 entier, `p+k` contient l'adresse de `p`, augmentée de `k` fois
 `sizeof(T)`
 
 Une démonstration ? Voici un code qui fait afficher la
-valeur d'un pointeur (de `double`), à qui on ajoute des entiers
+valeur d'un pointeur (de `double`), à qui on ajoute des entiers :
 
 ~~~C
 int main()
