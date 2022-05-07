@@ -1,0 +1,16 @@
+all: cours-c.pdf
+
+%.pdf: %.tex
+	rubber -d $<
+
+
+cours-c.pdf: ../Sim16/sim16.c
+
+clean: 
+	$(RM) *.aux  *.log  *.out  *.toc *.bak *~
+
+%.d: %.tex
+	grep lstinputlisting $< | sed -e  "s/^.*{/`basename $< .tex`.pdf: /" -e  "s/}.*\$$//" > $@
+
+-include cours-c.d
+

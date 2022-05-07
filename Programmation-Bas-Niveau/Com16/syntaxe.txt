@@ -1,0 +1,42 @@
+----------------------------------------------------------------------
+
+			PROPOSITION DE GRAMMAIRE
+
+----------------------------------------------------------------------
+Instructions
+
+while  condition
+  ... instructions ....
+end
+
+repeat
+  .... instructions ....
+until condition
+
+
+if condition
+then
+   .....
+[ else
+   ....
+]
+fi
+
+var = expression
+
+halt 
+
+----------------------------------------------------------------------
+Expressions
+
+Expr   ::=  Terme   {  {+/-}  Terme }*
+Terme  ::=  [-] { variable | constante {   ( Expr ) } }
+
+----------------------------------------------------------------------
+Conditions  
+
+Cond   ::=  Expr op  Expr
+
+op     :=   {  </>/<=/>=/==/!= }
+----------------------------------------------------------------------
+

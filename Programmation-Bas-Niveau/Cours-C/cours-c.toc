@@ -1,0 +1,49 @@
+\babel@toc {french}{}
+\contentsline {section}{\numberline {1}De C++ à C}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Ce qui n'existe pas en C}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Idées directrices du langage C}{2}{subsection.1.2}%
+\contentsline {subsection}{\numberline {1.3}Caractéristiques du langage C}{4}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Évolution du langage}{4}{subsection.1.4}%
+\contentsline {section}{\numberline {2}Premiers exemples}{5}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Hello, world !}{5}{subsection.2.1}%
+\contentsline {paragraph}{Explications : }{5}{section*.2}%
+\contentsline {subsection}{\numberline {2.2}Utilisation des paramètres de la ligne de commande}{6}{subsection.2.2}%
+\contentsline {paragraph}{Exemple}{6}{section*.3}%
+\contentsline {section}{\numberline {3}La fonction \texttt {printf()}}{6}{section.3}%
+\contentsline {paragraph}{Autres spécificateurs de conversion :}{7}{section*.4}%
+\contentsline {paragraph}{Exemples : }{7}{section*.5}%
+\contentsline {paragraph}{Documentation : }{7}{section*.6}%
+\contentsline {paragraph}{Exercice :}{7}{section*.7}%
+\contentsline {section}{\numberline {4}Passage de paramètres}{7}{section.4}%
+\contentsline {paragraph}{Étudions l'exemple suivant}{7}{section*.8}%
+\contentsline {section}{\numberline {5}Adresses et pointeurs}{8}{section.5}%
+\contentsline {paragraph}{Déréférencement}{8}{section*.9}%
+\contentsline {paragraph}{Exercice : }{8}{section*.10}%
+\contentsline {paragraph}{Exemple}{8}{section*.11}%
+\contentsline {paragraph}{Exercice :}{9}{section*.12}%
+\contentsline {section}{\numberline {6}Les chaînes des caractères}{9}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Opérations sur les chaînes :}{9}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Opérations sur les caractères}{10}{subsection.6.2}%
+\contentsline {section}{\numberline {7}Lecture et écriture dans des fichiers textes}{10}{section.7}%
+\contentsline {paragraph}{Remarques : }{11}{section*.13}%
+\contentsline {paragraph}{Un peu plus : }{11}{section*.14}%
+\contentsline {paragraph}{Exercice : }{11}{section*.15}%
+\contentsline {section}{\numberline {8}Chaînes UNICODE et caractères larges}{12}{section.8}%
+\contentsline {paragraph}{Exercice : }{12}{section*.16}%
+\contentsline {paragraph}{Conclusion : }{12}{section*.17}%
+\contentsline {section}{\numberline {9}Structures}{12}{section.9}%
+\contentsline {subsection}{\numberline {9.1}Initialisation des structures}{13}{subsection.9.1}%
+\contentsline {subsection}{\numberline {9.2}Affectation, passage de paramètres}{13}{subsection.9.2}%
+\contentsline {section}{\numberline {10}Union}{14}{section.10}%
+\contentsline {paragraph}{L'initialisation d'une union}{15}{section*.18}%
+\contentsline {section}{\numberline {11}Définition de noms de types : typedef}{15}{section.11}%
+\contentsline {paragraph}{Ne pas en abuser.}{15}{section*.19}%
+\contentsline {section}{\numberline {12}Préprocesseur : usage des macros}{16}{section.12}%
+\contentsline {subsection}{\numberline {12.1}\texttt {\#include}}{16}{subsection.12.1}%
+\contentsline {subsection}{\numberline {12.2}{\#define}}{16}{subsection.12.2}%
+\contentsline {subsection}{\numberline {12.3}{\#ifdef}}{17}{subsection.12.3}%
+\contentsline {subsection}{\numberline {12.4}Macros}{17}{subsection.12.4}%
+\contentsline {section}{\numberline {13}Allocation dynamique : malloc, free}{17}{section.13}%
+\contentsline {section}{\numberline {14}Traitement d'exceptions : \texttt {setjmp}, \texttt {longjmp}}{18}{section.14}%
+\contentsline {section}{\numberline {A}Un exemple : simulateur de processeur}{19}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Notes}{20}{subsection.A.1}%

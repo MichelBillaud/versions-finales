@@ -1,0 +1,351 @@
+Solutions des exos du cours
+----------------------------
+
+Transparent 18, affectations
+
+1) A = A + B
+
+   load   A
+   add    B
+   store A
+
+2) A = A + 1
+
+  loadi 1
+  add   A
+  store A
+
+3) A = B + C - 1
+
+  loadi -1
+  add   B
+  add   C
+  store A
+
+4) Echange de deux variables A et B
+
+  load  A  # C = A
+  store C
+  load  B  # A = B
+  store A
+  load  C  # B = C
+  store A
+
+
+ --------------------------
+
+
+transparent 48
+
+1) M = max(A,B)
+
+   load A
+   sub B
+   jneg B_est_max
+     load A
+     jmp  fin
+B_est_max
+     load B
+fin
+    store M
+    halt 0
+
+A word 5
+B word 10
+M word 0
+
+(testé !)
+
+
+
+2) ordonner 2 nombres A B (ordre croissant)
+
+  load A
+   sub B
+   jneg fin
+ 
+   load A
+   store C
+   load B
+   store A
+   load C
+   store B
+fin
+# ici A <= B
+    halt 0
+
+A word 5
+B word 3
+C word 0
+
+------------------------------------------------
+
+Transparent 53 : multiplication 
+
+Algorithme :
+
+P = 0
+faire A fois
+   P += B
+
+(on suppose A positif)
+
+Pour faire A fois : boucle avec compteur qui part de 0
+et s'arrete quand il atteint A
+
+   P = 0
+   K = 0
+boucle
+   si K==A aller à fin
+     P += B
+     K += 1
+   aller à boucle
+fin
+
+  loadi 0
+  store p
+  store k
+
+boucle
+  # k est dans l'accumulateur
+  sub a
+  jzero fin
+
+  load p
+  add  b
+  store p
+
+  loadi 1
+  add   k
+  store k
+  jmp boucle
+
+fin
+  halt 0
+
+a word 3
+b word 4
+p word 0
+k word 0
+
+
+----
+
+
+2) Division de A par B -> Q et R
+
+   r = a
+   q = 0
+   tant que r >= b
+      r = r - b
+      q = q + 1
+
+   r = a
+   q = 0
+boucle
+   tmp = r - b
+   si tmp < 0 aller à fin
+      r = tmp
+      q++
+   aller à boucle
+fin 
+   ...
+ 
+#  r = a
+  load a
+  store r
+#   q = 0
+  loadi 0
+  store q
+boucle
+#    tmp = r - b
+  load r
+  sub  b
+#   si tmp < 0 aller à fin
+  jneg fin
+#      r = tmp
+  store r
+#      q++
+  loadi 1
+  add q
+  store q
+#   aller à boucle
+  jmp boucle
+#
+fin 
+   halt 0
+ 
+a word 21
+b word 4
+q word 0  # -> 5
+r word 0  # -> 1
+
+(vérifié) 
+
+3) factorielle   F = fac(N)
+
+
+Ca se gate : deux boucles imbriquées, une sur les facteurs, l'autre pour la multiplication
+
+Pour simplifier le code, on fait la boucle externe descendante (comme
+ça on teste si l'indice est arrivé à 0, avec jzero)
+
+   F = 1
+   K = N
+   tant que K != 0 0
+      F = F * K
+      K --
+
+----
+
+   loadi 1
+   store F
+   load  N
+   store K
+boucle
+   # K est dans acc
+   jzero fin
+   ... F = F * K
+   loadi -1
+   add k
+   store K
+fin
+   halt 0
+
+---
+
+POur le produit, on reprend de qu'on a
+déjà fait
+   P = 0
+   K2 = 0
+boucle2
+   si K2==K aller à fin2
+     P += F
+     K2 += 1
+   aller à boucle2
+fin2
+   F = P
+
+
+soit:
+
+#
+# Solution (testée)
+#
+   loadi 1
+   store F
+   load  N
+   store K
+boucle
+   # K est dans acc
+   jzero fin
+   # debut  F = F * K
+  loadi 0
+   store P
+   store K2
+boucle2
+   # K2 dans acc
+   sub K
+   jzero fin2
+   load P
+   add  F
+   store P
+   loadi 1
+   add K2
+   store K2
+   jmp boucle2
+fin2
+   load P
+   store F
+   # fin multiplication
+
+   loadi -1
+   add K
+   store K
+   jmp boucle
+fin
+   halt 0
+
+# 3 -> 6
+# 4 -> 24 = 0x18
+# 5 -> 120 = 0x78
+n word 5
+f word 0  
+p word 0
+k word 0
+k2 word 0
+
+
+
+
+--------------
+
+Recherche du plus petit diviseur D  > 1 de  N
+
+   D = 1
+   repeter
+      D ++
+      R = reste de D div N
+   jusqu'a R == 0
+
+
+   loadi 1
+   store D
+boucle
+   loadi 1
+   add D
+   store D
+   .... R = reste de N div D
+   load R
+   jzero fin
+   jmp boucle
+fin
+   halt 0
+
+   
+
+calcul du reste
+
+   R = N
+boucle2
+   tmp = R - D
+   si tmp < 0 aller à fin2
+      R = tmp
+      aller à boucle2
+fin2
+
+ 
+#
+# Code (vérifié)
+#
+   loadi 1
+   store D
+boucle
+   loadi 1
+   add D
+   store D
+   # debut R = reste de N div D
+   # R = N
+   load N
+   store R
+boucle2
+   # R est dans acc
+   # tmp = R - D
+   sub D
+   # si tmp < 0 aller à fin2
+   jneg fin2
+   # R = tmp
+   store R
+   # aller à boucle2
+   jmp boucle2
+fin2
+   # fin division
+   load R
+   jzero fin
+   jmp boucle
+fin
+   halt 0
+
+N word 77
+D word 0  # 7
+R word 0

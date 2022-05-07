@@ -1,0 +1,293 @@
+%rubber: module xelatex
+\documentclass[10pt]{article}
+
+\usepackage[a4paper,hmargin=2.5cm,vmargin=2.0cm]{geometry}
+
+\usepackage{fontspec}
+
+% \usepackage{lmodern}
+\usepackage[french]{babel}
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage{listings}
+\renewcommand{\familydefault}{\sfdefault}
+
+
+\title{Questions - Cours assembleur}
+
+\author{ASR2-Système 2012-2013}
+\date{\today}
+
+
+
+\begin{document}
+\begin{multicols*}{2}
+\maketitle
+
+\section{Cours}
+
+\subsection{SSEM}
+\begin{enumerate}
+\item En quelle année a-t-elle été développée, et où ?
+\item Quel était son objectif ?
+\item Quelle était sa capacité mémoire ?
+\end{enumerate}
+
+\subsection{Structure d'un ordinateur}
+
+\begin{enumerate}
+\item Principaux éléments d'un ordinateur
+\item Principaux éléments d'un processeur
+\item Qu'est-ce qu'un registre ?
+\item Qu'est-ce que l'accumulateur ?
+\item Qu'appelle-t'on \emph{compteur de programme} ? Quel est son rôle ?
+\item Le premier micro-processeur commercialisé : modèle, fabriquant,
+  année ? Combien comportait-il de transistors ?  Combien de
+  transistors dans un processeur actuel ?
+\end{enumerate}
+
+
+\subsection{Instructions}
+\begin{enumerate}
+\item Expliquez ce qu'est le \emph{format d'instruction}, en vous appuyant
+sur l'exemple du processeur fictif.
+\item Les grandes classes d'instructions
+\item Quel est l'effet d'un instruction de saut conditionnel ?
+\item Citez les types d'opérandes disponibles sur le processeur fictif
+\item Qu'est-ce qu'un opérande \emph{immédiat} ?
+\end{enumerate}
+
+\subsection{Assemblage}
+
+\begin{enumerate}
+\item sur le programme suivant
+
+\begin{lstlisting}[frame=single, numbers=left]
+debut
+   loadi 3
+   add   a
+   store b
+fin
+   halt 0
+a  word 23
+b  word 54
+\end{lstlisting}
+Indiquez ce que sont 
+\begin{itemize}
+\item les mnémoniques
+\item les symboles
+\item les opérandes
+\item les directives
+\end{itemize}
+
+\item qu'est-ce qu'un \emph{assembleur} ?
+\end{enumerate}
+
+\section{Programmation}
+
+\subsection{Affectations}
+
+\begin{enumerate}
+\item Traduisez l'instruction \texttt{ A = B-C+1 }
+\item Traduisez 
+\begin{lstlisting}[frame=single]
+  if (A < 0) {
+     A = -A;
+  }
+\end{lstlisting}
+\item Sur cet exemple
+\begin{lstlisting}[frame=single]
+debut
+   load  a
+   add   b
+   store c
+fin
+   halt  0
+a  word 10
+b word  20
+c word  42
+\end{lstlisting}
+
+\begin{enumerate}
+  \item Quel est le contenu du mot d'adresse 5 avant l'exécution ?
+\item
+   Quelle est la valeur des \emph{symboles} a,b, c, debut, fin ?
+\item 
+   Quel est le contenu des \emph{variables} a, b, c après l'exécution.
+\item même question si on remplace la première instruction par \texttt{loadi a}
+\end{enumerate}
+
+   
+\item Écrivez le code pour l'échange de deux variables A et B
+
+\item Étudiez l'effet de la séquence d'instruction suivante, en notant
+dans la partie droite le contenu de l'accumulateur et des variables A et B
+(au suppose qu'au départ les valeurs respectives sont 4, 2, et 5).
+
+\begin{center}
+\begin{tabular}{|l||ccc|}
+\hline
+  instructions  &   Acc & A & B \\ 
+                &    4  & 2 & 5 \\
+\hline
+   load b       &       &   &   \\
+   add b  &&& \\
+ store a &&& \\
+ sub b &&& \\
+ store b &&& \\
+ load a &&& \\
+ sub b &&& \\
+ store a &&& \\
+\hline
+\end{tabular}
+\end{center}x
+Quel est en général l'effet de cette séquence, pour des valeurs 
+quelconques $x$ et $y$  de A et B ?
+\end{enumerate}
+
+\subsection{Décisions}
+
+\begin{enumerate}
+\item traduire les séquences
+\begin{lstlisting}[frame=single]
+si X < SEUIL 
+alors  INF = INF + 1
+\end{lstlisting}
+\begin{lstlisting}[frame=single]
+si X <= SEUIL 
+alors  INF = INF + 1
+\end{lstlisting}
+\begin{lstlisting}[frame=single]
+si X == VAL 
+alors  NB = NB + 1
+\end{lstlisting}
+\begin{lstlisting}[frame=single]
+si X != VAL 
+alors  DIFF = DIFF + 1
+\end{lstlisting}
+\end{enumerate}
+
+\subsection{Boucles}
+
+\begin{enumerate}
+\item Traduisez l'algorithme de  calcul du n-ième terme de la 
+suite de Fibonacci
+\begin{lstlisting}[frame=single, numbers=left]
+int n = 5;
+int p = 1, f = 0;
+for (int i = 0; i != n; i++) {
+             // ici f == fib(i-1)
+             //  et p == fib(i-2)
+    int x = p + f;
+             // ici x == fib(i)
+    p = f;
+    f = x;
+         //  ici f == fib(i)
+         //    et p == fib(i-1)
+}
+         //     ici i == n 
+       //  et donc f == fib(n)
+\end{lstlisting}
+
+
+\item Traduisez l'algorithme de division par soustractions successives
+\begin{lstlisting}[frame=single]
+int a = 123, b = 10;
+
+int r = a, q = 0;
+while(r > b) {
+  r = r - b;
+  q = q + 1;
+}
+\end{lstlisting}
+
+\item Traduisez l'algorithme d'Euclide ci-dessous pour le calcul
+du PGCD de a et b. La variable a est supposée strictement positive au
+départ, et contiendra le PGCD à la fin.
+\begin{lstlisting}[frame=single]
+int a = 144, b = 84, c = 0;
+while ( b != 0 ) {
+    if (a >= b) {
+       a = a - b ;
+    } else {
+       c = a;
+       a = b;
+       b = c;
+    } 
+}
+\end{lstlisting}
+\end{enumerate}
+
+\subsection{Tableaux, pointeurs}
+
+\begin{enumerate}
+  \item traduire le fragment de programme C suivant
+\begin{lstlisting}[frame=single]
+int t[5];
+for (int i = 0; i != 5; i++) {
+   t[i] = i;
+}
+\end{lstlisting}
+
+  \item traduire le fragment de programme C suivant
+\begin{lstlisting}[frame=single]
+int t[5] = {7, 4, 8, 1, 2};
+int val = 4;
+int nb = 0;
+for (int i = 0; i != 5; i++) {
+   if (t[i] >= val) {
+      nb = nb + 1;
+   }
+}
+\end{lstlisting}
+
+ \item traduire le fragment de programme C suivant
+\begin{lstlisting}[frame=single]
+int a[5] = {7, 4, 8, 1, 2};
+int b[5] = {5, 4, 9, 1, 0}
+int nb = 0;
+
+for (int i = 0; i != 5; i++) {
+   if (a[i] == b[i]) {
+      nb = nb + 1;
+   }
+}
+\end{lstlisting}
+  \item traduire le fragment de programme C suivant
+(construction de la table des carrés)
+% corrigé
+\begin{lstlisting}[frame=single]
+int carre[10];
+carre[0] = 0;
+int c = 0;
+for (int i = 1; i != 10; i++) {
+    c = c + 2*i - 1;
+    carre[i] = c;
+}   
+\end{lstlisting}
+
+\item Voici l'algorithme du tri à bulles
+trouvé sur Wikipedia. Traduisez-le pour le tri d'un tableau de 10
+éléments.
+\begin{lstlisting}[frame=single]
+void bubbleSort(int val[], 
+                int size)
+{
+  int i, j, temp;
+ 
+  for (i = size-1; i > 0; i--) {
+    for (j = 1; j <= i; j++) {
+      if (val[j-1] > val[j]) {
+        temp     = val[j-1];
+        val[j-1] = val[j];
+        val[j]   = temp;
+      }
+    }
+  }
+}
+\end{lstlisting}
+\end{enumerate}
+
+\end{multicols*}
+ 
+\end{document}

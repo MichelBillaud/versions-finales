@@ -1,0 +1,80 @@
+PDP-4
+
+instructions sur 18 bits, adresses 13 bits, 
+accumulateur 18 bits
+
+
+Instructions :
+- 4 bits de code operation
+- 1 bit d'indirection
+- 13 bits d'adresse ou operande
+
+Si le bit d'indirection est utilisé avec les adresses 10 à 17 (oct),
+pré-incrementation.
+
+Terminologie : registres = mémoires
+
+
+
+instructions principales
+
+dac Y	     deposit acc       M[Y] := C(AC)  ou  M[M[Y]] := C(AC)
+jms Y        jump to subroutine     M[Y] = PC+1,  PC=M[Y]+1
+    	     	     		   l'adresse de retour est le premier mot du
+				   du sous-programme
+dzm Y          deposit zero     M[Y] := 0
+lac Y	       load acc		C(AC) := C(Y)
+xor Y
+add Y		add compl 1
+tad Y		add comp  2
+xct Y		execute instr
+isz Y           index and skip if zero.   C(Y)++  evite instr suivante si 0
+and Y
+sad Y           skip if AC != C(Y)
+JMP Y
+
+law              ?
+
+opr  op		 diverses operations
+     		 complement accumulateur, clear test des switches,
+		 rotations, halt
+		 skip < >=  =0 !=0
+
+iot op		 in out transfer 
+
+
+----------------
+
+Simplification pour 16 bits
+
+4 bits code op, 1 bit indirection, 11 bits adresse
+
+LOAD  Y
+STORE Y
+
+ADD   Y
+SUB   Y
+
+AND   Y
+OR    Y
+XOR   Y
+
+CMP   Y 
+JUMP  Y
+CALL  Y 
+
+LDI   V    (bit indirection non utilisé)
+ADDI  V
+CMPI  V
+
+
+1111 
+     SKIP condition  < > <= >= == != always never
+     RL   bits
+     RR   bits
+     SL   bits
+     SR   bits
+     IN   port
+     OUT  port
+     HALT
+

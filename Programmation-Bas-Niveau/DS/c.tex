@@ -1,0 +1,145 @@
+\section{Langage C}
+
+\subsection{De C++ à C}
+\begin{tabular}{ll}
+\begin{minipage}[t]{0.45\textwidth}
+\begin{lstlisting}[language=c]
+// C source code (file s.c)
+
+#include <stdlib.h>
+#include <stdio.h>
+
+void swap(int a, int b)
+{
+	int tmp = a;
+	a = b;
+	b = tmp;
+}
+
+int main(int argc, char *argv[])
+{
+   int a = atoi(argv[1]);
+   int b = atoi(argv[2]);
+   swap(a, b);
+   printf("a = %d\n", a);
+   printf("b = %d\n", b);
+   return EXIT_SUCCESS;
+}
+
+// End of file
+\end{lstlisting}
+\end{minipage}
+&
+\begin{minipage}[t]{0.45\textwidth}
+\begin{lstlisting}[language=c++]
+// C++ source code (file spp.cpp)
+
+#include <stdlib.h>
+#include <iostream>
+
+using namespace std;
+
+void swap(int &a, int &b)
+{
+	int tmp = a;
+	a = b;
+	b = tmp;
+}
+
+int main(int argc, char *argv[])
+{
+   int a = atoi(argv[1]);
+   int b = atoi(argv[2]);
+   int &ra = a;
+   int &rb = b;
+   swap(ra, rb);
+   cout << "a = " << a << endl;
+   cout << "b = " << b << endl;
+   return EXIT_SUCCESS;
+}
+
+// End of file
+\end{lstlisting}
+\end{minipage}
+\end{tabular}
+
+\cparagraph{On lance les deux programmes avec  
+les nombres \texttt{4} et \texttt{2} en paramètres. Qu'affichent-ils ?}
+
+\cparagraph{Donnez une version modifiée du code 
+source \texttt{C} pour qu'il se comporte de la même manière que celui en \texttt{C++}.}
+
+% -------------------------------------------------------------------
+
+\subsection{Taille de fichier}
+\cparagraph{Écrivez un programme qui affiche la taille en octet d'un fichier texte
+dont le nom est passé en paramètre.}
+
+
+\paragraph*{Exemple d'utilisation :}
+\begin{verbatim}
+$ ./count toto.txt
+toto.txt : 42
+\end{verbatim}
+
+\textbf{Remarques :}
+\begin{itemize}
+\item 1 caractère = 1 octet.
+% note : précision, pas d'affichage en cas d'erreur.
+\item Une fonction annexe \texttt{taille\_fichier} doit ouvrir le fichier, calculer sa taille, 
+refermer le fichier et retourner la taille trouvée. En cas d'erreur
+la fonction n'affiche rien, et retourne -1.
+\item La fonction \textit{main} doit afficher le résultat, ou un message
+si le fichier n'a pas été trouvé.
+\end{itemize}
+
+\vspace{1cm}
+
+\cparagraph{Modifiez votre fonction \texttt{main} pour qu'elle puisse opérer sur 
+plusieurs fichiers, et afficher le total.}
+
+\paragraph*{Exemple d'utilisation :}
+
+\begin{verbatim}
+$ ./count toto.txt tata.txt titi.txt
+toto.txt : 42
+tata.txt : error
+titi.txt : 100
+--------------------
+TOTAL    : 142
+\end{verbatim}
+
+% ------------------------------------------------------------------------------------------
+
+\subsection{Base de données}
+\begin{lstlisting}[language=c]
+struct Date{
+	int day;
+	int month;
+	int year;
+};
+
+struct Personne{
+	char first_name[20];
+	char last_name[20];
+	struct Date birth_date;
+};
+
+struct Personne *base[128];
+int base_size;
+\end{lstlisting}
+
+\cparagraph{Écrivez une fonction qui devra afficher la base 
+de données contenue dans les \texttt{base\_size} premiers
+éléments du tableau \texttt{base}.}
+
+\paragraph*{Exemple d'affichage :}
+\begin{verbatim}
+First Name            Last Name           Birth Date
+--------------------------------------------------------
+Bob                   Grieves             31 / 01 / 1979
+Alice                 Smith               01 / 12 / 1978
+Ruppert               Giles               16 / 02 / 1812
+\end{verbatim}
+
+\end{document}

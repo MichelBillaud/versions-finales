@@ -1,0 +1,92 @@
+\section{Assembleur}
+
+% ------------------------------------------------------------------------------------------
+
+\subsection{Un programme de calcul}
+On veut calculer $R = 2^N$, selon l'algorithme ci-dessous :
+\begin{lstlisting}
+     R = 1
+     faire N fois
+       |  R = R + R
+\end{lstlisting}
+(on suppose que N est positif ou nul)
+
+\cparagraph{Écrivez le programme en assembleur 
+pour le processeur étudié en cours.}
+
+% ------------------------------------------------------------------------------------------
+
+\subsection{Compréhension d'un code}
+Soit le programme suivant (les adresses sont indiquées à gauche).
+
+\lstset{frame=single}
+
+\begin{tabular}{ll}
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}
+ 0 :        loadi 0
+ 1 :        store a
+ 2 :boucle  sub   taille
+ 3 :        jzero fin
+ 4 :        loadi c
+ 5 :        add   a
+ 6 :        store b
+ 7 :        load  a
+ 8 :        storex b
+ 9 :        load  a
+10 :        add   un
+11 :        store a
+12 :        jmp   boucle
+13 :fin     halt 0   
+\end{lstlisting}
+\end{minipage}
+&
+\begin{minipage}[t]{0.45\linewidth}
+\begin{lstlisting}
+14 :un      word 1
+15 :taille  word 5
+16 :a       word 0
+17 :b       word 0
+18 :c       word 0
+19 :        word 0
+20 :        word 0
+21 :        word 0
+22 :        word 0
+23 :        word 0
+24 :        word 0
+\end{lstlisting}
+\end{minipage}
+\end{tabular}
+
+\cparagraph{Que valent les mots d'adresses \texttt{16} à \texttt{24} au moment où le programme
+se termine ?}
+
+\cparagraph{Quel est le rôle respectif de \texttt{a}, \texttt{b} 
+et \texttt{c} ?}
+
+\cparagraph{Donnez l'algorithme du programme en pseudo-code.}
+
+\cparagraph{Proposez des optimisations pour ce code, en les justifiant 
+clairement}.
+
+% ------------------------------------------------------------------------------------------
+
+\subsection{De C à l'assembleur}
+On profite du fait que $n^2 = (n-1 + 1)^2 = (n-1)^2 + 2(n-1) + 1 
+= (n-1)^2 + 2n - 1$
+pour construire une table des carrés des entiers de 0 à 9, 
+sans faire de multiplications.
+ 
+\begin{lstlisting}[language=C]
+int carre [10];
+carre [0] = 0;
+int c = 0;
+for (int i = 1 ; i != 10 ; i++) {
+      c = c + 2*i - 1 ; 
+      carre [ i ] = c ;
+}
+\end{lstlisting}
+
+\cparagraph{Traduire le code ci-dessus en langage d'assemblage. Vous 
+commenterez soigneusement.}
+

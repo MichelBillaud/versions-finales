@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<!-- Simulateur Sim16,  M. Billaud, Dec 2012 -->
+<html>
+<head>
+  <meta charset="iso-8859-1"></meta>
+
+  <title>Simulateur SIM16</title>
+  <script src="utils.js" type="text/javascript"></script>
+  <script src="assembleur.js" type="text/javascript"></script>
+  <script src="simulateur.js" type="text/javascript"></script>
+  <script src="interface.js" type="text/javascript"></script>
+  <style>
+
+h1, h2 {
+   font-family : Helvetica;
+   padding-left: 1em;
+   padding-right: 1em;
+   margin: 0;
+}
+
+div#editor {
+   border: solid blue 1px;
+   background: #DDF;
+   float: left;
+  }
+div#editor h1 {
+   color: white;
+   background: blue;
+}   
+
+div#simulation {
+   color: black;
+   background: #CFC;
+   border: solid black 1px;
+   float: left;
+}
+div#simulation h1 {
+   color: white;
+   background: green;
+}
+   
+  div#listing{
+    font-family: Courier;
+    color: black;
+   border: solid black 1px;
+    background: #FFE;
+   float:left;
+ }
+div#listing h1 {
+   color: white;
+   background: #660;
+}
+
+iframe#doc {
+width: 100%;
+height: 500px;
+}
+  </style>
+
+  <script>
+  </script>
+</head>
+
+<body>
+
+    <div id="editor">
+      <h1>Editor</h1>
+      
+<button id="b_asm">Run Assembler</button>
+<br/>
+      <textarea cols="30" rows="24" id="buffer">
+start    # debut programme
+    load a 
+    add b 
+    store c
+    halt 0
+
+# donnees
+A   word 30
+B   word 12
+C   word 0
+
+# et voila
+</textarea>
+
+    </div>
+
+    <div id="listing">
+      <h1>Listing</h1>
+      <button id="b_load">Load To Memory</button>
+      <div id="paper">
+      PRINTER READY.
+      </div>
+    </div>
+
+
+  <div id="simulation">
+    <h1>Simulator</h1>
+
+    <button id="b_step">Step</button>
+    <br/>
+    <button id="b_run"'>Run</button>
+    with delay 
+    <input type="text" id="delay" size='4' value="500"> ms
+    |     <button id="b_pause"'>Pause</button>
+    <br/>
+    <button id='b_setci'>Set CI</button> to
+    <input type="text" id="ci" size='4' value="0"> 
+
+    <div id="registers">
+      <h2>Registers</h2>
+    </div>
+    <div id="status">
+      <h2>Status</h2>
+      </div>
+    <div id="memory">
+      <h2>Memory</h2>
+    </div>
+
+</div>
+  </div>
+<div>
+  <iframe id="doc" src="documentation.html">
+</div>
+</body>
+</html>

@@ -1,0 +1,1402 @@
+%rubber: module xelatex
+\documentclass[10pt]{article}
+
+\usepackage[a4paper,hmargin=2.5cm,vmargin=2.5cm]{geometry}
+
+\usepackage{fontspec}
+
+% \usepackage{lmodern}
+\usepackage[french]{babel}
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage{listings}
+
+\title{Programmer en C}
+\author{S2 - dept info}
+\date{\today}
+
+% inspiré de http://people.cs.uchicago.edu/~iancooke/osstuff/ccc.html
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{De C++ à C}
+
+Quand on regarde superficiellement un programme C, on trouve
+que la syntaxe est identique à celle de C++. 
+C'est normal, historiquement C++ a été conçu
+\footnote{Voir document
+\url{http://www.hitmill.com/programming/cpp/cppHistory.html}} 
+par Bjarne Stroustrup  des Bell Labs, dans les années
+1983-1985, comme une extension
+du langage C, pour y intégrer les classes et la programmation objet.
+Au départ, C++ s'appelait « C with classes ».
+
+
+Le langage C a été conçu 10 ans plus tôt (1971-1972) par 
+Dennis Ritchie des Bell Labs, qui travaillait avec Ken Thompson 
+sur la conception d'un nouveau système d'exploitation appelé UNIX.
+
+
+D'où deux nouvelles : 
+\begin{itemize}
+\item la bonne : vous ne serez pas dépaysé par la 
+syntaxe\footnote{qui a aussi fortement imprégné celles de Java,  C\#, 
+PHP, Javascript, Python, Perl etc.)} ;
+\item la mauvaise :  il va falloir  apprendre à se passer 
+de mécanismes que vous connaissez en C++, mais qui n'existent pas
+en C. 
+\end{itemize}
+
+\subsection{Ce qui n'existe pas en C}
+
+Citons par exemple 
+\begin{itemize}
+\item le passage de paramètres par référence,
+\item la surcharge,
+\item les chaînes de caractères,
+\item les opérations \texttt{<<} et \texttt{>>} pour lire et écrire sur
+des \emph{streams},
+\item new et delete
+\item les classes, l'héritage, 
+\item  le transtypage \texttt{dynamic\_cast}, \texttt{static\_cast}),
+et le polymorphisme etc.
+\item les templates,
+\item et plein d'autres choses.
+\end{itemize}
+
+\subsection{Idées directrices du langage C}
+
+Source \url{http://fr.wikipedia.org/wiki/Unix}
+
+En 1969, K. Thomson a commencé à programmer le système UNIX en langage
+d'assemblage, spécifique au mini-ordinateur PDP-7 sur lequel il
+travaillait.
+
+Voici un extrait du code d'UNIX (commande d'administration
+\texttt{dsw}, qui servait à détruire des fichiers indiqués par les
+interrupteurs de la console)
+\footnote{
+\url{http://www.informatica.co.cr/unix-source-code/research/pups-mail/eml.1208.html}
+}
+\begin{multicols}{2}
+\small
+\begin{lstlisting}[frame=single]
+" dsw
+
+   lac djmp
+   dac .-1
+   oas cla
+   cma
+   tad d1
+   dac t1
+   sys open; dd; 0
+1:
+   lac d2
+   sys read; dir; 8
+   sna
+   sys exit
+   lac dir
+   sna
+   jmp 1b
+   isz t1
+   jmp 1b
+
+wr:
+   lac d1
+   sys write; dir+1; 4
+   lac d1
+   sys write; o12; 1
+   sys save
+do:
+   sys unlink; dir+1
+   sys exit
+
+d1: 1
+d2: 2
+o12: 012
+t1: 0
+djmp: jmp do
+dd: 056056; 040040; 040040; 040040
+dir: .=.+8
+\end{lstlisting}
+\end{multicols}
+
+Évidemment, ce genre de programme permet d'utiliser au mieux les
+possibilités de la machine, mais il est peu maintenable, et n'est pas
+\emph{portable} : pour l'utiliser sur une autre machine que le PDP-7, il faut
+le réécrire complètement.
+
+En 1971, K. Thomson décide de réécrire UNIX pour le rendre plus
+facilement maintenable, et portable sur d'autres machines. Il pense
+pour cela d'abord aux langages TMG et FORTRAN, mais TMG est aussi
+spécifique au PDP-7, et FORTRAN n'est pas vraiment adapté. Il décide,
+avec l'aide de D. Ritchie, de définir un nouveau langage B, inspiré de
+BCPL qu'il utilisait sur son projet précédent (MULTICS).
+
+Le langage B est non typé : toutes les données sont des \emph{mots},
+de même taille, pouvant contenir indifféremment des entiers, des
+adresses etc.
+
+Cette absence de typage s'est révélé ennuyeuse sur le PDP-11, parce qu'elle
+ne permettait pas de travailler facilement sur des caractères (octets).
+D. Ritchie a alors commencé à modifier le langage B pour y introduire des
+types, c'est "new B", qui devient "C".  
+
+Ce nouveau langage permet toujours de travailler à bas niveau : les
+types de données de base correspondent de façon triviale à ceux qui
+sont disponibles sur la machine (un entier ou un pointeur = un mot, un
+caractère = un octet, etc) et les instructions C se traduisent
+facilement en instructions élémentaires, et inversement. Par exemple,
+l'auto-incrémentation (opérateur ``++'') était disponible dans le jeu
+d'instructions de beaucoup de machines de l'époque.
+
+
+Voici par exemple la commande \texttt{cp}, telle que la trouve dans
+les sources UNIX de juin 1972\footnote{
+\url{http://code.google.com/p/unix-jun72/source/browse/trunk/src/cmd/cp.c}}
+
+\begin{lstlisting}[frame=single,language=C,numbers=left]
+main(argc,argv)
+char **argv;
+{
+char buf[512];
+int fold, fnew, n;
+char *p1, *p2, *bp;
+int mode;
+        if(argc != 3) {
+                write(1,"Usage: cp oldfile newfile\n",26);
+                exit();
+        }
+        if((fold = open(argv[1],0)) < 0){
+                write(1,"Cannot open old file.\n",22);
+                exit();
+        }
+        fstat(fold,buf);
+        mode = buf[2] & 037;
+        if((fnew = creat(argv[2],mode)) < 0){
+                stat(argv[2], buf);
+                if((buf[3] & 0100) != 0){
+                        p1 = argv[1] - 1;
+                        p2 = argv[2] - 1;
+                        bp = buf - 1;
+                        while(*++bp = *++p2);
+                        *bp = '/';
+                        p2 = bp;
+                        while(*++bp = *++p1)
+                                if(*bp == '/')
+                                        bp = p2;
+                        if((fnew = creat(buf,mode)) < 0){
+                                write(1,"Cannot creat new file.\n",23);
+                                exit();
+                        }
+                }else{
+                write(1,"Cannot creat new file.\n",23);
+                exit();
+                }
+        }
+        while(n = read(fold, buf, 512))
+        if(n < 0){
+                write(1,"Read error\n",11);
+                exit();
+        }else
+                if(write(fnew,buf,n) != n){
+                        write(1,"Write error.\n",13);
+                        exit();
+                }
+        fstat(fnew,buf);
+        exit();
+}
+\end{lstlisting}
+
+La réécriture du noyau UNIX dans ce nouveau langage C est achevée à
+l'été 1973.
+
+\subsection{Caractéristiques du langage C}
+
+En résumé, le langage C a été conçu comme un langage de programmation 
+\begin{itemize}
+\item \textbf{de bas niveau}, pour écrire des programmes
+efficaces qui utilisent au mieux les possibilités du matériel ;
+\item \textbf{simple}, pour pouvoir écrire des compilateurs efficaces. 
+Par exemple les opérations d'entrée-sortie, bien qu'indispensables, 
+ne font pas partie du langage C :
+ce sont des fonctions définies dans une bibliothèque ;
+\item \textbf{portable}, pour écrire des programmes qui tournent
+sur des machines de types différents ;
+\item \textbf{de programmation structurée}, avec des notions de blocs,
+  de boucles (\texttt{for}, \texttt{while}), d'alternatives
+  (\texttt{if}, \texttt{switch}), comme Algol et Pascal, plutôt que de
+  branchements et d'étiquettes (comme Fortran IV et l'assembleur),
+  afin de faciliter l'écriture et la maintenance ; 
+\item \textbf{concis}, pour accélérer le codage. Utilisation de symboles
+à la place de mots-clés (il n'y en a que 32,  contre 50 en Java, 
+77 en C\# et 357 en Cobol).
+\end{itemize}
+
+La concision a souvent été reprochée au langage C, parce que les
+programmeurs débutants ont du mal à décoder les formulations
+parfois cryptiques qu'ils rencontrent dans les programmes.
+
+Par exemple la séquence (lignes 22 à 24)
+
+\begin{verbatim}
+p2 = argv[2] - 1;
+bp = buf - 1;
+while(*++bp = *++p2);
+\end{verbatim}
+
+a pour effet de copier la chaîne de caractères donnée en second paramètre 
+(y compris le  caractère nul qui la termine) dans
+ dans le tampon \texttt{buf}, en laissant à la fin \texttt{bp}
+ pointer sur le caractère nul. \footnote{Sur cet exemple on voit que l'auteur a mis à profit sa connaissance
+des opérations du PDP-7, pour essayer de convaincre le compilateur C
+d'utiliser les instructions avec pré-incrémentation, quitte à ``reculer''
+les pointeurs au départ pour y arriver.}
+
+
+En réalité, il se dégage assez rapidement des \emph{tournures idiomatiques} 
+pour réaliser les opérations courantes : au bout de quelques jours de pratique
+n'importe quel programmeur débutant, en C ou C++, sait reconnaître
+d'un simple coup d'oeil des boucles comme
+\begin{verbatim}
+	for (i=0; i<10; i++) {
+	   ...
+	}
+\end{verbatim}
+sans avoir besoin de réfléchir aux détails de fonctionnement de la boucle \texttt{for}.
+
+\subsection{Évolution du langage}
+
+Depuis 1972, le langage C a connu quelques évolutions, qui vont globalement
+vers
+\begin{itemize}
+\item une \emph{standardisation des types} : le langage C ne précisait par
+  exemple pas la taille des entiers utilisés, ce qui posait des
+  problèmes de portabilité (dans B, il était supposé qu'un mot était
+  assez grand pour contenir un entier ou un pointeur) ; ajout de
+  nouveaux types (complexes, booléens).
+\item un \emph{renforcement des vérifications} de types (dans la philosophie initiale,
+le programmeur était supposé "assez grand pour savoir ce qu'il fait 
+et le faire correctement", ce qui n'a pas manqué de causer quelques soucis),
+adjonction de \texttt{const} pour interdire des modifications malencontreuses.
+\item des ajouts de facilités parfois déjà implémentées dans les compilateurs : 
+tableaux de taille variable, 
+\item un rapprochement de la syntaxe avec C++ : commentaires commençant par \texttt{//},
+possibilité de déclarer des variables ailleurs qu'en début de bloc.
+\end{itemize}
+
+La normalisation :
+
+\begin{itemize}
+\item 1978, livre \emph{The C Programming Language} de Brian Kernighan 
+et Dennis Ritchie. Sert de référence pour ce qu'on
+appelle C "K\&R":
+\item En 1989, norme dite ANSI C ou C89 (officiellement ANSI X3.159-1989)
+ par l'ANSI  (american national standard organization). Norme adoptée aussi 
+ par l'Organisation internationale de normalisation (C ISO, ISO/CEI 9899:1990). 
+\item C95 de l'ISO, apporte quelques correctifs.
+\item C99 (formellement ISO/CEI 9899:1999), amène  en particulier 
+les tableaux dynamiques et facilite les calculs numériques intensifs ;
+\item C11, alias ISO/IEC 9899:2011
+\item C17 est la dernière version à ce jour.
+  \item la prochaine version, nom de code C2X, devrait être adoptée fin 2021.
+\end{itemize}
+
+Dans ce cours  les exemples seront compilés
+avec \texttt{gcc -std=c17} ou
+\texttt{-std=gnu17} pour utiliser quelques spécificités.
+
+ \section{Premiers exemples}
+
+\subsection{Hello, world !}
+
+ Le langage C a inauguré une tradition qui se perpétue de nos jours : 
+ toute présentation d'un langage de programmation commence par un 
+ exemple qui fait écrire un message de bienvenue. 
+ 
+ Pour gagner du temps, nous passons de suite à une version plus sophistiquée, 
+puisqu'elle intègre des opérations d'entrées-sorties, et des calculs :
+ \lstinputlisting[frame=single,language=C, numbers=left]{src/hello.c}
+
+\paragraph{Explications : } 
+\begin{enumerate}
+\item Comme en C++, l'exécution d'un programme commence par l'appel de 
+sa fonction \texttt{main()}.
+
+ Les arguments de \texttt{main()} servent à récupérer
+ les paramètres qui figurent sur la ligne de commande qui lance le 
+ programme. Ce sont
+ \begin{itemize}
+ \item le nombre d'arguments (arg. count),
+ \item un tableau de chaînes de caractères (le nom du programme 
+ et les paramètres, arg. values) ;
+ \end{itemize}
+nous en verrons l'usage plus loin.
+
+\item
+Ce programme fait des écritures sur l'écran (appels
+ de la fonction \texttt{printf()}) et des lectures
+au clavier (\texttt{scanf()}).
+
+\item 
+Les deux premiers appels à \texttt{printf} sont faciles à comprendre,
+le dernier vous permet de voir que le premier paramètre est un
+\emph{chaîne de format}, un ``modèle à trous'' avec des spécifications qui indique où doivent apparaître les
+paramètres suivants : la  \texttt{\%s} correspond à la
+chaîne \texttt{nom} et \texttt{\%d} à la valeur décimale de
+\texttt{2013-annee}.
+
+\item 
+On retrouve ces formats pour l'instruction \texttt{scanf} qui sert à la lecture.
+
+\item
+Pour la lecture de l'année de naissance, vous remarquez certainement
+que le paramètre était ``\texttt{\& annee}'' et non ``\texttt{annee}'' :
+la fonction \texttt{scanf()} prend comme paramètre l'\texttt{adresse} des données
+qui doivent être saisies.
+
+C'est parce qu'en C, 
+\begin{quote}le passage de paramètre se fait par valeur
+\end{quote}
+il n'y a pas de passage de paramètres par référence. Pour transmettre
+une donnée qu'une fonction doit modifier, on passe explicitement en
+paramètre \emph{son adresse}.  Pour saisir quelque chose dans une variable
+entière (ou réelle), on précède donc le nom de la variable par
+l'opérateur \texttt{\&}.
+\item 
+Les chaînes de caractères étant des tableaux, on passe simplement le nom
+du tableau. En effet, les déclarations
+\begin{verbatim}
+   char nom[100];
+   int  annee;
+\end{verbatim}
+servent à réserver de l'emplacement pour deux données en mémoire :
+l'une pour stocker 100 caractères, l'autre pour un entier.
+l'identificateur \texttt{nom} représente la position de la première
+zone, c'est déjà une adresse, alors que l'identificateur
+\texttt{annee} désigne la seconde donnée. Son adresse s'obtient en lui
+appliquant l'opérateur ``\texttt{\&}''.
+\end{enumerate}
+
+
+\subsection{Utilisation des paramètres de la ligne de commande}
+ 
+ \paragraph{Exemple} :
+ \lstinputlisting[frame=single,language=C, numbers=left]{src/salutations.c}
+ 
+ Voici ce que donne une exécution
+\begin{verbatim}
+$ ./salutations bienvenue chez les programmeurs C
+Ceci est le programme ./salutations avec 6 arguments.
+argv[0] = ./salutations
+argv[1] = bienvenue
+argv[2] = chez
+argv[3] = les
+argv[4] = programmeurs
+argv[5] = C
+\end{verbatim}
+
+\section{La fonction \texttt{printf()}}
+
+La fonction \texttt{printf()} sert, comme le nom l'indique, à afficher
+des données selon un certain \textbf{f}\emph{ormat}.
+Exemple
+\begin{verbatim}
+printf ("Bonjour %s, vous avez %d ans !\n", nom, 2013- annee) ;
+\end{verbatim}
+
+Le format, premier argument, est un modèle de ce qu'il faut afficher,
+avec des "trous" pour y faire apparaître des valeurs en suivant une
+\emph{spécification}. On trouve ici
+\begin{itemize}
+\item \texttt{\%d} pour faire afficher un nombre entier en décimal,
+\item \texttt{\%s} pour faire afficher une chaîne.
+\end{itemize}
+
+Les spécificateurs (d, s, etc.) doivent correspondre au type des
+paramètres. Afficher une chaîne avec \texttt{\%d} fait apparaître son
+adresse, pas son contenu.
+
+
+\paragraph{Autres spécificateurs de conversion :} (parmi les plus courants)
+\begin{itemize}
+\item \texttt{\%x} et \texttt{\%o}  pour faire afficher un nombre entier 
+en hexadécimal ou en octal
+\item \texttt{\%u} pour un nombre non signé,
+\item \texttt{\%c} pour faire afficher le caractère correspondant à un nombre
+(par exemple, le caractère A pour la valeur 65).
+\item \texttt{\%f} pour un nombre en virgule flottante (\texttt{float}
+ ou \texttt{double})
+\item \texttt{\%p} pour un pointeur.
+\end{itemize}
+
+Le spécificateur peut être précédé d'indicateurs et de
+champs pour préciser la présentation voulue.
+
+\paragraph{Exemples : }
+\begin{itemize}
+\item \texttt{\%4d} demande l'affichage d'un nombre sur au moins 4 
+caractères. La valeur 42 sera donc précédée de deux espaces.
+\item idem pour \texttt{\%04d} qui affiche un nombre sur 4 chiffres, mais
+avec des zéros en tête.
+\item \texttt{\%10s} affiche une chaîne cadrée à droite sur 10 caractères, en 
+remplissant éventuellement les premiers caractères par des espaces.
+\item \texttt{\%-10s} fait un cadrage à droite
+\item \texttt{\%10.3f} affiche un nombre réel sur 10 caractères dont 3
+après la virgule.
+\end{itemize}
+
+Pour les conversions d'entiers (spécifications \texttt{d},
+\texttt{u},\texttt{x}, ...) la longueur de la donnée est précisée par
+\begin{itemize}
+\item \texttt{hh} pour les \texttt{char} (signés ou pas),
+\item \texttt{h} pour les \texttt{short int},
+\item \texttt{l} pour les \texttt{long int},
+\item \texttt{ll} pour les \texttt{long long int}
+\item \texttt{z} pour les \texttt{size\_t}
+\end{itemize}
+
+Enfin, pour les caractères larges (\texttt{wchar\_t}) on emploie
+\texttt{\%lc}, et \texttt{\%ls}, pour les chaînes de caractères
+larges, ce qui provoquera leur conversion en chaînes de caractères
+``multibyte'' (UTF-8).
+ 
+\paragraph{Documentation : } voir \texttt{man 3 printf} pour plus de détails sur les spécifications.
+
+\paragraph{Exercice :} écrire un programme qui affiche 
+la table de multiplication
+\begin{center}
+\begin{verbatim}
+      1  2  3  4  5   .... 9 
+     -- -- -- -- --       --
+ 1 :  1  2  3  4  5        9
+ 2 :  2  4  6  8 10       18
+      .....
+ 9 :  9 18 27  .......    81
+\end{verbatim}
+\end{center}
+ 
+\section{Passage de paramètres}
+
+En C, le passage de paramètres se fait par valeur uniquement. Depuis
+C89, on peut préciser (\texttt{const} qu'un paramètre ne doit pas être
+modifié dans la fonction.
+
+\paragraph{Étudions l'exemple suivant} :
+\lstinputlisting[frame=single,language=C, numbers=left]{src/somme.c}
+
+La définition de la fonction \texttt{somme()} ne devrait pas vous
+causer de surprise particulière, pas plus que son appel depuis le
+\texttt{printf()} du \texttt{main()}.
+
+Ce qui est plus intéressant, c'est la fonction \texttt{scanf()}, qui sert
+à la lecture des données \texttt{a} et \texttt{b}. Globalement, cette 
+fonction reçoit une chaîne de format de lecture (similaire à celle
+de \texttt{printf}), et une indication des variables à remplir.
+
+Mais si on écrivait \texttt{scanf("...", a,b); } ce qu'on transmettrait
+à \texttt{scanf}, c'est les \emph{valeurs} contenues dans \texttt{a}
+et  \texttt{b} à ce moment-là, parce que \texttt{scanf}, comme toutes les
+fonctions C, utilise un passage par valeur.
+
+On transmet donc les \emph{adresses} des variables, 
+qui se notent \texttt{\&a} et \texttt{\&b}, à la fonction \texttt{scanf()}.
+
+\section{Adresses et pointeurs}
+
+Les \textbf{pointeurs} sont des variables susceptibles de
+contenir des adresses. 
+On les déclare en précédant leur nom par une étoile. 
+
+Par exemple dans
+\begin{verbatim}
+int a, *pa;
+char message[10], *ptr;
+\end{verbatim}
+on voit la déclaration de deux pointeurs, l'un vers des entiers,
+l'autre vers des caractères.
+
+On peut leur affecter un contenu, qui sera respectivement l'adresse d'un
+entier, et celle d'un caractère
+\begin{verbatim}
+pa = & a;
+ptr = & ( message[3] ); // ou message+3, voir plus loin
+\end{verbatim}
+Il existe aussi une valeur spéciale, \texttt{NULL}, qui peut être 
+affectée à n'importe
+quel pointeur.
+
+On pourrait donc utiliser des pointeurs dans \texttt{scanf} :
+\begin{verbatim}
+int pa = &a,  pb = &b;
+...
+scanf("%d %d", pa, pb);
+\end{verbatim}
+Mais ici c'est plus simple de faire directement :
+\begin{verbatim}
+scanf("%d %d", &pa, &pb);
+\end{verbatim}
+
+\paragraph{Déréférencement} : Quand un pointeur contient l'adresse d'une donnée, on peut le \emph{déréférencer},
+c'est-à-dire accéder à la donnée pointée par le pointeur. 
+Le déréférencement, 
+ou indirection, se note par une étoile.
+
+\paragraph{Exercice : } dans l'exemple ci-dessous, étudiez l'utilisation des pointeurs
+comme paramètres : 
+ \paragraph{Exemple} :
+ \lstinputlisting[frame=single,language=C, numbers=left]{src/somme2.c}
+
+Quand une action doit modifier un de ses paramètres, cette action
+se traduit par une fonction C qui reçoit comme paramètre l'adresse
+de la donnée.
+
+\paragraph{Exercice :} écrire un programme C qui 
+\begin{itemize} 
+\item demande trois nombres entiers,
+\item appelle une fonction qui ordonne ces trois nombres,  
+\item les affiche dans l'ordre (du plus petit au plus grand).
+\end{itemize}
+
+\section{Les chaînes des caractères}
+
+En C il n'y a pas de chaînes de caractères au sens des \texttt{string} de C++,
+qui sont des objets qui peuvent contenir un nombre indéfini de caractères,
+et qui possèdent des méthodes pour réaliser diverses opérations.
+
+En C les chaînes sont des suites de caractères  consécutifs en 
+mémoire, dont la fin est marquée
+par un caractère nul \texttt{'$\backslash 0$'}. 
+Elles sont désignées par l'adresse
+de leur premier caractère.
+
+Une chaîne est en fait un tableau : la notation \texttt{"abc"}
+ correspond à une suite de 4 octets : 'a', 'b', 'c' et le caractère
+ nul '$\backslash 0$' qui marque la fin.
+
+
+\subsection{Opérations sur les chaînes :} 
+
+Dans la mesure où ce qu'on appelle chaîne est simplement l'adresse de
+ son premier octet, on peut accéder individuellement à ses caractères
+ par un simple indiçage.
+
+\begin{verbatim}
+   char message [] = "Hello, world !";
+
+   for (int i=0; message[i] != '\0'; i++) {
+     printf("_%c_", message[i]);
+   }
+\end{verbatim}
+ 
+Et on peut aussi la parcourir par des pointeurs ;
+\begin{verbatim}
+   char message [] = "Hello, world !";
+   for (char *p = message;  *p != '\0'; p++) {
+     printf("_%c_", *p);
+   }
+\end{verbatim}
+
+Les autres opérations, comme par exemple évaluer la longueur d'une chaîne ou déterminer si elle contient un caractère donnée, comparer deux chaînes etc. se font par l'intermédiaire de fonctions de bibliothèque.
+
+Quelques-unes parmi les plus importantes :
+\begin{verbatim}
+       #include <string.h>
+
+       size_t strlen(const char *s);
+
+       char *strcpy(char *dest, const char *src);
+       char *strcat(char *dest, const char *src);
+       int strcmp(const char *s1, const char *s2);
+
+\end{verbatim}
+
+\begin{enumerate}
+\item \texttt{strlen} retourne la longueur d'une chaîne, est
+ calculée par une boucle de parcours. Le type de retour est \texttt{size\_t} ce qui correspond à des entiers non signés.
+\item \texttt{strcpy} copie les octets de \texttt{src}, jusqu'au caractère nul final (compris), dans \texttt{dst}. 
+\item \texttt{strcat} détermine la position du caractère nul de \texttt{c}, et copie à partir de là les octets de \texttt{src}, jusqu'au caractère nul final (compris). 
+\item \texttt{strcmp} compare les chaînes \texttt{s1} et \texttt{s1},
+ et renvoie un nombre négatif si \texttt{s1} précède \texttt{s2} dans
+ l'ordre lexicographique, 0 si les chaînes sont égales, et 
+détermine la position du caractère nul de \texttt{c}, et
+un nombre positif si \texttt{s1} est après \texttt{s2}.
+\end{enumerate}
+
+Il faut bien noter que les fonctions \texttt{strcpy} et
+ \texttt{strcat} peuvent causer des violations d'accès mémoire si le
+ programmeur a réservé des tableaux trop petits pour y loger le
+ résultat : C est un langage de bas niveau, et la responsabilité des
+"détails techniques" incombe au programmeur.
+
+\subsection{Opérations sur les caractères}
+
+On a souvent besoin de savoir
+à quel genre de caractère on a affaire : alphabétique, numérique,
+minuscule, etc. Il existe de nombreuses fonctions définies par 
+l'entête \texttt{ctype.h}
+
+\begin{verbatim}
+#include <ctype.h>
+
+int isalpha(int c);
+int isdigit(int c);
+int isalnum(int c);
+int isspace(int c);
+
+int islower(int c);
+int isupper(int c);
+ ...
+\end{verbatim}
+
+Remarquez que
+\begin{itemize}
+\item elles prennent comme caractère un \texttt{int}, et non un \texttt{char},
+mais les deux sont compatibles : un caractère est un petit entier.
+\item elles renvoient un \texttt{int} et non un \texttt{bool}, type qui n'existait pas dans les débuts de C (mais les booléens sont aussi de petits entiers).
+\end{itemize}
+
+
+\section{Lecture et écriture dans des fichiers textes}
+
+Pour lire et écrire dans des fichiers textes autres que l'entrée et la sortie
+standard, on dispose de fonctions
+\texttt{fscanf} et \texttt{fprintf} analogues aux fonctions vues plus haut.
+
+Elles prennent comme premier paramètre un ``\texttt{FILE *}'' obtenu par
+la fonction \texttt{fopen()} et comme second paramètre un format. 
+
+
+Exemple
+ \lstinputlisting[frame=single,language=C, numbers=left]{src/notes.c}
+
+\paragraph{Remarques : }
+\begin{itemize}
+\item le second paramètre de \texttt{fopen()} est une chaîne qui 
+indique le mode d'ouverture du fichier : ici en lecture, ce serait \texttt{"w"} en écriture ;
+\item la boucle est répétée tant que le \texttt{fscanf()} réussit à lire un
+nombre sur \texttt{fnotes} ; 
+\item \texttt{fclose()} fait évidemment le pendant à \texttt{fopen()} ;
+\item l'affichage de la somme se fait avec 2 chiffres après la virgule (en fait un point décimal)
+celui de la moyenne sur 5 chiffres, dont 2 après la virgule, avec éventuellement
+un ou plusieurs zéros non significatifs en tête.
+\end{itemize}
+
+Exemple d'exécution :
+\begin{verbatim}
+4 notes lues, total=50.00, moyenne=12.50
+\end{verbatim}
+
+\paragraph{Un peu plus : }  les fonctions \texttt{scanf(...)} 
+et \texttt{printf(...)}  sont en fait des appels à
+\texttt{fscanf(stdin,....)} et \texttt{fprintf(stdout,....)}, les
+variables prédéfinies \texttt{FILE *stdin, *stdout
+  *}''  correspondent aux flots d'entrée et de sortie
+standards\footnote{la sortie d'erreurs est \texttt{stderr}}.
+
+Il faut aussi signaler les deux fonctions
+\begin{verbatim}
+       int fgetc(FILE *stream);
+       char *fgets(char *s, int size, FILE *stream);
+\end{verbatim}
+qui servent à lire respectivement un caractère ou une ligne de texte.
+
+La fonction \texttt{fgets} nécessite quelques commentaires : 
+\begin{itemize}
+\item elle prend comme second paramètre le nombre maximum de caractères
+qu'on peut mettre dans le tampon \texttt{s}, ce qui assure une protection contre les lignes trop longues (débordement de buffer)
+\item si le tampon est assez grand il reçoit la ligne, le retour-chariot de fin de ligne, ainsi que le caractère nul de fin de chaîne. 
+\end{itemize}
+\emph{Last but not least}, \texttt{int feof(FILE *stream);} teste
+l'indicateur de fin d'un fichier.
+\paragraph{Exercice : } écrire un programme qui fait afficher, ligne par ligne,
+un fichier texte dont le nom est passé en paramètre. Les lignes apparaîtront numérotés sur 4 chiffres, en commençant par 0001.
+
+Prévoir le cas des lignes trop longues qui apparaîtront sans numérotation.
+
+\begin{verbatim}
+0001 ceci est une premiere ligne
+0002 ceci est une seconde ligne qui e
+     st trop longue pour apparaitre e
+     n une seule fois
+0003 ceci est la troisieme ligne
+....
+\end{verbatim}
+
+
+\section{Chaînes UNICODE et caractères larges}
+
+Si vous testez le programme précédent avec des textes
+accentués, vous risquez d'avoir quelques surprises.
+
+Vous travaillez en effet dans un environnement moderne qui permet
+l'emploi simultané de jeux de caractères multiples : alphabet latin, grec,
+arabe, idéogrammes, etc. Tous ces jeux de caractères sont intégrés dans
+le standard UNICODE, dans lequel les \emph{caractères larges} sont
+codés sur 32 bits (et non sur 8 bits comme dans le code ISO-LATIN).
+Cependant les caractères UNICODE sont transmis, dans le codage UTF-8,
+sous forme d'un nombre variable d'octets : 1 octet pour ceux qui correspondent
+à l'ancien code ASCII 7 bits, 2 octets pour les caractères accentués
+des langues dérivées du latin, du grec, etc, et jusqu'à 4 pour les idéogrammes.
+
+\paragraph{Exercice : } pour vous en convaincre, écrivez un programme qui
+\begin{itemize}
+\item lit une chaîne par \texttt{fgets()}
+\item calcule et affiche sa longueur (déduire le caractère de fin de ligne)
+\item fait afficher la chaîne caractère par caractère, avec des espaces entre
+deux caractères consécutifs (\texttt{hello} -> \texttt{h e l l o}).
+\end{itemize}
+et essayez-le avec des chaînes accentuées ou pas.
+
+\paragraph{Conclusion : } La représentation de chaînes de caractères 
+par des tableaux d'octets
+fonctionnait correctement dans des environnements où les caractères étaient
+codés sur un octet (ANSI, ISO-LATIN), mais ce n'est plus le cas aujourd'hui.
+
+
+C'est pour cela qu'ont été introduits en C les \emph{caractères larges} (type
+\texttt{wchar\_t}) et les fonctions associées.
+
+ \fbox{A développer}
+
+Voici un exemple de programme utilisant les caractères larges
+
+\begin{lstlisting}[frame=single,language=C,numbers=left]
+#include <stdio.h>
+#include <wchar.h>
+#include <locale.h>
+
+int main(void)
+{
+	wchar_t prenom[20];
+	
+	setlocale(LC_ALL,"");
+	wprintf(L"Ton prénom ? ");
+	wprintf(L"prenom = %ls\n", prenom);
+	for (int i=0; i<wcslen(prenom); i++) {
+		wprintf(L"_%lc", prenom[i]);
+	}
+	wprintf(L"_\n");
+	return 0;
+}
+\end{lstlisting}
+
+\section{Structures}
+
+Les classes de C++ ont été élaborées à partir du concept de
+\emph{structure} présent dans C.
+
+Une structure est une simple collection de champs. Pas de méthodes,
+pas d'héritage, pas d'attributs de visibilité.
+
+Pour déclarer des types, on écrit
+\begin{lstlisting}
+struct Date {
+  int jour, mois, annee;
+};
+
+struct Personne {
+  char nom[64];
+  char prenom[64];
+  struct Date naissance;
+};
+
+struct CarteGrise {
+  char plaque[20];
+  char modele[20];
+  int annee;
+  struct Personne * titulaire;
+};
+\end{lstlisting}
+
+Remarquez que
+\begin{itemize}
+\item on utilise les noms de types en les précédant par le mot-clé
+  \texttt{struct}.\footnote{On verra plus loin (\texttt{typedef}) comment
+  s'affranchir de cette contrainte.}
+\item la structure\texttt{Personne} \emph{contient} une \texttt{Date}, alors que
+\item la structure\texttt{CarteGrise} \emph{fait référence} à une \texttt{Personne} : elle contient un pointeur vers une \texttt{Personne}.
+\end{itemize}
+
+L'utilisation des structures ne pose pas de difficulté :
+\begin{lstlisting}[language=C]
+void saisir_date(struct Date *pDate)
+{
+  printf("Jour mois annee ? ");
+  scanf("%d %d %d", pDate->jour, pDate->mois, pDate->annee);
+}
+
+void saisir_personne(struct Personne *pPersonne)
+{
+  printf("Nom :") ;
+  .....
+  printf("Date de Naissance, ");
+  saisir_date(& (pPersonne->naissance));
+}
+...
+int main(void) 
+{
+  struct Personne conducteur;
+  saisie_Personne(& conducteur);
+  ....
+}
+\end{lstlisting}
+
+\subsection{Initialisation des structures}
+
+Une structure peut être initialisée, au moment de sa déclaration, par la liste
+des valeurs de ses champs, dans l'ordre, et entourée d'accolades.
+
+\begin{verbatim}
+   struct Date prise_bastille = { 14, 7, 1789 };
+\end{verbatim}
+
+Il est aussi possible\footnote{mais pas en C++} de désigner 
+les champs à initialiser 
+\begin{verbatim}
+   struct Date noel = { .mois = 12, .jour = 25 }
+\end{verbatim}
+
+Les champs manquants sont initialisés à 0.
+
+
+\subsection{Affectation, passage de paramètres}
+
+Les structures sont des données qui peuvent être contenues 
+dans des variables, on peut les affecter
+\begin{verbatim}
+struct Date anniversaire ;
+
+anniversaire = noel;
+\end{verbatim}
+et elles sont passées en paramètres par valeur.
+
+\begin{verbatim}
+void afficher_date(struct Date d)
+{
+  printf("%d/%d/%d", d.jour, d.mois, d.annee);
+}
+\end{verbatim}
+
+On peut également les comparer par \texttt{==} et \texttt{!=}.
+
+
+\section{Union}
+
+Soit un jeu, piloté par des évènements provenant du
+clavier ou de la souris
+\begin{verbatim}
+struct EvenementClavier {
+   int type;              // type = 1
+   char touche;          
+};
+
+struct EvenementSouris {
+   int type;               // type = 2 
+   int x, y;               // coordonnées
+   int etat;               // état des boutons  
+};
+\end{verbatim}
+
+L'union permet de faire un type général, assez grand pour contenir 
+l'un ou l'autre de ses membres :
+
+
+\begin{verbatim}
+union Instruction {
+   int type;
+   struct EvenementClavier ec;
+   struct EvenementSouris  es;
+};
+\end{verbatim}
+
+Ici, 
+\begin{itemize}
+\item soit un entier appelé \texttt{type},
+\item soit une structure \texttt{EvenementClavier} appelée \texttt{ec},
+avec des champs \texttt{ec.type} et  \texttt{ec.touche},
+\item soit une structure \texttt{EvenementSouris} appelée \texttt{es},
+avec des champs \texttt{ec.type}, \texttt{ec.touche}, etc.
+\end{itemize}
+
+
+Une \emph{union} est donc une donnée en mémoire, de taille suffisamment 
+grande pour stocker le plus grand de ses membres. Ici, probablement 
+l'EvènementSouris. Chaque membre constitue une façon de voir le contenu de cette zone de données.
+
+Notez qu'on a bien pris soin que le champ type se retrouve, au même endroit,
+dans les 3 membres;
+
+
+
+\begin{verbatim}
+void traiterEvenement(union Evenement e) 
+{
+   switch (e.type) {
+   case  1 :  // evenement souris
+            if (e.ec.touche == '\e') // escape
+                SuspendrePartie();
+            else if (e.ec.touche == '\n')
+                TraiterSaisie();
+            else 
+                AjouterCaractere(e.ec.touche);
+            break;
+   case 2 :  // evenement clavier
+            DeplacerPointeur(e.es.x, e.es.y);
+            ....
+            break;
+   ...
+  }
+}
+\end{verbatim}
+
+
+
+ \paragraph{L'initialisation d'une union} peut se faire selon la même syntaxe 
+ que pour les structures, avec laquelle elle se combine 
+
+
+
+\begin{verbatim}
+union Evenement e = { 
+                     .ec = { .type = 1,
+                             .touche = '@';
+                     };
+\end{verbatim}
+
+
+%% \begin{verbatim}
+%%   union Instruction i1 = { 
+%%                            .fmt1 = { .operation = 3 , 
+%%                                      .adresse = 42 } 
+%%                          };
+%%   union Instruction i2 = {
+%%                            .fmt2 = { .operation = 15 ,
+%%                                      .fonction  = 0, 
+%%                                      .regsrc    = 3,
+%%                                      .regdst    = 1 }
+%%                          }; 
+%% \end{verbatim}
+
+%% Ci-dessus, initialisation d'une union composée de structures.
+
+\section{Définition de noms de types : typedef}
+
+Le mot-clé \texttt{typedef} permet de définir des noms de types, au
+lieu de définit des noms de variables.
+
+Exemple : les lignes 
+\begin{lstlisting}
+struct Point {
+   int x, y
+}  p, *pp;
+\end{lstlisting}
+déclarent à la fois
+\begin{itemize}
+\item un type nommé \texttt{struct Point},
+\item une variable \texttt{p} de type \texttt{struct Point},
+\item une variable \texttt{pp} de type \texttt{struct Point *}.
+\end{itemize}
+
+Si on écrit
+\begin{lstlisting}
+typedef struct Point {
+   int x, y
+}  POINT, *PPOINT;
+\end{lstlisting}
+on définit deux noms de types
+\begin{itemize}
+\item \texttt{POINT} qui est synonyme de  \texttt{struct Point},
+\item \texttt{PPOINT} synonyme de type \texttt{struct Point *}.
+\end{itemize}
+
+ce qui permet de raccourcir ensuite les écritures : au lieu de
+\begin{lstlisting}
+  void tracerTrait( struct Point A, struct Point B)  {
+    ....
+  }
+\end{lstlisting}
+on pourra écrire
+\begin{lstlisting}
+  void tracerTrait(POINT A, POINT B)  {
+    ....
+  }
+\end{lstlisting}
+
+\paragraph{Ne pas en abuser.} L'utilisation de \texttt{typedef}
+peut améliorer la lisibilité, mais aussi compliquer la compréhension, et il y a souvent
+des abus.
+
+Par exemple, si on a défini le type \texttt{Evenement} comme une union
+d'\texttt{EvenementClavier}, \texttt{EvenementSouris}, etc. il est
+important de savoir, quand on relit le programme, que c'est une union
+et non pas une structure. Dans ce cas, utiliser un \texttt{typedef}
+cache de l'information qui est pourtant indispensable.
+
+De même, dans l'exemple ci-dessus, il est assez probable qu'un aura
+besoin dans le code de dé-référencer les \texttt{PPOINT} : il est donc
+important de savoir que ce sont des pointeurs. Dans ce cas il serait
+plus raisonnable de déclarer un pointeur \texttt{pp} comme
+\begin{lstlisting}
+     POINT * pp;
+\end{lstlisting}
+plutôt que comme
+\begin{lstlisting}
+     PPOINT  pp;
+\end{lstlisting}
+Il y a malheureusement beaucoup d'abus. Le document
+\url{http://www.kernel.org/doc/Documentation/CodingStyle} (chapitre 5)
+définit une liste limitative d'usages raisonnables, dont en
+particulier
+\begin{itemize}
+\item Pour les \emph{types opaques}, quand on veut absolument cacher
+  les détails d'implémentation du type. Par exemple vous survivez très
+  bien sans savoir que qu'est en réalité un \texttt{FILE}, du moment
+  que vous pouvez l'employer à travers les fonctions prévues pour :
+  \texttt{fopen}, \texttt{fscanf}, etc.
+\item Pour les types entiers, quand l'abstraction aide à éviter les confusions entre \texttt{int} et \texttt{long}. Exemple
+\begin{lstlisting}
+typedef unsigned long EntierPositif;
+\end{lstlisting}
+\end{itemize}
+Un bon principe : 
+\begin{citation}
+``In general, a pointer, or a struct that has elements that can reasonably
+be directly accessed should \emph{never} be a typedef.''
+\end{citation}
+
+
+\section{Préprocesseur : usage des macros}
+
+Les directives du préprocesseur sont les lignes de votre programme C qui commencent par un dièse.
+Ces lignes sont traités avant la compilation proprement dite.
+
+
+
+\subsection{\texttt{\#include}}
+
+En C++, vous avez déjà rencontré ce type de directive, qui sert à
+inclure le contenu d'un autre fichier.  Il y a deux formes :
+\begin{lstlisting}
+#include <nomdefichier>
+#include "nomdefichier"
+\end{lstlisting}
+Les deux formes diffèrent par l'emplacement des fichiers ainsi inclus
+: avec la première forme ce sont des fichiers d'entête de bibliothèques
+système\footnote{\texttt{/usr/local/include},
+  \texttt{libdir/gcc/target/version/include},
+  \texttt{/usr/target/include},
+  \texttt{/usr/include}}, avec la seconde des fichiers ``personnels'', généralement situés dans
+le même répertoire que le source.
+Le paramètre \texttt{-I} de \texttt{gcc} permet de citer des répertoires supplémentaires où le compilateur
+ira chercher les fichiers à inclure.
+
+
+\subsection{{\#define}}
+
+Cette directive est généralement utilisée pour définir des constantes
+\begin{lstlisting}
+#define  TAILLE_MAXIMUM 1000
+#define  VERSION "Truc 3.14.16"
+\end{lstlisting}
+Le préprocesseur remplace les occurrences des identificateurs - si elles ne sont pas dans une chaîne par la chaîne correspondante,
+qui va jusqu'à la fin de la ligne. Par exemple
+\begin{lstlisting}
+printf("VERSION = %s\n", VERSION);
+\end{lstlisting}
+est expansé en  
+\begin{lstlisting}
+printf("VERSION = %s\n", Truc 3.14.16);
+\end{lstlisting}
+Pour faire une expansion \emph{dans} un chaîne on peut employer deux trucs
+\begin{itemize}
+\item l'opérateur \texttt{\#\#} qui concatène des chaînes pendant le prétraitement
+\begin{lstlisting}
+printf("VERSION = " ##  VERSION ## "\n");
+\end{lstlisting}
+\item le fait qu'une chaîne peut être une suite d'éléments entre guillemets
+\begin{lstlisting}
+printf("VERSION = "  VERSION  "\n");
+\end{lstlisting}
+\end{itemize}
+
+L'usage de \texttt{\#define} ne se limite pas à définir des constantes, outre les macros
+que nous verrons plus loin, on peut s'en servir pour redéfinir n'importe quoi
+\begin{lstlisting}
+#include <stdio.h>
+
+#define SI  if (
+#define ALORS ) {
+#define SINON } else {
+#define FINSI }
+
+int main(int argc, char **argv)
+{
+	int a, b, max;
+	printf("Donnez deux entiers ");
+        scanf("%d %d", &&, &b);
+        SI a > b
+        ALORS 
+            max = a;
+        SINON 
+            max = b;
+        FINSI
+        printf("max = %d\n", max);
+}
+\end{lstlisting}
+ce qui n'est pas forcément une pratique recommandable.
+
+\subsection{{\#ifdef}}
+
+Directive qui permet de savoir si une variable du préprocesseur a déjà été définie 
+ou non. Permet en particulier d'éviter les problèmes de double inclusion.
+\begin{lstlisting}
+/* fichier truc.h */
+#ifndef TRUC_H
+#define TRUC_H
+   ...
+#endif
+\end{lstlisting}
+ou d'inclure du code conditionnel
+\begin{lstlisting}
+#ifdef MISE_AU_POINT
+   printf("je suis passe dans truc(%d)\n", n);
+#endif
+\end{lstlisting}
+
+qui sera compilé uniquement si la variable est définie plus haut, ou
+par l'option \texttt{-D} du compilateur  :
+\begin{lstlisting}
+      gcc  -DMISE_AU_POINT prog.c -o prog
+\end{lstlisting}
+
+\subsection{Macros}
+
+Enfin, il y a la possibilité de réaliser des macros-définitions (macros), avec des paramètres.
+Exemple
+\begin{lstlisting}
+#define CARRE(n)  ((n)*(n))
+...
+
+printf("2*2 = %s\n", carre(2));
+\end{lstlisting}
+
+Attention, les macros ne sont pas des fonctions. Si on avait écrit
+\begin{lstlisting}
+#define CARRE(n)  n*n
+\end{lstlisting}
+le terme \texttt{CARRE(1+1)} se serait expansé en \texttt{1+1*1+1} qui vaut 3...
+
+De même si on écrit
+\begin{lstlisting}
+#define echanger(a,b)  {int c = a; a = b; b = c;}
+\end{lstlisting}
+on va avoir des problèmes avec
+\begin{lstlisting}
+echanger((t[i++],t[j]);
+\end{lstlisting}
+qui s'expanse en 
+\begin{lstlisting}
+{int c = t[i++]; t[i++] = t[j]; t[j] = c;}
+\end{lstlisting}
+dans lequel i est incrémenté deux fois...
+
+\section{Allocation dynamique : malloc, free}
+
+La fonction \texttt{malloc()} permet de demander au système de
+réserver (allouer) en mémoire un espace d'une certaine taille.
+
+La fonction retourne un pointeur (\texttt{void *}) vers cet espace.
+
+\begin{lstlisting}
+#include <stdlib.h>
+
+struct Date {
+  int jour, mois, annee;
+};
+
+void truc() {
+   struct Date * ptr;
+   ...
+   ptr = malloc(sizeof(struct Date));
+   ...
+}
+\end{lstlisting}
+
+Cet espace reste alloué jusqu'à ce que le programmeur en demande
+explicitement la libération (restitution), par l'appel de
+\texttt{free(ptr)}, ou jusqu'à la fin du programme.
+
+C'est ce qu'on appelle l'\emph{allocation dynamique}, par opposition à
+\begin{itemize}
+\item l'allocation \textbf{statique} des variables globales du programme
+\item l'allocation \textbf{automatique} des variables locales, qui sont crées et détruites
+automatiquement à l'entrée et à la sortie des fonctions.
+\end{itemize}
+
+A noter
+\begin{itemize}
+\item \texttt{malloc} prend comme paramètre le nombre d'octets désirés. Pour allouer un 
+tableau de N dates,  on appellera logiquement \texttt{malloc(N * sizeof(struct Date))}.
+\item elle retourne un pointeur de type \texttt{void*}, ce qui
+  correspond en C à un pointeur générique qui ne peut pas être
+  dé-référencé.  Le type de ce pointeur doit être converti (on parle de
+  \emph{type cast}) en pointeur vers une structure Date.
+\end{itemize}
+
+Signalons l'existence d'une fonction \texttt{realloc()} qui change la taille mémoire d'une zone
+allouée, en la déplaçant et la recopiant éventuellement.
+
+\begin{lstlisting}
+struct TableauExtensible {
+    int taille;
+    int *t;
+};
+
+void initialiser(struct TableauExtensible *tab, int tailleInitiale)
+{
+   tab->taille = tailleInitiale;
+   tab->t      = malloc(tailleInitiale * sizeof(int));
+}
+
+void affecter(struct TableauExtensible *tab, int indice, int valeur)
+{
+   tab->t[indice] = valeur;
+}
+
+void valeur(struct TableauExtensible *tab, int indice)
+{
+   return tab->t[indice];
+}
+
+void redimensionner(struct TableauExtensible *tab, int taille)
+{
+   tab->taille = taille;
+   tab->t      = realloc(tab, taille * sizeof(int));
+}
+\end{lstlisting}
+
+
+\section{Traitement d'exceptions : \texttt{setjmp}, \texttt{longjmp}}
+
+Ce couple d'instructions permet de réaliser des sauts d'une fonction
+à une autre. C'est une forme rudimentaire de mécanisme d'\emph{exception},
+utilisée principalement pour faire du rattrapage d'erreurs.
+
+
+Lors d'un appel à la fonction \texttt{setjmp()}, le contexte (contenu
+des registres etc.) est sauvegardé dans un tampon (\texttt{jmp\_buf})
+et l'exécution continue en retournant la valeur 0.
+
+Quand on appelle \texttt{longjmp()}, l'exécution se poursuit au
+``point de retour'' indiqué dans le tampon (c'est-à-dire l'appel à la
+fonction \texttt{longjmp()}) , en transmettant une valeur différente
+de 0.
+
+Il est donc possible, en regardant la valeur retournée par
+\texttt{setjmp()}, de voir si on est dans le cas normal ou dans le cas
+de traitement d'une exception.
+
+Exemple :
+
+\begin{lstlisting}
+#include <setjmp.h>
+
+jmp_buf erreur_fatale;        // variables globales
+jmp_buf commande_abandonnee;
+
+voir executer(char commande[]) {
+    ....
+    if (....) {
+         longjmp(commande_abandonnee, 42);
+    }
+    ....
+}
+
+int main() {
+   if ( setjmp(erreur_fatale) == 0 ) {
+     while (1) {
+       char commande[128];
+       lire(commande);
+       int n = setjmp(commande_abandonnee);
+       if (n == 0) {                
+           executer(commande);
+       } else {            // exception ``commande abandonnée''
+           printf("commande abandonnée (err %d)\n", n);
+       }
+    }
+   } else {                     // exception ``erreur fatale''
+            printf("erreur fatale\n");
+          }
+}
+\end{lstlisting}
+
+
+
+ 
+\appendix
+\section{Un exemple : simulateur de processeur}
+
+\fbox{À mettre à jour}
+
+Le programme suivant simule le fonctionnement d'un ordinateur très
+simple, composé d'un processeur et d'une mémoire de 4096 mots de 16
+bits.
+
+Le processeur comporte 3 registres
+\begin{itemize}
+\item un \emph{accumulateur} 16 bits
+\item un \emph{compteur de programmes}, registre qui contient le
+  numéro de la prochaine instruction à exécuter,
+\item un \emph{registre d'instruction} qui contient l'instruction en
+  cours d'exécution
+\end{itemize}
+
+Il ne possède que quelques instructions :
+\begin{itemize}
+\item \texttt{halt}, qui arrête le processeur ;
+\item \texttt{loadi}, qui charge une constante dans l'accumulateur,
+\item \texttt{load}, qui charge dans l'accumulateur un mot de la mémoire. Le
+  numéro du mot est indiqué dans les 12 bits de droite de
+  l'instruction.
+\item \texttt{loadx} et \texttt{storex}, utilisant l'adressage indirect : l'opérande effectif est le mot
+dont le numéro est contenu dans le mot dont l'adresse est codée dans l'instruction. 
+\item \texttt{store}, qui copie le contenu de l'accumulateur dans un mot de la mémoire. 
+\item \texttt{add} et \texttt{sub} qui ajoutent ou retranchent à l'accumulateur un mot de la mémoire
+\item \texttt{jmp} (jump) qui modifie le compteur de programme pour ``sauter'' à une autre instruction que celle d'après
+\item \texttt{jneg} qui fait sauter seulement si le contenu de l'accumulateur est négatif
+\item \texttt{jzero} qui fait sauter seulement si le contenu de l'accumulateur est négatif
+\item \texttt{call} qui appelle un sous-programme,
+\item \texttt{jmpx} qui fait un saut indirect.
+\end{itemize}
+
+\subsection{Notes}
+
+\begin{enumerate}
+\item \texttt{\#define} définit une macro du préprocesseur. La chaîne
+  ``\texttt{TAILLE\_MEMOIRE}'' sera remplacée par l'expression
+  \verb/(1 << 12)/ partout dans la suite du texte source.
+\item Un \texttt{Mot} est une donnée sur 16 bits, qui peut être un
+  entier signé ou non signé.  Les deux types sont définis dans
+  \texttt{stdint.h}.
+\item L'énumération définit une suite de constantes : \texttt{HALT} vaut \texttt{0}, LOAD 1, etc.
+\item La fonction utilitaire \texttt{nInstruction} fabrique un mot qui
+  correspond à une instruction : les 4 premiers contiennent le code
+  instruction (obtenu en décalant le code fourni de 12 positions vers
+  la gauche), le reste l'adresse (à qui on applique un masque pour ne
+  conserver que les 12 bits de droite).
+
+\item La fonction \texttt{voir\_donnes} affiche les valeurs signées contenues
+dans une partie de la mémoire du simulateur.
+\item la fonction \texttt{voir\_code} extrait la partie opération (4 bits) et l'adresse (12 bits), d'un mot contenant des instructions. 
+
+\end{enumerate}
+
+
+\end{document}
+
+
+

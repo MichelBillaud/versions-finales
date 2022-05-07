@@ -1,0 +1,44 @@
+%rubber: module xelatex
+\documentclass[a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[french]{babel}
+\usepackage[a4paper]{geometry}
+\usepackage{float}
+\usepackage{amsmath, amsthm}
+\usepackage{amsfonts, amssymb}
+\usepackage{listings}
+\usepackage{fullpage}
+\usepackage{import}
+\usepackage{lastpage}
+
+
+\lstset{frame=single, numbers=none}
+
+\title{Devoir surveillé}
+\author{ASR2 Système}
+\date{16/05/2013}
+
+\newcounter{paracount}
+\setcounter{paracount}{0}
+\newcommand{\cparagraph}[1]{\addtocounter{paracount}{1}\paragraph*{\theparacount) #1}~}
+
+\begin{document}
+\maketitle
+
+\textsf{
+\begin{itemize}
+\item La durée de l'épreuve est de 1H30.
+\item Veuillez répondre sur une copie séparée.
+\item Une feuille recto-verso de notes manuscrite au format A4 est acceptée.
+\item Tout autre document est interdit.
+\item Votre voisin est un document, mais il n'est pas au format A4. Il est donc interdit de s'en servir.
+\item Votre téléphone n'est pas une feuille.
+\item Ce sujet comporte \pageref{LastPage} pages.
+\end{itemize}
+}
+
+\import{./}{cours}
+\import{./}{asm}
+\import{./}{c}
+\end{document}

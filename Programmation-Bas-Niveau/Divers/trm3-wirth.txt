@@ -1,0 +1,71 @@
+Machine TRM3 de N. Wirth
+
+
+8 registres 32 bits
+instructions sur 18 bits
+Instructions à 2 registres ou 1 registre + valeur immediate
+8 registres, R7 = registre de lien
+
+
+
+opérations
+
+4 bits codop, 3 bit rt, 1 bit=1, 7 bits x, 3 bits RS 
+4 bits codop, 3 bit rt, 1 bit=0, 10 bits immediats
+
+
+MOV RT,RS	MOVI RT,imm     affectation
+NOT RT,RS	NOTI RT,imm     négation 
+ADD RT,RS	ADDI RT,imm	addition
+SUB RT,RS	SUBI RT,imm	soustraction
+AND RT,RS	ANDI RT,imm	et
+BIC RT,RS	BICI RT,imm	masque
+OR TR,RS	ORI RT,imm	ou
+XOR TR,RS	XORI RT,imm	ou exclusif
+MUL TR,RS	MULI RT,imm	multiplication
+DIV TR,RS	DIVI RT,imm	division
+ROR TR,RS	RORI RT,imm	rotation à droite
+
+BR  RS          BR imm          branchement 
+
+LD  RT,RS,off                  chargement RT=M[RS+off]
+ST  RT,RS,off		       rangement
+
+4 bits codop, 4 bits cond, 10 bits offset
+BC condition,offset            branchement conditionnel
+
+4 bits codop,14 bits offset
+BL offset
+
+Conditions basées sur les bits
+	   Z (zero,égal) C (carry) N négatif V overflow 
+
+code mnemonic condition
+0000 EQ       equal (zero)      Z
+0001 NE       not equal        ~Z
+0010 CS       carry set         C
+0011 CC       carry clear      ~C
+0100 MI       negative (minus)  N
+0101 PL       positive (plus)  ~N
+0110 VS       overflow set      V
+0111 VC       overflow clear   ~V
+1000 HI       high             ~(~C|Z)
+1001 LS       less or same     ~C|Z
+1010 GE       greater or equal ~(N != V)
+1011 LT       less than        N != V
+1100 GT       greater than     ~((N != V)|Z)
+1101 LE       less or equal    (N != V)|Z
+1110          true             T
+1111          false            F
+
+Instructions spéciales : dérivées des instructions registre à registre
+
+LDH, cherche la partie haute du résultat d'une multiplication
+     = mov RR, avec 1 dans bits "ignorés"
+
+BLR : branch and link 
+    = br avec 10 dans bits ignorés.
+
+ 
+
+

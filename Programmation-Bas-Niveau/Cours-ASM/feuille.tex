@@ -1,0 +1,112 @@
+%rubber: module xelatex
+
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,hmargin=2.5cm,vmargin=2.5cm]{geometry}
+
+\usepackage{fontspec}
+% \usepackage{lmodern}
+\usepackage[french]{babel}
+\usepackage{hyperref}
+\usepackage{multicol}
+\usepackage{listings}
+\renewcommand{\familydefault}{\sfdefault}
+
+
+\title{Jeu d'instructions du simulateur}
+
+\author{ASR2-Système 2012-2013}
+\date{\today}
+
+
+\begin{document}
+\maketitle
+
+Machine à mots de 16 bits, adresses sur 12 bits. 
+Registres : accumulateur 16 bits, compteur de programme 12 bits.
+
+Simulateur accessible sur
+\url{http://www.labri.fr/perso/billaud/WebSim16/}
+et  \url{~/Bibliotheque/ASR2-systeme/WebSim16/index.html} au département.
+
+
+\section{Table des instructions}
+
+
+
+\begin{center}
+\begin{tabular}{|lllll|}
+\hline
+Code & Mnémonique &  Description & Action & \texttt{Cp = } \\
+\hline
+0 & \texttt{loadi} \emph{imm12} &  chargement immédiat &  \verb/Acc = ext(imm12)/ & \verb/Cp + 1/\\
+1 & \texttt{load} \emph{adr12} &  chargement direct &  \verb/Acc = M[adr12]/ & \verb/Cp + 1/ \\
+2 & \texttt{loadx} \emph{adr12} &  chargement indirect &  \verb/Acc = M[M[adr12]]/& \verb/Cp + 1/ \\
+3 & \texttt{store} \emph{adr12} &  rangement direct &  \verb/M[adr12] = Acc/ & \verb/Cp + 1/ \\
+4 & \texttt{storex} \emph{adr12} &  rangement indirect &  \verb/M[M[adr12]] = Acc/& \verb/Cp + 1/ \\
+\hline
+5 & \texttt{add} \emph{adr12} & addition & \verb/Acc += M[adr12]/ & \verb/Cp + 1/ \\
+6 & \texttt{sub} \emph{adr12} & soustraction & \verb/Acc -= M[adr12]/ & \verb/Cp + 1/ \\
+\hline
+7 & \texttt{jmp} \emph{adr12}  & saut inconditionnel & &\verb/adr12/  \\
+8 & \texttt{jneg} \emph{adr12}  & saut si négatif & & \verb/Acc<0  ? adr12 : Cp+1/ \\
+9 & \texttt{jzero} \emph{adr12}  & saut si zéro & & \verb/Acc==0 ? adr12 : Cp+1/ \\
+\hline
+A & \texttt{jmpx} \emph{adr12}  & saut indirect & & \verb/M[adr12]/ \\
+B & \texttt{call} \emph{adr12}  & appel & \verb/M[adr12] = Cp+1/ & \verb/M[adr12]+1 / \\
+\hline
+C & \texttt{halt 0}  & arrêt & &  \\
+\hline
+D & & op. illégale & erreur &   \\
+E & & op. illégale & erreur &   \\
+F & & op. illégale & erreur &  \\
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{Commentaires}
+\begin{itemize}
+\item \emph{adr12} (resp. \emph{imm12}) désigne l'adresse (resp. la valeur immédiate) encodée sur les 12 bits de l'instruction
+\item l'instruction \texttt{loadi} procède à une \emph{extension de
+  signe} de \emph{imm12} : le bit de poids fort de la valeur immédiate
+  est copiée dans 4 bits de poids fort de l'accumulateur. Par exemple
+  l'instruction \fbox{\texttt{loadi -1}} est codée \texttt{0000 1111
+    1111 1111} en binaire. Lors de l'affectation dans l'accumulateur
+  16 bits, le bit de signe de la valeur immédiate est propagé de façon
+  à obtenir la valeur \texttt{1111 1111 1111 1111} (qui représente -1
+  sur 16 bits) dans l'accumulateur.
+\item lors de l'exécution des opérations indirectes 
+(\texttt{loadx}, \texttt{storex},\texttt{jmpx})
+le contenu de \verb/M[adr12]/  qui est sur 16 bits est interprété
+comme une adresse sur 12 bits. Une erreur est détectée si les 4 bits de poids 
+ne sont pas nuls, et entraîne l'arrêt du processeur.
+\item le paramètre de \texttt{halt} est ignoré.
+\item 3 codes ne sont pas utilisés.
+\end{itemize}
+
+\newpage
+
+\section{Exemples de programme}
+
+\lstinputlisting[frame=single,numbers=left]{Exemples/somme-entiers.asm}
+
+
+\begin{lstlisting}[frame=single]
+# somme des éléments d'un tableau
+
+   loadi 0
+   store S
+   store K
+BOUCLE
+   loadi 10       / loadi T
+   sub   K       /  add   K
+   jzero FIN    /   store PTR
+   ........... /    loadx PTR
+   loadi 1      \   add   S
+   add   K       \  store S
+   store K
+   jmp   BOUCLE
+FIN
+   halt  0
+\end{lstlisting}
+\end{document}

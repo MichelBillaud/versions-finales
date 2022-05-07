@@ -1,0 +1,68 @@
+%rubber:  module xelatex
+
+\documentclass[10pt]{article}
+
+\usepackage{a4wide}
+
+\usepackage{fontspec}
+\usepackage[french]{babel}
+
+\usepackage{textcomp}
+
+\usepackage[draft]{hyperref}
+\usepackage{multicol}
+
+\usepackage{graphicx}
+
+\usepackage{travail}
+\usepackage{listings}
+%% \usepackage{parskip}
+%% \usepackage{vmargin}
+%% \usepackage{xcolor}
+%% \usepackage{fancyvrb}
+%% \usepackage{xspace}
+%% \usepackage{framed}
+
+
+
+
+\sloppy
+
+\titreEpreuve{Devoir ASR2 - Système}
+\dateEpreuve{Mai 2013}
+\publicEpreuve{Semestre 2}
+
+\newcounter{questions}
+
+
+\newcounter{paracount}
+\setcounter{paracount}{0}
+\newcommand{\cparagraph}[1]{\addtocounter{paracount}{1}\fbox{\textbf{\theparacount}} \emph{#1} \vspace{0.3cm}}
+
+
+\begin{document}
+\maketitle
+\lstset{frame=single, numbers=none}
+
+\vspace{1cm}
+{
+\begin{itemize}
+\item La durée de l'épreuve est de 1H30.
+\item Veuillez répondre sur une copie séparée.
+\item Une feuille recto-verso de notes manuscrite au format A4 est acceptée.
+\item Tout autre document est interdit.
+\item Votre voisin est un document, mais il n'est pas au format A4. Il est donc interdit de s'en servir.
+\item Votre téléphone n'est pas une feuille.
+\item Ce sujet comporte 4 pages.
+\end{itemize}
+}
+
+\input{cours}
+
+\input{asm}
+
+\input{c}
+
+
+
+\end{document}

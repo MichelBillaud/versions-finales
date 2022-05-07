@@ -1,0 +1,807 @@
+%rubber module: xelatex
+\documentclass[]{beamer}
+
+\usepackage{../Cours-ASM/transparents-cours}
+\usepackage{graphicx}
+
+\usefonttheme{default}
+
+\subtitle{ASR2 - Système}
+\title{Programmation C \\
+Écriture d'un simulateur}
+
+\author{Semestre 2, année 2012-2013}
+\institute{
+  Département informatique\\
+  IUT Bordeaux 1
+}
+\date{Avril 2013}
+
+
+\AtBeginPart{
+  \frame{\partpage} 
+  \frame{
+\frametitle{Contenu}
+\begin{multicols}{2}
+\tableofcontents
+    \end{multicols}
+  }
+}
+
+
+\begin{document}
+\newcommand{\bashlisting}[0]{\lstset{language=bash,numbers=left,numberstyle=\tiny,frame=single}}
+\lstdefinestyle{sourcec}{frame=single,language=C}
+\lstdefinestyle{makefile}{frame=single,language=make}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Fil conducteur}
+
+\begin{itemize}
+\item
+Pour apprendre C, on écrit un 
+\alert{simulateur 
+pour le processeur fictif}.
+
+\item
+\alert{Usage typique} du C :
+\begin{itemize}
+\item programmation à bas niveau
+\begin{itemize}
+\item utilisation d'entiers 16 bits (signés / non signés)
+\item manipulation de bits (extraction du code opération etc).
+\end{itemize}
+\item portabilité
+\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Découpage du programme}
+\begin{itemize}
+\item \alert{lire} dans un fichier un ``programme'' écrit en hexadécimal, 
+\item \alert{exécuter} ce programme
+\item à la fin, \alert{afficher} l'état de la machine
+\end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Allure générale du programme}
+\begin{lstlisting}[style=sourcec]
+struct Machine {
+  .... M[256];  
+  .... ACC;     
+  .... PC;      
+  bool HALT;
+};
+
+int main(int argc, char **argv)
+{
+     struct Machine m;
+
+     charger_fichier  (& m, argv[1]);
+     lancer_execution (& m);
+     afficher_etat    (& m);
+
+     return EXIT_SUCCESS;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+  \frametitle{Structures}
+  \begin{itemize}
+  \item Les \alert{structures} regroupent plusieurs \alert{champs}
+
+\begin{lstlisting}[style=sourcec]
+struct Date {
+  int jour;
+  int mois;
+  int annee;
+};
+
+struct Personne {
+  char nom[30];
+  char prenom[30];
+  struct Date naissance;
+};
+\end{lstlisting}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+  \frametitle{Structures (suite)}
+  \begin{itemize}
+\item = \alert{classe} C++, \alert{sans méthodes}, 
+et avec tous les \alert{champs publics}.
+\item notations pointée ``\verb+.+'' et flèche ``\verb+->+''
+  \end{itemize}
+{\small
+\begin{lstlisting}[style=sourcec]
+struct Date bastille;
+
+bastille.jour =   14;
+bastille.mois =    7;
+bastille.annee = 1789;
+
+struct Personne * musicien;  // pointeur
+
+strcpy (musicien -> prenom, "kevin");
+strcpy (musicien -> nom   , "ayers");
+
+(musicien -> naissance).jour   = 16;
+(musicien -> naissance).mois   = 8;
+(musicien -> naissance).annee  = 1944;
+\end{lstlisting}
+}
+\end{frame}
+
+
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Les types}
+\begin{lstlisting}[style=sourcec]
+#include <stdint.h>
+#include <stdbool.h>
+
+struct Machine {
+  uint16_t M[256];  
+  int16_t  ACC;     
+  uint16_t PC;      
+  bool     HALT;
+};
+\end{lstlisting}
+\begin{tabular}{lll}
+\texttt{HALT} & indique si la machine tourne & \alert{\texttt{bool}} \\
+accumulateur & un entier de 16 bits & \alert{\texttt{int16\_t}} \\
+compteur de programme & entier de 16 bits, positif ou nul &\alert{\texttt{uint16\_t}} \\
+mémoire & 256 mots de 16 bits & 
+\end{tabular}
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Types entiers}
+  \begin{itemize}
+  \item les \alert{types de base}
+    \begin{itemize}
+    \item \texttt{int}, \texttt{char}
+    \item modificateurs : \texttt{short},  \texttt{long}
+    \item \texttt{signed}, \texttt{unsigned}
+    \end{itemize}
+    dont la taille dépend de l'implémentation
+  \item Les \alert{types standards}, pour la portabilité :
+    \begin{itemize}
+    \item de \alert{taille exacte} : 
+      signés \texttt{int8\_t, int16\_t, int32\_t, int64\_t}
+      et non signés \texttt{uint8\_t ...} 
+    \item de \alert{taille minimum} : 	\texttt{int\_least8\_t, ...}
+    \item les \alert{représentations efficaces} (en temps) : \texttt{int\_fast8\_t, ...}
+    \end{itemize}
+  \end{itemize}
+    La \emph{représentation exacte} n'existe pas forcément (exemple
+    microcontrôleur 18 bits).
+
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Bilan provisoire}
+Vous connaissez
+\begin{itemize}
+\item les \alert{structures}
+\begin{itemize}
+\item définition
+\item différence avec les classes
+\item notations pointée et fléchée
+\end{itemize}
+\item les \alert{types entiers}
+\begin{itemize}
+\item \alert{types de base} : int / char / long / short / signed / unsigned
+\item \alert{types standards}, taille exacte, taille minimum, représentation efficace.
+\end{itemize}
+\end{itemize}
+
+Le langage C permet de préciser la représentation des données : langage de bas niveau.
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Retour à l'écriture du simulateur}
+
+Développement incrémental : on procède par étapes 
+\begin{enumerate}
+\item \alert{ajout de ``stubs}'' (fonctions bouchon) pour que le source
+soit accepté à la compilation
+\item \alert{écriture et test} de chaque fonction, dans l'ordre de facilité :
+\begin{enumerate}
+\item affichage de l'état
+\item chargement du programme
+\item exécution
+\end{enumerate}
+\end{enumerate}
+
+\alert{Fonctions bouchon} : ne font rien (à part afficher un message !)
+\begin{lstlisting}[style=sourcec]
+ int foo (float bar) 
+ {
+    printf("Appel de %s\n", __PRETTY_FUNCTION__);
+}
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Travail : complétez le code par des stubs}
+\footnotesize
+\begin{multicols}{2}
+\begin{lstlisting}[style=sourcec]
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+struct Machine {
+  uint16_t M[256];  
+  int16_t  ACC;     
+  uint16_t PC;      
+  bool     HALT;
+};
+\end{lstlisting}
+\break
+\begin{lstlisting}[style=sourcec]
+// ....         ....
+// .... STUBS ? ....
+///....         ....
+\end{lstlisting}
+\begin{lstlisting}[style=sourcec]
+int main(int argc, char **argv)
+{
+  struct Machine m;
+
+  charger_fichier  (& m, 
+                    argv[1]);
+  lancer_execution (& m);
+  afficher_etat    (& m);
+
+  return EXIT_SUCCESS;
+}
+
+\end{lstlisting}
+\end{multicols}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+  \frametitle{Travail : programmer l'affichage de l'état de la machine}
+
+
+\alert{Exemple de présentation } : 
+{
+\scriptsize
+\begin{lstlisting}
+ADR     0    1    2    3    4    5    6    7    8    9    a    b  
+   +--------------------------------------------------------------
+00 | 0160 43da 7fff 0000 34b0 43d7 7fff 0000 34b0 43d7 7fff 0000 3
+10 | aaa8 ec3b 7f62 0000 0003 0000 0000 0000 4e2e f63d 0000 0000 7
+.....
+e0 | 0000 0000 0000 0000 04c3 0040 0000 0000 0000 0000 0000 0000 0
+f0 | bac0 ebe4 7f62 0000 0880 0040 0000 0000 0000 0000 0000 0000 0
+ 
+Registres    ACC [hex=3710 dec= 14096]     PC [43d7]    HALT [0]
+\end{lstlisting}
+}
+\alert{Mémoire} : 16 lignes de 16 nombres de 4 chiffres en hexadécimal 
+\begin{lstlisting}
+   pour ligne de 0 à 15 faire
+    | pour colonne de 0 à 15 faire
+    |  | afficher  M[ 16*ligne + colonne ]
+    | sauter à la ligne
+\end{lstlisting}
+
+\alert{Formats} à utiliser : \texttt{\%x}, \texttt{\%4x} 
+\end{frame}
+
+
+
+\begin{frame}[containsverbatim]
+  \frametitle{Chargement du programme}
+
+
+\begin{itemize}
+\item Programme = suite de mots de 16 bits
+\item 1 mot = 4 chiffres hexadécimaux
+\item chargement à partir de l'adresse 0
+\end{itemize}
+
+Exemple :
+\begin{lstlisting}[frame=single]
+0007  5004 3005
+C000 0006 
+0000
+\end{lstlisting}
+
+Traduction de 
+\begin{verbatim}
+  loadi 7    # 0007
+  add   A    # 5004
+  store B    # 3005
+  halt  0    # C000
+a word  6    # 0006
+b word  0    # 0000
+\end{verbatim}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+  \frametitle{Lecture dans un fichier}
+Vous connaissez déjà \texttt{scanf( format, adr....)} pour lire sur le terminal.
+
+\begin{itemize}
+\item équivalent : \texttt{fscanf( fichier, format, adr....)}
+\item où \texttt{fichier} est un ``FILE *''.
+\end{itemize}
+
+\begin{lstlisting}[style=sourceC]
+FILE * f;
+int nombre, somme = 0;
+
+f = fopen("monfichier.txt", "r");
+while ( fscanf(f, "%d", & nombre) == 1) {
+   somme += nombre;
+};
+fclose(f);
+printf("La somme vaut %d\n", somme);
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Fichiers de haut niveau}
+\begin{itemize}
+\item 
+\alert{ouverture} par \texttt{fopen(chemin, mode-d'accès)}
+\begin{itemize}
+\item retourne un  \texttt{FILE *}
+\item modes : \texttt{"r"} en lecture, \texttt{"w"} en écriture, ...
+\end{itemize}
+\item \alert{lecture} par \texttt{fscanf(fichier, format, adr...)}
+\begin{itemize}
+\item retourne
+le nombre d'éléments lus avec succès
+\end{itemize}
+\item \alert{écriture} par \texttt{fprintf(fichier, format, ....);}
+\item \alert{fermeture} par \texttt{fclose(fichier);}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+  \frametitle{Travail : écrire la lecture d'un programme}
+
+  \begin{block}{Fichier "\texttt{prog1.hex}"}
+\begin{lstlisting}[frame=single]
+0007  5004 3005  C000 0006 0000
+\end{lstlisting}
+  \end{block}
+
+\alert{Portabilité} pour lire des mots de 16 bits en hexadécimal,
+utiliser le format portable \fbox{\texttt{"\%" SCNx16}}, défini dans
+\texttt{inttypes.h}
+
+  \begin{block}{Exemple de programme de lecture}
+\begin{lstlisting}[style=sourceC]
+FILE * f = fopen("monfichier.txt", "r");
+if ( f == NULL ) {
+   ... // fichier absent ?
+}
+uint16_t nombre;
+while ( fscanf(f, "%" SCNx16, & nombre) == 1) {
+   ....
+};
+fclose(f);
+\end{lstlisting}    
+  \end{block}
+
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bilan}
+Vous savez maintenant 
+\begin{itemize}
+\item ouvrir un fichier
+\item y lire des données 
+\item utiliser les formats de lecture adaptés aux types standards
+\end{itemize}
+
+Ecrire : c'est pareil.
+\end{frame}
+
+\begin{frame}[containsverbatim]
+  \frametitle{Exécution du programme}
+Pour lancer l'exécution :
+\begin{lstlisting}[frame=single]
+initialiser les registres :  HALT = faux, PC = 0 ...
+
+tant que non HALT 
+  | aller chercher l'instruction en M[PC]
+  | la décomposer en  code opération + opérande
+  |
+  | selon le code opération
+  | si 1 (load)  =>   Acc = M [opérande], PC=PC+1
+  | si 3 (store) =>   M [opérande] = ACC, PC=PC+1
+  | ....
+  | si 12 (halt) =>   HALT = vrai
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Énumérations}
+\begin{multicols}{2}
+Avec une  \alert{enumération}
+\begin{lstlisting}[langage=C, frame=single] 
+enum Code {
+  LOADI, LOAD,  LOADX,   
+  STORE, STOREX,
+  ADD,   SUB,   JMP,     
+  JNEG,  JZERO,
+  JMPX,   CALL, HALT
+};
+\end{lstlisting}
+\break
+on pourra utiliser des constantes
+\begin{lstlisting}[frame=single, language=C]
+enum Code code;
+...
+switch (code} {
+case LOADI:
+    ....
+case LOAD:
+    ....
+default:
+    ...
+};
+\end{lstlisting}
+\end{multicols}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Décomposition d'une instruction : opérande}
+
+\begin{itemize}
+\item une instruction = 16 bits, non signé
+\begin{tabular}{|*{16}{c|}}
+\hline
+0 & 0 & 1 & 1 &
+0 & 0 & 0 & 0 &
+0 & 0&  0&  0&
+0 & 1 & 0 & 0 \\
+\hline
+\end{tabular}
+\item pour obtenir l'\alert{opérande} (12 bits de droite) : masquer
+\begin{lstlisting}
+    uint_16  avant =  0x3005;
+    uint_16  apres =  avant & 0x0FF;
+\end{lstlisting}
+{\small
+\begin{tabular}{l|*{16}{c|}}
+\hline
+avant & \alert{0} & \alert{0} & \alert{1} & \alert{1} &
+0 & 0 & 0 & 0 &
+0 & 0&  0&  0&
+0 & 1 & 0 & 1 \\
+\hline
+et 0x0FF & \alert{0} & \alert{0} & \alert{0} & \alert{0} &
+1 & 1 & 1 & 1 &
+1 & 1 & 1 & 1 &
+1 & 1 & 1 & 1 \\
+\hline\hline
+après & \alert{0} & \alert{0} & \alert{0} & \alert{0} &
+0 & 0 & 0 & 0 &
+0 & 0&  0&  0&
+0 & 1 & 0 & 1 \\
+\hline
+\end{tabular}
+}
+\item Opération : 
+ \emph{expression entière} \texttt{\&} \emph{expression entière}
+
+\item \alert{Bitwise operations} : 
+\begin{itemize}
+\item binaires : 
+et (\verb+&+), 
+ou  (\verb+|+), 
+ou-exclusif  (\verb+^+), 
+\item unaire : 
+complément (\verb+~+).
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Décomposition d'une instruction : code opération}
+
+\begin{itemize}
+\item Pour obtenir le \alert{code opération} : décaler de 12 bits vers la droite
+\begin{lstlisting}
+    uint_16  avant =  0x3005;
+    uint_16  apres =  avant >> 12;
+\end{lstlisting}
+\begin{tabular}{l|*{16}{c|}}
+\hline
+avant & \alert{0} & \alert{0} & \alert{1} & \alert{1} &
+0 & 0 & 0 & 0 &
+0 & 0&  0&  0&
+0 & 1 & 0 & 1 \\
+\hline
+après & 
+0 & 0 & 0 & 0 &
+0 & 0 & 0 & 0 &
+0 & 0 & 0 & 0 &
+\alert{0} & \alert{1} & \alert{0} & \alert{1} \\
+\hline
+\end{tabular}
+\item \alert{Décalages} :  \begin{itemize}
+\item \emph{expression entière} \verb+>>+ \emph{nombre de positions vers la droite}
+\item \emph{expression entière} \verb+<<+ \emph{nombre de positions vers la gauche}
+\end{itemize}
+\item \alert{Propagation de signe} pour le décalage à droite des
+\alert{entiers signés}, exemple : 
+\verb+  -1 >> 1 + donne  -1 \fbox{111...1111}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Travail : décomposition}
+Programme interactif qui lit des instructions  (nombres 16 bits hexadécimaux), et les décompose
+en code opération + opérande :
+\begin{lstlisting}[style=sourcec]
+int main( ...) {
+  for(;;) {
+     uint16_t instruction;
+     printf("Instruction : ");    // lecture
+     if (scanf( ...... instruction) != 1) 
+        break;
+     uint16_t code     = .....    // décomposition
+     uint16_t operande = .....
+                                  // affichage
+     printf("code = ..... operande = .....\n", 
+              code, operande);
+    }
+  return 0;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{travail : petit supplément}
+Ajoutez l'affichage des mnémoniques, en utilisant un tableau
+\begin{lstlisting}[style=sourcec]
+
+char * mnemoniques[16] = {
+    "loadi", "load", "loadx",
+    ...
+    "halt", "illegal13", "illegal14", "illegal15"
+};
+\end{lstlisting}
+
+\end{frame}
+
+
+
+\begin{frame}[containsverbatim]
+  \frametitle{Exécution du programme : écriture en C}
+\footnotesize
+\begin{lstlisting}[frame=single, language=C]
+void lancer_execution(struct Machine * m) 
+{
+  // initialiser les registres
+  while ( ! m -> HALT ) { 
+     uint16_t instruction = m->M [ m->PC ];
+     enum Code code       = ... 
+     uint16_t operande    = ...
+                                 // tracer instruction
+     switch(code) {
+     case LOAD :
+               ...
+               m->PC ++;
+               break;
+     case HALT :
+               m -> HALT = true;
+               break;
+   }
+
+}
+\end{lstlisting}
+\alert{Implémentez} \texttt{load}, \texttt{store}, \texttt{add}, et \texttt{halt}.
+
+\end{frame}
+
+\begin{frame}[containsverbatim]
+\frametitle{Cas de l'instruction \texttt{loadi}}
+
+\alert{Rôle} : charger la valeur de l'opérande
+dans l'accumulateur.
+
+Mais
+\begin{itemize}
+\item code opération sur 4 bits
+\item l'opérande est codé sur 12 bits
+\item l'accumulateur un mot de 16 bits.
+\end{itemize}
+
+\begin{block}{Exemples }
+\begin{itemize}
+\item 
+ \texttt{loadi 42} = Ox0\alert{02A}, charge 0x\alert{002A}
+\item 
+ \texttt{loadi -1} = Ox0\alert{FFF}, charge 0x\alert{FFFF}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Extension de signe}
+Pour les nombres négatifs
+\begin{itemize}
+\item -1 codé \fbox{1111 1111 1111} en binaire
+\item loadi -1 : \fbox{0000 1111 1111 1111} en binaire
+\item pour amener -1 dans l'accumulateur, il faut donc
+étendre le nombre signé 12 bits sur 16 bits.
+\item propager le bit de signe (5 ième) dans les 4 premiers.
+\begin{tabular}{r|cccc|}
+\hline
+avant & 0000 & Syyy & zzzz & tttt \\
+\hline
+après & SSSS & Syyy & zzzz & tttt \\
+\hline
+
+\end{tabular}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Propagation de signe 12 à 16 bits : comment faire}
+
+On utilise
+\begin{itemize}
+\item un \alert{décalage à gauche} pour amener le bit de signe à gauche
+\item un \alert{changement de type} pour transformer en nombre signé
+\item un \alert{décalage à droite} du nombre signé
+\end{itemize}
+
+{ \small
+\begin{tabular}{r|c|l}
+expression & type & contenu en binaire \\
+\hline
+\verb+opérande+ & uint16\_t & \texttt{0000 Syyy zzzz tttt} \\
+\verb+opérande << 4+ & uint16\_t & \texttt{Syyy zzzz tttt 0000} \\
+\hline
+\verb+(int16_t) (opérande << 4)+ & \alert{int16\_t} & \texttt{Syyy zzzz tttt 0000} \\
+\verb+((int16_t) (opérande << 4)) >> 4+ & int16\_t & \texttt{SSSS Syyy zzzz tttt} \\
+\hline
+\end{tabular}
+}
+
+\vspace{1cm}
+
+\alert{Conversions de type} (typecast) 
+  \begin{itemize}
+\item \texttt{float quotient = (float) num / den;}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Bilan}
+Vous connaissez maintenant
+\begin{itemize}
+\item les opérations ``bit-à-bit''
+\item les décalages
+\item les conversions de type
+\end{itemize}
+qui permettent à travailler ``à bas niveau'' sur les données
+en mémoire
+\end{frame}
+
+\begin{frame}
+\frametitle{Travail : complétez le simulateur}
+\begin{enumerate}
+\item \texttt{loadi}
+\item \texttt{sub}
+\item \texttt{jmp},  \texttt{jzero}, \texttt{jneg},
+\item ...
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Allocation dynamique}
+
+\alert{Objectif} 
+\begin{itemize}
+\item simulateur avec taille de mémoire variable
+\end{itemize}
+
+\begin{verbatim}
+struct Machine {
+
+  uint16_t *M;
+  int      memsize;
+
+  int16    ACC;     
+  uint16_t PC;      
+  bool HALT;
+};
+\end{verbatim}
+
+\begin{itemize}
+\item l'\alert{allocation mémoire} se fait par \texttt{malloc(nombre d'octets)},
+\item la \alert{libération}, par \texttt{free}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[containsverbatim]
+\frametitle{Allocation dynamique (suite)}
+
+\alert{Utilisation}
+\begin{itemize}
+\item l'\alert{allocation mémoire} par \texttt{malloc(nombre d'octets)},
+\begin{verbatim}
+#include <stdlib.h>
+
+m->memsize = 256;
+m->M       = malloc ( m->memsize * sizeof(uint16_t) );
+\end{verbatim}
+\alert{sizeof()} indique la taille d'un type / d'une variable
+\item la \alert{libération} par \texttt{free(pointeur)}
+\begin{verbatim}
+free( m->M );
+\end{verbatim}
+\item il est possible \alert{redimensionner} (en recopiant)
+\begin{verbatim}
+void *realloc(void *ptr, size_t size);
+\end{verbatim}
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}
+  \frametitle{Bilan général}
+A travers le développement d'un exemple typique :
+\begin{multicols}{2}
+\begin{itemize}
+\item types, instructions
+\item chaines
+\item utilisation des pointeurs
+\item structures, énumérations
+\item programmation à bas niveau (manipulation de bits)
+\item allocation dynamique
+\end{itemize}
+
+\break
+Il reste quelques autres aspects à voir
+\begin{itemize}
+\item unions
+\item utilisation du préprocesseur
+\item fichiers à bas niveau
+\item bibliothèque Unix
+\item ...
+\end{itemize}
+\end{multicols}
+\end{frame}
+\end{document}
+
+

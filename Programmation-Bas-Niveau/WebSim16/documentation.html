@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <meta charset='iso-8859-15'>
+  <meta name="generator" content=
+  "HTML Tidy for Linux from https://github.com/w3c/tidy-html5">
+
+  <title></title>
+</head>
+
+<body>
+  <h1>Processeur Sim16</h1>(c) Michel Billaud - Décembre 2012- <a href=
+  'mailto:michel.billaud@u-bordeaux1.fr?subject=SSEM+Emulator'>michel.billaud@u-bordeaux1.fr</a>
+  <hr>
+
+  <center>
+    <a href="#sim16"></a>  <a href=
+    "#architecture">Architecture</a> | <a href="#instructions">Jeu
+    d'instructions</a> | <a href="#assembleur">Le langage
+    d'assemblage</a> | <a href="#simulateur">Le simulateur</a>
+  </center><a name="sim16" id="sim16">
+  <hr>
+
+  <h2>Le processeur SIM16</h2></a>est une machine fictive
+  destinée à illustrer les notions de base de la programmation 
+  au niveau des instructions de la machine.
+</p>
+ Sa structure a été calquée sur les premiers ordinateurs : SSEM de l'université
+Victoria de Manchester, PDP/1 de Digital Equipement Corporation, etc.
+
+  <h2>Architecture</h2></a>Le processeur Sim16 a une architecture très simple
+
+  <ul>
+    <li>mots de 16 bits, adresses 12 bits</li>
+    <li>nombres entiers en complément à 2</li>
+    <li>un accumulateur A (16 bits)</li>
+    <li>une mémoire de 128 mots, théoriquement extensible à 4K mots </li>
+    <li>un registre CI (current instruction) de 12 bit contient
+    l'adresse de l'instruction à exécuter (compteur de programme,
+    dans la terminologie actuelle)</li>
+
+    <li>additionneur/soustracteur 16 bits</li>
+
+    <li>un bit AUTO pour le fonctionnement (0 si arrété)</li>
+
+    <li>un répertoire de 13 instructions seulement.</li>
+    <li>modes d'adressages : immédiat, direct, indirect.</li>
+
+  </ul><a name="instructions" id="instructions">
+  <h2>Jeu d'instruction</h2>Les instructions, codées sur 16 bits,
+  ont toutes le même format :
+
+  <center>
+    <table border="1">
+      <tr>
+        <th>OP</th>
+        <th>S (opérande)</th>
+
+      </tr>
+
+      <tr>
+        <td>o o o o </td>
+        <td>s s s s  s s s s  s s s s</td>
+
+      </tr>
+    </table>
+  </center>
+
+  <ul>
+    <li>les bits 15-12 contiennent le code opération sur 4
+    bits</li>
+
+    <li>les bits 0-11 contiennent un opérande S</li>
+
+  </ul>Le tableau ci-dessous récapitule les 12 instructions et les
+  mnémoniques que nous utilisons.
+
+Selon l'instruction, S est
+<ul>
+<li>soit une valeur immédiate <i>imm12</i></li>
+<li>soit une adresse directe <i>adr12</i> </li>
+<li>soit une adresse indirecte <i>ind12</i></li>
+</ul>
+M désigne la mémoire, considérée comme un tableau de mots. A désigne l'accumulateur.
+
+  <center>
+    <table border='1'>
+      <tr>
+        <th>Mémonique</th>
+
+        <th>Signification</th>
+
+        <th>Effet</th>
+      </tr>
+
+<tr>
+<td>loadi <i>imm12</i></td>
+<td>charge dans A la valeur immédiate <i>imm12</i>, avec extension de signe sur 16 bits.</td>
+<td>A = ext16(<i>imm12</i>) ; CI++</td>
+</tr>
+
+<tr>
+<td>load <i>dir12</i></td>
+<td>charge dans A le contenu du mot d'adresse <i>dir12</i></td>
+<td>A = M[<i>dir12</i>] ; CI++</td>
+</tr>
+
+<tr>
+<td>loadx <i>ind12</i></td>
+<td>charge dans A le contenu du mot pointé par le mot d'adresse <i>ind12</i></td>
+<td>A = M[M[<i>ind12</i>]] ; CI++</td>
+</tr>
+
+<tr>
+<td>store <i>dir12</i></td>
+<td>copie  le contenu de  A dans le  mot d'adresse <i>dir12</i></td>
+<td> M[<i>dir12</i>] = A ; CI++</td>
+</tr>
+
+<tr>
+<td>storex <i>ind12</i></td>
+<td>copie le contenu de  A dans le mot pointé par le mot d'adresse <i>ind12</i></td>
+<td>M[M[<i>ind12</i>]] = A  ; CI++</td>
+</tr>
+
+<tr>
+<td>add <i>dir12</i></td>
+<td>ajoute à A le contenu du mot d'adresse <i>dir12</i></td>
+<td>A += M[<i>dir12</i>] ; CI+</td>
+</tr>
+
+<tr>
+<td>sub <i>dir12</i></td>
+<td>soustrait de A le contenu du mot d'adresse <i>dir12</i></td>
+<td>A -= M[<i>dir12</i>] ; CI+</td>
+</tr>
+
+<tr>
+<td>jmp <i>adr12</i></td>
+<td>saute à l'adresse <i>ard12</i></td>
+<td>CI = <i>adr12</i></td>
+</tr>
+
+<tr>
+<td>jneg <i>adr12</i></td>
+<td>saute à l'adresse <i>adr12</i> si A est négatif</td>
+<td>si A &lt; 0 alors CI = <i>adr12</i> sinon CI++</td>
+</tr>
+
+<tr>
+<td>jzero <i>adr12</i></td>
+<td>saute à l'adresse <i>adr12</i> si A est nul</td>
+<td>si A == 0 alors CI = <i>adr12</i> sinon CI++</td>
+</tr>
+
+<tr>
+<td>jmpx <i>ind12</i></i></td>
+<td>saute à l'adresse contenue dans le mot d'adresse <i>ind12</i></td>
+<td>CI = M[<i>ind12</i>]</td>
+</tr>
+
+<tr>
+<td>call <i>adr12</i></td>
+<td>appel de sous programme à l'adresse <i>adr12</i></td>
+<td>M[<i>adr12</i>] = CI+1 ; CI = <i>adr12</i>+1</td>
+</tr>
+
+<tr>
+<td>halt 0</td>
+<td>arrêt</td>
+<td>auto = 0</td>
+</tr>
+
+    </table>
+</center>
+
+  <h2>Le langage d'assemblage</h2></a>Le langage d'assemblage
+  permet de rédiger les programmes, instruction par instruction, en
+  utilisant des mnémoniques. Exemple 1
+  <pre>
+# exemple
+debut
+    load a   
+    add  b   
+    sub  c   
+    store d  
+    halt 0   
+# variables
+a  word 42   
+b  word  12
+c  word 3
+d  word 0
+</pre>
+
+  <ul>
+    <li>Il y a une instruction par ligne.</li>
+
+    <li>les commentaires commencent par un dièse, et
+    finissent au bout de ls ligne</li>
+
+    <li>une ligne peut comporter une <b>étiquette</b> qui commence
+    en colonne 1</li>
+
+    <li>les étiquettes peuvent apparaître seules</li>
+
+    <li>le mnémonique est séparé de l'étiquette éventuelle et de l'opérande
+     par un ou plusieurs espaces</li>
+
+    <li>le mnémonique "word" permet de réserver un mot en mémoire,
+    en lui affectant une valeur initiale</li>
+  </ul>
+
+Les étiquettes évitent d'avoir à compter les instructions.
+  Sans elles, il faudrait écrire<br>
+  Exemple 2
+  <pre>
+# exemple
+  load 5    # 0 
+  add  6    # 1
+  sub  7    # 2
+  store 8   # 3
+  halt 0    # 4
+# variables
+  word 42   # 5
+  word  12  # 6
+  word 3    # 7
+  word 0    # 8
+</pre>
+
+<b>Compléments</b>
+
+  <ul>
+    <li>les majuscules et minuscules sont indifférenciées</li>
+
+    <li>les nombres peuvent étre écrits en hexadécimal. Par exemple
+    <tt>0x11</tt> équivaut à <tt>17</tt>.</li>
+  </ul><a name="simulateur" id="simulateur">
+  <h2>Le simulateur</h2></a>Le simulateur permet
+
+  <ul>
+    <li>L'exécution de l'instruction désignée par CI (step)</li>
+
+    <li>la modification de la valeur de CI</li>
+
+    <li>le lancement d'une boucle d'exécution (RUN) en indiquant le
+    délai entre deux instructions</li>
+
+    <li>L'exécution s'arrête quand l'instruction HALT fait passer
+    l'indicateur AUTO à 0, ou quand une erreur est détectée
+    (tentative d'accès en dehors des limites de la mémoire)</li>
+
+    <li>L'interruption de cette boucle (PAUSE)</li>
+  </ul></a>
+</body>
+</html>

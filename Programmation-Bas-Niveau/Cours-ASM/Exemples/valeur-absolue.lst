@@ -1,0 +1,55 @@
+***************
+* Code source *
+***************
+
+  1 :	# Programme pour calcul de la valeur absolue
+  2 :	# version non optimisée
+  3 :	
+  4 :	      load  X       # si X<0 aller à OPPOSE
+  5 :	      jneg OPPOSE
+  6 :	
+  7 :	      load  X       # R = X
+  8 :	      store R
+  9 :	
+ 10 :	      jmp   SUITE   # aller à SUITE
+ 11 :	OPPOSE
+ 12 :	      loadi 0        # R = 0-X
+ 13 :	      sub  X
+ 14 :	      store R
+ 15 :	SUITE
+ 16 :	      halt 0
+ 17 :	# 
+ 18 :	# données
+ 19 :	#
+ 20 :	X     word  -3
+ 21 :	R     word  0
+
+**********************
+* Table des symboles *
+**********************
+
+Symbole     Ligne   =Decimal =Hex  References
+----------  -----   -------- ----  ----------
+OPPOSE         11          5 0005   5
+R              21         10 000A   8 14
+SUITE          15          8 0008   10
+X              20          9 0009   4 7 13
+----------  -----   -------- ----  ----------
+
+*****************
+* Image memoire *
+*****************
+
+000:  1009   (4105)
+001:  8005   (32773)
+002:  1009   (4105)
+003:  300a   (12298)
+004:  7008   (28680)
+005:  0000   (0)
+006:  6009   (24585)
+007:  300a   (12298)
+008:  c000   (49152)
+009:  fffd   (65533)
+00a:  0000   (0)
+
+*** 0 erreur(s)

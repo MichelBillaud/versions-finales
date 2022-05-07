@@ -1,0 +1,31 @@
+11 mots lus
+--- Contenu de la memoire, adresses 0 a 10
+ addr	hexa	decimal	instr adr (dec)
+ ----	----	-------	----------------
+    0	1009	  4105	load  9
+    1	8005	-32763	jneg  5
+    2	1009	  4105	load  9
+    3	300A	 12298	store 10
+    4	7008	 28680	jmp   8
+    5	0000	     0	loadi 0
+    6	6009	 24585	sub   9
+    7	300A	 12298	store 10
+    8	C000	-16384	halt  0
+    9	FFFD	    -3	illegal15 4093
+   10	0000	     0	loadi 0
+--- fin simulation
+--- Contenu de la memoire, adresses 0 a 10
+ addr	hexa	decimal	instr adr (dec)
+ ----	----	-------	----------------
+    0	1009	  4105	load  9
+    1	8005	-32763	jneg  5
+    2	1009	  4105	load  9
+    3	300A	 12298	store 10
+    4	7008	 28680	jmp   8
+    5	0000	     0	loadi 0
+    6	6009	 24585	sub   9
+    7	300A	 12298	store 10
+*   8	C000	-16384	halt  0
+    9	FFFD	    -3	illegal15 4093
+   10	0003	     3	loadi 3
+* Status=halted, A=3 (0x0003), CP=8 -> [halt 0]

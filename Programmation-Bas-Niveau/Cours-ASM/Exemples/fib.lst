@@ -1,0 +1,209 @@
+***************
+* Code source *
+***************
+
+  1 :	#
+  2 :	# Calcul de fibonacci
+  3 :	# récursif
+  4 :	#
+  5 :	
+  6 :	# algo
+  7 :	#  fib(n):
+  8 :	#    si n < 2
+  9 :	#	retourner n
+ 10 :	#    a = fib(n-1)
+ 11 :	#    b = fib(n-2)
+ 12 :	#    retourner a+b
+ 13 :	
+ 14 :	# conventions d'appel
+ 15 :	#
+ 16 :	#  En entrée : Acc contient n
+ 17 :	#              cadre   contient l'adresse d'un espace en sommet de pile
+ 18 :	#                      disponible pour l'instance de la fonction
+ 19 :	#  En sortie : Acc contient n
+ 20 :	
+ 21 :	
+ 22 :	main
+ 23 :		loadi	pile
+ 24 :		store   cadre
+ 25 :		
+ 26 :		load    N   # calcul fib(N)
+ 27 :		call	fib
+ 28 :		store   R
+ 29 :		halt	0
+ 30 :	
+ 31 :	N	word  	8
+ 32 :	R	word 	0
+ 33 :	# -------------------------------------
+ 34 :	
+ 35 :	
+ 36 :	fib	word	0      # adresse de retour
+ 37 :	
+ 38 :		store  tmp    # copie de N
+ 39 :		loadi   1      # si N>1, aller à cas_general
+ 40 :		sub	tmp
+ 41 :		jneg	cas_general
+ 42 :		load	tmp 	# sinon retourner N
+ 43 :		jmpx	fib
+ 44 :		
+ 45 :	cas_general
+ 46 :		load	tmp
+ 47 :		storex 	cadre  # sauvegarde N dans cadre[0]
+ 48 :	
+ 49 :		loadi 	1      # sauvegarde adresse de retour
+ 50 :		add	cadre  # dans cadre[1]
+ 51 :		store 	ptr
+ 52 :		load	fib
+ 53 :		storex	ptr
+ 54 :					# contenu du cadre de pile :
+ 55 :					#    cadre[0] = n
+ 56 :					#    cadre[1] = adresse de retour
+ 57 :		
+ 58 :		loadi	2	# allocation nouveau cadre
+ 59 :		add	cadre
+ 60 :		store 	cadre
+ 61 :		loadi	-1	# appel fib(n-1)
+ 62 :		add	tmp
+ 63 :		call	fib
+ 64 :		store 	res	# copie résultat
+ 65 :		loadi	-2	# libération cadre		
+ 66 :		add	cadre
+ 67 :		store 	cadre
+ 68 :	
+ 69 :		loadi	2 	# sauvegarde résultat fib(n-1) dans cadre[2]
+ 70 :		add	cadre
+ 71 :		store	ptr
+ 72 :		load	res
+ 73 :		storex	ptr
+ 74 :	
+ 75 :		loadx	cadre   # recupération de N dans tmp
+ 76 :		store	tmp	
+ 77 :					# contenu du cadre de pile :
+ 78 :					#    cadre[0] = n
+ 79 :					#    cadre[1] = adresse de retour
+ 80 :					#    cadre[2] = valeur de fib(n-1)
+ 81 :		
+ 82 :		loadi	3	# allocation nouveau cadre
+ 83 :		add	cadre
+ 84 :		store 	cadre
+ 85 :		loadi	-2	# appel fib(n-2)
+ 86 :		add	tmp
+ 87 :		
+ 88 :		call	fib
+ 89 :		store 	res	# copie résultat fib(n-2)
+ 90 :		loadi	-3	# libération cadre
+ 91 :		
+ 92 :		add	cadre
+ 93 :		store 	cadre	                
+ 94 :		loadi	1       # récupération de l'adresse de retour
+ 95 :		add	cadre
+ 96 :		store	ptr
+ 97 :		loadx	ptr
+ 98 :		store	fib
+ 99 :		
+100 :		loadi	2       # calcul fib(n-1) + fib(n-2) 
+101 :		add	cadre
+102 :		store	ptr
+103 :		loadx	ptr
+104 :		add	res
+105 :	
+106 :		jmpx fib
+107 :	
+108 :	# -----------------------------------
+109 :	ptr	word	0
+110 :	tmp	word	0
+111 :	res	word	0
+112 :	# ------------------------------------
+113 :	cadre	word   0       # pointeur de cadre de pile
+114 :	pile    word   0       # la pile commence ici
+115 :		               # ...
+
+**********************
+* Table des symboles *
+**********************
+
+Symbole     Ligne   =Decimal =Hex  References
+----------  -----   -------- ----  ----------
+N              31          6 0006   26
+R              32          7 0007   28
+cadre         113         63 003F   24 47 50 59 60 66 67 70 75 83 84 92 93 95 101
+cas_general    45         15 000F   41
+fib            36          8 0008   27 43 52 63 88 98 106
+main           22          0 0000  
+pile          114         64 0040   23
+ptr           109         60 003C   51 53 71 73 96 97 102 103
+res           111         62 003E   64 72 89 104
+tmp           110         61 003D   38 40 42 46 62 76 86
+----------  -----   -------- ----  ----------
+
+*****************
+* Image memoire *
+*****************
+
+000:  0040   (64)
+001:  303f   (12351)
+002:  1006   (4102)
+003:  b008   (45064)
+004:  3007   (12295)
+005:  c000   (49152)
+006:  0008   (8)
+007:  0000   (0)
+008:  0000   (0)
+009:  303d   (12349)
+00a:  0001   (1)
+00b:  603d   (24637)
+00c:  800f   (32783)
+00d:  103d   (4157)
+00e:  a008   (40968)
+00f:  103d   (4157)
+010:  403f   (16447)
+011:  0001   (1)
+012:  503f   (20543)
+013:  303c   (12348)
+014:  1008   (4104)
+015:  403c   (16444)
+016:  0002   (2)
+017:  503f   (20543)
+018:  303f   (12351)
+019:  0fff   (4095)
+01a:  503d   (20541)
+01b:  b008   (45064)
+01c:  303e   (12350)
+01d:  0ffe   (4094)
+01e:  503f   (20543)
+01f:  303f   (12351)
+020:  0002   (2)
+021:  503f   (20543)
+022:  303c   (12348)
+023:  103e   (4158)
+024:  403c   (16444)
+025:  203f   (8255)
+026:  303d   (12349)
+027:  0003   (3)
+028:  503f   (20543)
+029:  303f   (12351)
+02a:  0ffe   (4094)
+02b:  503d   (20541)
+02c:  b008   (45064)
+02d:  303e   (12350)
+02e:  0ffd   (4093)
+02f:  503f   (20543)
+030:  303f   (12351)
+031:  0001   (1)
+032:  503f   (20543)
+033:  303c   (12348)
+034:  203c   (8252)
+035:  3008   (12296)
+036:  0002   (2)
+037:  503f   (20543)
+038:  303c   (12348)
+039:  203c   (8252)
+03a:  503e   (20542)
+03b:  a008   (40968)
+03c:  0000   (0)
+03d:  0000   (0)
+03e:  0000   (0)
+03f:  0000   (0)
+040:  0000   (0)
+
+*** 0 erreur(s)

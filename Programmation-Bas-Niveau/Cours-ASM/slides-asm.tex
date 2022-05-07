@@ -1,0 +1,44 @@
+%rubber: module xelatex
+
+\documentclass[]{beamer}
+
+\usepackage{transparents-cours}
+\usepackage{graphicx}
+
+\usefonttheme{default}
+
+\subtitle{ASR2 - Système}
+\title{Le langage de la machine}
+
+\author{Semestre 2, année 2012-2013}
+\institute{
+  Département informatique\\
+  IUT Bordeaux 1
+}
+\date{Mars 2013}
+
+
+\AtBeginPart{
+  \frame{\partpage} 
+  \frame{
+\frametitle{Contenu}
+\begin{multicols}{2}
+\tableofcontents
+    \end{multicols}
+  }
+}
+
+
+\begin{document}
+\newcommand{\bashlisting}[0]{\lstset{language=bash,numbers=left,numberstyle=\tiny,frame=single}}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\input{01-intro}
+\input{02-processeur}
+\input{03-programmation}
+
+\end{document}
+

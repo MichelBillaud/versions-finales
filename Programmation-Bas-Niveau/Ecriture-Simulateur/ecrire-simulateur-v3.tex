@@ -1,0 +1,407 @@
+%rubber: module xelatex
+
+\documentclass[10pt]{article}
+
+\usepackage{fullpage} 
+\usepackage{fontspec}
+\usepackage[french]{babel} 
+
+
+\usepackage{multicol}
+\usepackage{listings}
+\renewcommand{\familydefault}{\sfdefault}
+
+
+\title{Langage C : écriture d'un simulateur}
+
+\author{M. Billaud}
+\date{4 avril 2013 - V2}
+\lstdefinestyle{sourcec}{numbers=left,frame=single,language=C}
+\lstdefinestyle{makefile}{numbers=left,frame=single,language=make}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Comment programmer en C un simulateur pour un processeur.
+On veut écrire un simulateur qui 
+\begin{itemize}
+\item lit dans un fichier un ``programme'' écrit en hexadécimal, 
+destiné à un processeur fictif,
+\item exécute ce programme,
+\item affiche le contenu de la mémoire à l'issue de ce programme.
+\end{itemize}
+
+
+\end{abstract}
+
+\tableofcontents
+
+\newpage
+
+\section{Décomposition}
+
+\subsection{Le programme principal}
+
+Le programme principal est très court :
+
+\lstinputlisting[style=sourcec]{v2/simulateur.c}
+
+On y voit différents particularités de C
+\begin{enumerate}
+\item la déclaration de la variable \texttt{m}, qui est du type
+  \texttt{struct Machine}, et qui représente l'état de la machine,
+  c'est-à-dire le contenu de la mémoire et des différents
+  registres. En C, il n'y a pas de classes, mais des \emph{structures} qui
+  regroupent simplement des champs.
+\item l'écriture sur le terminal, par la sortie standard, se fait par la fonction \texttt{printf()}
+qui utilise comme premier paramètre une ``chaîne de format'', dans laquelle 
+\verb+\n+ figure le caractère de saut de ligne.
+\item on voit cette même notion de format dans l'écriture sur la sortie
+d'erreur (\texttt{stderr}), qui se fait par
+\begin{center}
+\texttt{fprintf(stderr,} \emph{format} \texttt{,} \emph{expressions...}\texttt{);}
+\end{center}
+Dans le format,  \verb/%s/ indique où et comment il faut afficher la variable \texttt{chemin}. 
+Ici c'est une chaine :  \texttt{s} = string.
+\item \texttt{charger\_fichier()}, comme son nom l'indique, a pour
+  vocation de charge le contenu d'un fichier ``exécutable'' dans la
+  mémoire de la machine \texttt{m}. En C++, on ferait un passage par
+  référence, qui n'existe pas en C, on passe donc comme paramètre
+  l'adresse de la structure \texttt{m}. La fonction
+  \texttt{charger\_fichier()} recevra donc un \emph{pointeur}.
+
+\end{enumerate}
+
+\subsection{Structures de données : la machine}
+
+Une machine comporte 4 champs : un tableau de mots de 16 bits 
+représentant la mémoire, l'accumulateur et le compteur de programme, 
+et un booléen qui indique si elle est arrête.
+
+\paragraph{Commentaires}
+\begin{enumerate}
+\item nous utilisons les types \texttt{int16\_t} et \texttt{uint16\_t}
+  qui codent des entiers, respectivement avec et sans signe, sur 16
+  bits. Ces types sont déclarés dans \texttt{stdint.h}.
+\item de même les booléens sont définis dans \texttt{stdbool.h}
+\item le langage C dispose par ailleurs d'une variété de types
+  standard : \texttt{char}, \texttt{int}, \texttt{float},
+  \texttt{double}, etc.  Mais pas de chaines de caractères, qui sont
+  simplement des tableaux de \texttt{char}, la fin de la chaîne étant
+  marquée par le caractère nul \verb/'\0'/.
+\item comme en C, les \texttt{char} sont simplement de petits entiers, codés
+sur un octet.
+\end{enumerate}
+
+\subsection{Fonctions}
+Pour l'instant les fonctions de chargement du programme, d'exécution et d'affichage
+de l'état de la machine se réduisent à des ``\emph{stubs}'' qui sont présents pour que la compilation se passe bien, 
+mais ne font rien d'utile.
+
+\subsection{Makefile}
+
+Enfin, il n'est pas de projet décent sans un bon petit \texttt{Makefile}, qui
+contient essentiellement
+
+\begin{lstlisting}[style=makefile]
+CFLAGS = -std=c99 -Wall -Wextra -pedantic
+
+simulateur : simulateur.o
+\end{lstlisting}
+
+\section{Affichage de l'état de la machine}
+
+Commençons par le plus facile, et nous en aurons besoin ensuite pour
+vérifier que les données sont chargées correctement : l'affichage de
+l'état de la machine.
+
+\subsection{Objectif}
+La fonction \texttt{afficher\_etat} affiche
+\begin{itemize}
+\item le contenu de la mémoire, sous forme de 16 lignes de 16 mots en hexadécimal (4 caractères)
+\item  les contenus des registres et indicateurs ACC, PC, HLT
+\end{itemize}
+
+\subsection{Exemple}
+Voici un fragment de l'affichage produit
+{\small
+\begin{verbatim}
+ADR     0    1    2    3    4    5    6    7    8    9    a    b    c    d    e    f
+   +--------------------------------------------------------------------------------
+00 | 0160 43da 7fff 0000 34b0 43d7 7fff 0000 34b0 43d7 7fff 0000 34b0 43d7 7fff 0000 
+10 | aaa8 ec3b 7f62 0000 0003 0000 0000 0000 4e2e f63d 0000 0000 782c ec1a 7f62 0000 
+.....
+e0 | 0000 0000 0000 0000 04c3 0040 0000 0000 0000 0000 0000 0000 08c5 0040 0000 0000 
+f0 | bac0 ebe4 7f62 0000 0880 0040 0000 0000 0000 0000 0000 0000 0530 0040 0000 0000 
+Registres    ACC [hex=3710 dec= 14096]     PC [43d7]
+\end{verbatim}
+}
+
+Ce qui montre que l'adresse \texttt{0xe4} contient la valeur \texttt{0x04c3}.
+
+Avec une machine non initialisée, c'est normal de voir un
+peu n'importe quoi.
+
+
+\subsection{Code}
+
+\lstinputlisting[style=sourcec]{v2/afficher-etat.c}
+
+\paragraph{Remarques}
+\begin{enumerate}
+\item le paramètre \texttt{m} est ici un \emph{pointeur} vers une
+  structure, les champs sont donc désignés par \verb/m->ACC/,
+  \verb/m->PC/, \verb/m->M/ qui sont des raccourcis pour 
+\verb/(*m).ACC/, etc.
+
+\item la spécification de format \texttt{\%x} fait apparaître un
+  nombre en hexadécimal, sur autant de caractères que nécessaire. Ici
+  le nombre à afficher est entre 0 et 15, donc il n'occupera qu'un
+  seul caractère.
+
+\item plus loin, \texttt{\%02x}  (et \texttt{\%04x}) demande un affichage sur 2 (ou 4) caractères au moins,
+avec éventuellement des zéros en tête si c'est nécessaire. 
+\item enfin, la spécification \texttt{\%6d} demande une représentation
+  décimale sur 6 chiffres, des espaces occupant les emplacements des
+  zéros non-significatifs
+\end{enumerate}
+
+\section{Lecture des données}
+
+\subsection{Objectifs}
+\begin{itemize}
+\item remplir la structure de données qui représente la mémoire avec 
+le contenu d'un fichier texte
+\item le fichier contient une suite de ``mots'' de 4 chiffres hexadécimaux.
+\end{itemize}
+
+\subsection{Préliminaires : lecture dans un ficheir}
+Avant d'aborder la lecture des données dans un fichier, revoyons comment
+lire sur le terminal.
+
+\subsubsection{Lecture sur le terminal}
+
+Nous employons \texttt{scanf()}, qui joue un rôle
+quasi-symétrique à \texttt{printf()}
+\begin{center}
+\texttt{scanf(} \emph{format} \texttt{, } \emph{adresses ...}\texttt{) ;}
+\end{center}
+
+\lstinputlisting[style=sourcec]{essais/hex.c}
+
+\paragraph{Remarques} :
+\begin{enumerate}
+\item comme \texttt{printf()}, le premier paramètre est une spécification de format
+\item par contre, les paramètres suivants sont les  \emph{adresses}
+des données à remplir. C'est une conséquence du seul mode de
+passage de paramètres disponible en C : le passage par valeur.
+\item ici la lecture se fait en hexadécimal (format \texttt{\%x}), ce
+  qui implique que la donnée lue soit un entier non-signé, d'où la
+  déclaration :
+  \begin{center}
+\begin{verbatim}
+unsigned int n;
+\end{verbatim}
+  \end{center}
+Pour cette démonstration, une variable de type \texttt{uint8\_t, uint16\_t, uint32\_t, uint64\_t} aurait aussi pu faire l'affaire.
+
+\end{enumerate}
+
+\subsubsection{Lecture d'un fichier}
+
+L'exemple suivant nous permettra de voir la lecture sur un fichier,
+à l'aide de 
+\begin{center}
+\texttt{fscanf(} \emph{fichier}\texttt{,} \emph{format} \texttt{, } \emph{adresses ...}\texttt{) ;}
+\end{center}
+
+\lstinputlisting[style=sourcec]{essais/lecture.c}
+
+\begin{enumerate}
+\item le premier argument de \texttt{fscanf()} est un fichier, plus précisément
+un ``\texttt{FILE *}'' qui sert à désigner un fichier ouvert.
+\item la fonction \texttt{fopen()} ouvre un fichier, à partir de son \emph{chemin d'accès} et d'un chaine qui indique son \emph{mode} d'ouverture. Ici \texttt{"r"} indique une ouverture en lecture (ce serait \texttt{"w"} pour une écriture).
+\texttt{fopen()} retourne le pointeur \texttt{NULL} si l'ouverture a échoué.
+\item \texttt{scanf()} et \texttt{fscanf()} retournent un entier, le
+  nombre d'éléments qu'elles ont réussi à lire. Dans ce programme,
+  normalement c'est 1, sauf à la fin du fichier où c'est 0. Ce serait
+  également 0 si le fichier contenait autre chose que des nombres.
+Ce qui explique la boucle de lecture ``tant qu'on arrive à lire un nombre, faire ...''.
+\end{enumerate}
+
+En exécutant ce programme avec un fichier \texttt{donnees.txt} qui
+contient ceci, 
+\begin{verbatim}
+12 34 5678
+9 1011 121314
+15
+\end{verbatim}
+le déroulement produit, sans surprise :
+\begin{verbatim}
+$ ./lecture donnees.txt
+12 34 5678 9 1011 121314 15 
+\end{verbatim}
+
+\subsection{Lecture dans le simulateur}
+
+Pour en revenir notre simulateur, il y a une petite complication : d'une part 
+nous voulons lire des \texttt{uint16\_t}, et non des \texttt{unsigned int},
+d'autre part toutes les machines ne sont pas semblables : certaines ont des
+entiers de 16 bits, d'autres de 32, ou de 64.
+
+Nous voulons du code \emph{portable} : c'est pour ça que nous avons précisé
+\texttt{uint16\_t}, pour être sûrs de travailler avec des entiers codés
+sur 2 octets.
+
+Pour la lecture, il faut en principe indiquer un format qui correspond
+à la nature des données. Sur une machine à mots de 32 bits, on lit un 
+entier hexadécimal avec \texttt{\%hx}, le \texttt{h} indiquant un demi-mot.
+
+Mais cela dépend des machines : on se repose donc sur un fichier
+\texttt{inttypes.h} qui indique les bons formats pour les différents types
+disponibles sur cette machine.
+
+En ce qui nous concerne, nous lirons nos mots de 16 bits avec la spécification
+\begin{center}
+\texttt{"\%" SCNx16}
+\end{center}
+qui concatène le caractère ``\%'' et la chaine qui va bien pour les 
+entiers 16 bits en représentation hexadécimale. Ce qui nous donne :
+
+\subsection{Code}
+\lstinputlisting[style=sourcec]{v2/charger-fichier.c} 
+
+
+\section{L'exécution}
+
+\subsection{Objectifs}
+La fonction d'exécution fait tourner le simulateur, en exécutant les instructions 
+depuis la première (PC=0) jusqu'à ce que l'indicateur HLT passe à 1.
+
+\subsection{Rappel: les instructions}
+
+Rappelons que les instructions du processeur fictif sont sur 16 bits,
+dont les 4 premiers indiquent le code-opération.
+Nous n'allons implémenter que quelques instructions du processeur fictif :
+
+\begin{center}
+\begin{tabular}{|lll|}
+\hline
+Code & Mnémonique &  Description \\
+\hline
+0 & \texttt{loadi} \emph{imm12} &  chargement immediat \\
+1 & \texttt{load} \emph{adr12} &  chargement direct  \\
+3 & \texttt{store} \emph{adr12} &  rangement direct  \\
+5 & \texttt{add} \emph{adr12} & addition \\
+C & \texttt{halt 0}  & arrêt \\
+\hline
+\end{tabular}
+\end{center}
+
+Le programme suivant nous permettra de faire des tests. La traduction 
+hexa est en commentaire.
+\begin{verbatim}
+  loadi 7    # 0007
+  add   A    # 5004
+  store B    # 3005
+  halt  0    # C000
+a word  6    # 0006
+b word  0    # 0000
+\end{verbatim}
+
+\subsection{Technique : Décomposer une instruction}
+
+Nous allons avoir besoin d'extraire 
+le code instruction et l'opérande codés respectivement codés sur 4 et 12 birs dans une instruction représentée
+sur 16 bits.
+
+Pour cela, on utilise les opérations C qui agissent sur des entiers
+considérés comme des vecteurs de bits (\emph{bitwise operators}) :
+\begin{itemize}
+\item l'opération de \emph{décalage à droite}, noté \verb/>>/.
+Le code opération est dans les 4 premiers bits (sur 16), on le récupère en décalant le mot de l'instruction de 12 positions vers la droite 
+\item l'opération \emph{et} ``bit à bit'' : l'opérande  s'obtient en faisant un ``et'' avec un masque qui contient 4 bits à 0 et 12 à 1, soit \texttt{000 1111 111 1111}, qui s'écrit \texttt{0x0FFF} en hexadécimal.
+\end{itemize}
+
+
+Voici un programme interactif qui met en oeuvre ces opérations
+
+\lstinputlisting[style=sourcec]{essais/bits.c}
+
+et son déroulement
+
+\begin{verbatim}
+$ ./bits < prog2.txt 
+mot = 0007, code = 0, operande = 7
+mot = 5004, code = 5, operande = 4
+mot = 3005, code = 3, operande = 5
+mot = c000, code = c, operande = 0
+mot = 0004, code = 0, operande = 4
+mot = 0000, code = 0, operande = 0
+\end{verbatim}
+
+\subsection{Technique : extension de signe}
+
+Avec l'instruction \texttt{loadi} se pose un petit souci. En effet, on
+souhaite légitimement avoir la possibilité de charger dans l'accumulateur des constantes négatives
+\begin{center}
+load -1
+\end{center}
+or la constante -1 se code  \texttt{1111 1111 1111 1111} sur 16 bits
+et ne rentre pas sur les 12 bits d'opérande d'une instruction.
+
+Le parti pris est donc de coder les constantes sur 12 bits seulement,
+et l'instruction ci-dessus sera représentée (en hexadécimal) \texttt{0x0fff}.
+
+Lors de l'exécution du \texttt{loadi}, il faudra mettre cette 
+valeur -1 (codée) sur 12 bits, dans l'accumulateur de 16 bits.
+Pour cela on procède à une \emph{extension de signe}, en profitant du fait
+que le décalage à droite d'un entier \emph{signé} propage le bit de signe
+vers la droite.
+
+De façon détaillée :
+\begin{itemize}
+\item la valeur non signée sur 16 bits est décalée de 4 bits vers la
+  gauche et placée dans un entier signé de 16 bits,
+\item l'entier signé est décalé de 4 bits vers la droite. 
+\end{itemize}
+
+Ceci tient en une ligne, en utilisant la conversion en entier signé :
+\begin{verbatim}
+m->ACC = ((int16_t)(operande << 4))  >> 4; 
+\end{verbatim}
+Pour convertir explicitement une variable (ou le résultat d'une
+expression) dans un autre type, on la précède par le nom du nouveau
+type entre parenthèses.
+\begin{verbatim}
+   int num, den;
+   ...
+   float r;
+   r = ((float) num) / den.
+\end{verbatim}
+Si on écrivait simplement \texttt{r = num / den}, il y aurait d'abord
+une division entière. L'affectation déclencherait alors une conversion 
+implicite de ce quotient en flottant.
+
+En procédant comme indiqué, \texttt{num} est d'abord converti, ce qui provoque 
+une division flottante.
+
+\subsection{Le code}
+
+Pendant l'exécution, nous allons faire ``tracer'' le déroulement de la
+simulation, et pour cela nous utilisons une table des mnémoniques.
+
+Il convient également de tester la validité des accès à la mémoire :
+une fonction s'en charge, et en cas d'erreur imprime un message circonstancié,
+et met la machine à l'arrêt.
+
+\lstinputlisting[style=sourcec]{v2/lancer-execution.c}
+
+et voici le compte rendu d'exécution du programme ci-dessus :
+
+{\small
+\lstinputlisting[]{v2/trace2.txt}
+}
+\end{document}
+

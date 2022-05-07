@@ -1,0 +1,697 @@
+%rubber: module xelatex
+\documentclass[10pt]{article}
+
+\usepackage[a4paper,hmargin=2.5cm,vmargin=2.5cm]{geometry}
+
+\usepackage{fontspec}
+\usepackage[french]{babel}
+
+% \usepackage{lmodern}
+
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{multicol}
+
+
+
+\title{Programmation de bas niveau \\
+le langage de la machine}
+
+\author{S2 - dept info}
+\date{\today}
+
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\section{Structure d'un ordinateur}
+
+Un ordinateur est un appareil qui comporte essentiellement
+un \emph{processeur},
+de la \emph{mémoire}, des \emph{dispositifs d'entrée-sortie}.
+
+Ces éléments interagissent : 
+\begin{itemize}
+\item le processeur exécute les \emph{instructions}
+qui sont dans la mémoire ;
+\item ces instructions effectuent des calculs, prennent et placent des
+  données qui sont aussi en mémoire, les envoient ou les lisent sur
+  les dispositifs d'entrée-sortie.
+\end{itemize}
+
+\section{Les processeurs}
+
+De nos jours les processeurs sont très complexes, ils intègrent
+plusieurs coeurs, des lignes de caches, des coprocesseurs etc.
+
+Pour comprendre ce qu'ils font, on peut regarder les premiers
+ordinateurs.  Construits en technologies discrètes (lampes, puis
+transistors et circuits intégrés), ils étaient par force relativement
+simples. Le premier prototype d'ordinateur\footnote{le calculateur
+  expérimental Small Scale Experimental Machine, développé en 1948 à
+  l'Université de Manchester, était la première machine à programme enregistré en mémoire vive}, ne comportait que 550 tubes
+électroniques.
+
+Depuis, les choses ont légèrement évolué
+
+\begin{center}
+\begin{tabular}{|l|r|l|}
+\hline
+année &  transistors & processeur\\
+\hline
+1971 & 2,300 & Intel 4004, premier microprocesseur \\
+1978 & 29,000 & Intel 8086, premiers PC \\
+1979 & 68,000 & Motorola 68000 \\
+1989 &	1,180,000 & Intel 80486 \\
+1993 & 	3,100,000 & Pentium \\
+1997 & 	9,500,000  & Pentium III \\
+2000 & 42,000,000 & Pentium 4 \\
+2012 & 1,400,000,000 & Quad-Core + GPU Core i7 \\
+2012 & 5,000,000,000  & 62-Core Xeon Phi \\
+\hline
+\end{tabular}
+\end{center}
+
+Source : \url{http://en.wikipedia.org/wiki/Transistor_count}
+
+
+Pour comprendre le fonctionnement des ordinateurs, nous allons donc nous ramener 
+à des machines très simples, du niveau de celles qui existaient au début des années 60.
+
+Fondamentalement, dans un processeur il y a des registres (circuits capables de mémoriser
+quelques bits d'information), des circuits combinatoires (additionneur, comparateurs, ...),
+et des circuits qui assurent le déroulement des différentes phases d'exécution des instructions.
+
+Le programmeur n'a pas forcément connaissance de tous ces
+éléments. Pour programmer, il se réfère au \emph{modèle du
+  programmeur}, c'est à dire la partie qui lui est directement accessible.
+
+En général, il s'agit
+\begin{itemize}
+\item du registre \emph{compteur de programme}, qui indique ou se trouve la prochaine instruction
+à exécuter
+\item de registres de travail, où sont stockés les résultats intermédiaires,
+\item d'indicateurs de condition, qui permettent de savoir si l'addition a eu une retenue,
+si la comparaison demandée a réussi ou échoué, etc.
+\end{itemize}
+
+
+\section{Un exemple très simple}
+
+Pour les besoins pédagogiques, nous allons considérer une machine extrêmement simplifiée
+\emph{quoique plus élaborée que la SSEM}, avec les caractéristiques suivantes :
+\begin{itemize}
+\item machine à mots de 16 bits
+\item nombres en binaire complément à deux
+\item instructions sur 16 bits
+\item architecture Von Neumann (les données et les instructions sont dans le même espace mémoire)
+\item adresses sur 12 bits (capacité d'adressage : 4096 mots de 16 bits)
+\item compteur ordinal 16 bits
+\item accumulateur 16 bits
+\item opérations arithmétique : addition et soustraction.
+\item adressage direct et indirect.
+\end{itemize}
+
+\section{Jeu d'instructions}
+
+Les instructions de cette machine sont codées sur 16 bits, dans un format unique : 
+\begin{itemize} 
+\item les 4 bits
+de poids fort indiquent le code opération
+\item les 12 bits de poids faible contiennent l'opérande.
+\end{itemize}
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+code & opérande \\
+4 bits & 12 bits \\
+\hline
+- - - - & - - - - - - - - - - - - \\
+\hline
+\end{tabular}
+\end{center}
+Trois types d'opérandes sont utilisés, selon les instructions. Par exemple il y a 3 variantes de l'instruction de chargement dans l'accumulateur :
+
+\begin{itemize}
+\item \fbox{\texttt{loadi 42}} place la valeur 42 dans l'accumulateur. Le nombre 42 est une \emph{valeur immédiate}.
+
+\item \fbox{\texttt{load 23}} met dans l'accumulateur le contenu du
+  mot mémoire d'adresse 23. Le nombre 23 est une \emph{ adresse
+    directe}.
+\item \fbox{\texttt{loadx 123}} met dans l'accumulateur le contenu du
+  mot mémoire dont l'adresse est contenue dans le mot d'adresse
+  123. Le nombre 123 est une \texttt{adresse indirecte}. On peut
+  considérer que le mot d'adresse 123 est un pointeur.
+\end{itemize}
+
+\subsection{Table des instructions}
+
+Par défaut, toutes les instructions ont pour effet d'incrémenter le compteur de programme (\verb/Cp++/), à l'exception des
+instructions de saut.
+
+Pour \texttt{halt}, l'opérande est ignoré. 
+
+\begin{center}
+\begin{tabular}{|lllll|}
+\hline
+Code & Mnémonique &  Description & Action & \texttt{Cp = } \\
+\hline
+0 & \texttt{loadi} \emph{imm12} &  chargement immédiat &  \verb/Acc = ext(imm12)/ & \verb/Cp + 1/\\
+1 & \texttt{load} \emph{adr12} &  chargement direct &  \verb/Acc = M[adr12]/ & \verb/Cp + 1/ \\
+2 & \texttt{loadx} \emph{adr12} &  chargement indirect &  \verb/Acc = M[M[adr12]]/& \verb/Cp + 1/ \\
+3 & \texttt{store} \emph{adr12} &  rangement direct &  \verb/M[adr12] = Acc/ & \verb/Cp + 1/ \\
+4 & \texttt{storex} \emph{adr12} &  rangement indirect &  \verb/M[M[adr12]] = Acc/& \verb/Cp + 1/ \\
+\hline
+5 & \texttt{add} \emph{adr12} & addition & \verb/Acc += M[adr12]/ & \verb/Cp + 1/ \\
+6 & \texttt{sub} \emph{adr12} & soustraction & \verb/Acc -= M[adr12]/ & \verb/Cp + 1/ \\
+\hline
+7 & \texttt{jmp} \emph{adr12}  & saut inconditionnel & &\verb/adr12/  \\
+8 & \texttt{jneg} \emph{adr12}  & saut si négatif & & \verb/Acc<0  ? adr12 : Cp+1/ \\
+9 & \texttt{jzero} \emph{adr12}  & saut si zéro & & \verb/Acc==0 ? adr12 : Cp+1/ \\
+\hline
+A & \texttt{jmpx} \emph{adr12}  & saut indirect & & \verb/M[adr12]/ \\
+B & \texttt{call} \emph{adr12}  & appel & \verb/M[adr12] = Cp+1/ & \verb/M[adr12]+1 / \\
+\hline
+C & \texttt{halt 0}  & arrêt & &  \\
+\hline
+D & & op. illégale & erreur &   \\
+E & & op. illégale & erreur &   \\
+F & & op. illégale & erreur &  \\
+\hline
+\end{tabular}
+\end{center}
+
+\paragraph{Commentaires}
+\begin{itemize}
+\item \emph{adr12} (resp. \emph{imm12}) désigne l'adresse (resp. la valeur immédiate) encodée sur les 12 bits de l'instruction
+\item l'instruction \texttt{loadi} procède à une \emph{extension de
+  signe} de \emph{imm12} : le bit de poids fort de la valeur immédiate
+  est copiée dans 4 bits de poids fort de l'accumulateur. Par exemple
+  l'instruction \fbox{\texttt{loadi -1}} est codée \texttt{0000 1111
+    1111 1111} en binaire. Lors de l'affectation dans l'accumulateur
+  16 bits, le bit de signe de la valeur immédiate est propagé de façon
+  à obtenir la valeur \texttt{1111 1111 1111 1111} (qui représente -1
+  sur 16 bits) dans l'accumulateur.
+\item lors de l'exécution des opérations indirectes 
+(\texttt{loadx}, \texttt{storex},\texttt{jmpx})
+le contenu de \verb/M[adr12]/  qui est sur 16 bits est interprété
+comme une adresse sur 12 bits. Une erreur est détectée si les 4 bits de poids 
+ne sont pas nuls, et entraîne l'arrêt du processeur.
+\item 3 codes ne sont pas utilisés. Ils pourront servir à définir de nouvelles opérations.
+\end{itemize}
+\section{Notation des programmes}
+
+Le chargement d'un programme consiste à donner un contenu initial à la mémoire.
+Ce contenu peut être décrit en hexadécimal :
+
+\begin{center}
+\begin{lstlisting}
+0009 5005 6006 3007 C000 0005 0003 0000
+\end{lstlisting}
+\end{center}
+
+\subsection{Utilisation de mnémoniques}
+
+En décodant les 5 premiers mots, on verrait qu'il s'agit d'un programme
+\begin{center}
+\begin{tabular}{ll|ll}
+adresse & contenu & mnémonique & opérande \\
+\hline
+0  & 0009 & loadi & 9 \\
+1 & 5005 & add & 5 \\
+2 & 6006 & sub & 6 \\
+3 &  3007 & store & 7 \\
+4 &  C000 & halt & 0 
+\end{tabular}
+\end{center}
+qui charge la valeur 9 dans l'accumulateur, lui ajoute le contenu du
+mot d'adresse 5, retranche celui de l'adresse 6 et range le résultat à
+l'adresse 7.
+
+À ces adresses on trouve initialement les valeurs 5, 3 et 0, ce qu'on peut noter
+\begin{center}
+\begin{tabular}{ll|ll}
+adresse & contenu & directive & opérande \\ \hline 5 & 0005 & word & 5
+\\ 6 & 0003 & word & 3 \\ 7 & 0000 & word & 0
+\end{tabular}
+\end{center}
+ 
+La \emph{directive} \texttt{word} indique qu'un mot mémoire est réservé,
+avec une certaine valeur initiale sur 16 bits.
+
+\subsection{Utilisation d'étiquettes}
+
+Écrire des programmes avec la notation ci-dessus serait fastidieux :
+ajouter/enlever des instructions décale les variables qui sont située
+plus loin, et oblige à modifier le codage des instructions qui y font 
+référence.
+
+Pour cela on utilise des noms symboliques, les \emph{étiquettes}, pour
+désigner les adresses, et un programme prend l'allure suivante
+\begin{lstlisting}[frame=single]
+#
+# premier programme
+#
+         load  9
+         add   premier
+         sub   second
+         store resultat
+         halt  0
+#
+# réservation des variables
+#
+premier  word  5
+second   word  3
+resultat word  0
+\end{lstlisting}
+
+La traduction de ce texte source est faite par un programme appelé
+\emph{assembleur} : il assemble entre elles les lignes rédigées par
+le programmeur, écrites en \emph{langage d'assemblage}\footnote{par un
+  abus de langage courant, on parle souvent de ``programmer en
+  assembleur''}, et comportant un mélange d'instructions sous forme
+mnémonique et de directives de réservation.
+
+
+
+\paragraph{Remarques}
+\begin{itemize}
+\item 
+L'étiquette est facultative et commence obligatoirement en colonne 1
+si elle est présente. 
+\item
+Si elle est absente, il doit y avoir au moins
+un espace avant le mnémonique ou la directive \texttt{word}.
+\item l'étiquette peut aussi être seule sur la ligne. Elle se réfère alors
+au prochain mot, donnée ou instruction. 
+\item un texte source contient aussi des commentaires, d'autant plus
+utiles que la programmation est laborieuse.
+\end{itemize}
+ 
+\paragraph{Exercice : } traduire les affectations
+\begin{itemize}
+\item A = B
+\item A = A + 1
+\item A = B + C - 1
+\end{itemize}
+
+\section{Tests et décisions}
+
+Le processeur ne comporte que deux instructions pour tester
+des conditions : regarder si le contenu de l'accumulateur est
+nul (\texttt{jzero}) ou si il est négatif (\texttt{jneg}).
+Ces instructions sont des \emph{sauts conditionnels} : si la condition
+indiquée est vraie, le déroulement se poursuit à l'adresse désignée,
+sinon on passe à l'instruction suivante.
+
+En pseudo-code, cela correspondrait à 
+\begin{center}
+si \texttt{Acc} est nul, aller à \emph{adresse} \\
+si \texttt{Acc} est négatif, aller à \emph{adresse}
+\end{center}
+
+C'est rudimentaire, mais suffisant pour exprimer des si-alors-sinon.
+Voyons par exemple un algorithme qui calcule la valeur absolue d'un nombre.
+
+Sous la forme habituelle d'algorithme structuré :
+\begin{lstlisting}[frame=single]
+Donnée:
+   X nombre
+Résultat
+   R nombre 
+début
+   si X >= 0
+   alors
+     |  R = X
+   sinon
+     |  R = -X
+fin
+\end{lstlisting}
+
+quand la condition est fausse, on va exécuter le bloc ``sinon''. 
+Quand elle est vraie, on exécute le bloc ``alors'', et on contourne
+le bloc ``alors''
+Ceci peut être exprimé sous forme de séquence d'instructions 
+avec quelques sauts et étiquettes :
+\begin{lstlisting}[frame=single]
+#
+# Séquence de pseudo-instructions pour
+# calcul de  R = abs(X)
+#
+    si X < 0 aller à OPPOSE
+    calculer R = X
+    aller à SUITE
+OPPOSE:
+    calculer R = - X    
+SUITE:
+\end{lstlisting}
+
+\paragraph{Important :} l'étape d'écriture en séquence 
+de pseudo-instructions comme ci-dessus est \texttt{indispensable}
+pour espérer arriver à un programme à moindre effort.
+
+Les programmeurs expérimentés, qui donnent l'impression d'écrire
+directement en langage d'assemblage, font figurer le pseudo-code en
+commentaires. En réalité, ils écrivent les commentaires d'abord, qui
+leur servent de guide pour aboutir aux instructions machine.
+
+Une première version
+
+\lstinputlisting[frame=single,numbers=left]{Exemples/valeur-absolue.asm}
+
+\paragraph{Exercice.} Remarquez que
+\begin{itemize}
+\item lors du  second chargement de X, sa valeur est
+déjà dans l'accumulateur.
+\item les deux alternatives se finissent par la même
+instruction.
+\end{itemize}
+et profitez-en pour \emph{optimiser} ce programme. Précisez
+le gain effectué en espace mémoire, et en nombre d'instructions
+effectuées.
+
+\paragraph{Exercice.} Écrire la séquence d'instructions en pseudo-code qui
+qui calcule le maximum de deux
+nombres A et B. Traduire ensuite en instructions machine.
+Remarque : comparer, c'est étudier la différence.
+
+
+\paragraph{Exercice.} Programme qui ordonne deux nombres A et B.
+(Après l'exécution A et B contiendront respectivement le max et le min des
+deux valeurs initiales). 
+
+\section{Faire des boucles}
+Soit à écrire un programme qui calcule la somme S des entiers de 1 à N.
+
+Sous forme d'algorithme classique
+\begin{lstlisting}[frame=single]
+donnée    N nombre
+résultat  S nombre
+variable  K nombre
+début
+   S = O
+   K = 1
+   tant que K <= N
+    faire
+      |   S = S + K
+      |   K = K + 1
+fin
+\end{lstlisting}
+
+L'exécution de la boucle commence par un test. Si la condition est vraie,
+le corps de boucle est exécuté, et on revient au test. Quand la condition
+du test est fausse, le corps de boucle est contourné.
+
+
+Sous forme de séquence de pseudo-instructions
+\begin{lstlisting}[frame=single]
+BOUCLE
+    S = 0
+    K = 1
+    si K > N aller à SUITE
+    S = S + K
+    K = K + 1
+    aller à BOUCLE
+SUITE
+    ...
+\end{lstlisting}
+
+Le test revient à étudier le signe de la différence N-K.
+
+D'où le programme
+\lstinputlisting[frame=single,numbers=left]{Exemples/somme-entiers.asm}
+
+\paragraph{Exercice : } quand la borne de la boucle est fixée, par exemple
+``pour K de 0 à 4'', il y a diverses façons de traduire la boucle
+selon qu'on fait le test de fin de boucle en premier ou après la
+première exécution du corps, et qu'on effectue la comparaison avec 4
+ou avec 5. Comparez-les.
+
+
+\paragraph{Exercice :} programme qui multiplie
+deux valeurs (additions successives)
+
+\paragraph{Exercice :} programme qui divise
+deux valeurs (soustractions successives) et fournit le quotient et le
+reste.
+
+\paragraph{Exercice :} programme qui calcule la factorielle d'un nombre.
+
+\paragraph{Exercice : } programme qui trouve le plus petit diviseur non 
+trivial d'un nombre (plus grand que 1).
+
+
+\section{Utiliser des tableaux}
+
+Les instructions \texttt{loadx} et \texttt{storex} chargent ou rangent
+un mot mémoire à une adresse qui est définie par une variable en
+mémoire. Exemple, si le mot d'adresse 23 contient 42, l'instruction
+\texttt{loadx 23} aura le même effet que \texttt{load 42}.  Ceci
+revient à utiliser le mot d'adresse 23 comme un \texttt{pointeur} vers
+la donnée effectivement chargée.
+
+
+Ceci permet de travailler avec des \emph{tableaux}, qui sont constitués
+de cases consécutives :
+\begin{lstlisting}
+T     word 0         # T[0]
+      word 0         # T[1]
+      word 0         # T[2]
+      word 0         # T[3]
+      ...
+\end{lstlisting}
+
+Un tableau de
+mots (indicé à partir de 0) commence à l´adresse T, sa K-ième case est
+à l´adresse T+K. Il suffit donc d´additionner l´\texttt{adresse de base} T
+et la valeur de l´indice K pour obtenir l´adresse de la case
+\begin{lstlisting}
+       loadi  T
+       add    K
+\end{lstlisting}
+que l´on peut ranger dans un pointeur
+\begin{lstlisting}
+      store  PTR
+\end{lstlisting}
+qui donne accès à la case \verb/T[K]/, par 
+\texttt{loadx  PTR}
+ou 
+\texttt{storex  PTR}.
+
+\paragraph{Exemple :} remplir un tableau de 5 cases avec les nombres de 0 à 4.
+
+\begin{lstlisting}[frame=single]
+résultat: tableau T[5]
+variables:  
+début
+   pour K de 0 à 4
+   faire 
+     |  T[K] = K
+fin
+\end{lstlisting}
+
+L'instruction \verb/T[K] = K/ peut se traduire ainsi
+\begin{lstlisting}[frame=single]
+      loadi  T       # PTR = & T[K]
+      add    K
+      store  PTR
+   
+      load   K       # *PTR = K
+      storex PTR
+\end{lstlisting}
+
+
+\paragraph{Exercice} Écrire complètement le programme qui remplit
+le tableau.
+
+
+
+\paragraph{Exercice} Écrire un programme qui calcule la somme des
+éléments d'un tableau.
+
+\textbf{Solution}
+
+\lstinputlisting[frame=single,numbers=left]{Exemples/somme-tab.asm}
+
+\paragraph{Exercice} Écrire un programme qui détermine le minimum
+des éléments d'un tableau.
+
+\paragraph{Exercice} Écrire un programme qui trie les
+des éléments d'un tableau dans l'ordre croissant (algorithme de
+tri par sélection).
+
+\textbf{Solution : }
+
+\lstinputlisting[frame=single,numbers=left]{Exemples/tri-tableau.asm}
+
+\paragraph{Remarque : } Une autre approche consiste à incrémenter
+ à chaque étape le pointeur
+pour qu'à chaque étape il avance sur l'élément suivant
+\begin{lstlisting}
+
+     loadi T
+     store PTR       # PTR = T
+boucle:
+     ...
+     loadi  1        #  PTR++
+     add    PTR
+     store  PTR
+     ....
+     jmp  boucle
+\end{lstlisting}
+
+\section{Sous-programmes}
+
+Les instructions \texttt{call} et \texttt{jmpx} servent à réaliser
+des appels et retours de sous-programme.
+
+\fbox{\texttt{call} \emph{adr12}} sauve l'adresse de 
+l'instruction suivante (\texttt{Cp+1}) à l'emplacement indiqué par 
+ \emph{adr12}, et continue à l'adresse (\emph{adr12}+1).\footnote{Ce type 
+d'instruction d'appel existait sur les machines PDP/1 et PDP/4 de DEC,
+et HP 1000 de Hewlett-Packard}.
+
+Le premier mot d'un sous-programme est donc réservé, et contiendra
+l'adresse à laquelle le sous-programme devra revenir, par l'intermédiaire
+de l'instruction \texttt{jumpx}
+
+Exemple : un sous-programme qui calcule le plus grand de deux nombres
+
+\begin{lstlisting}
+#
+# sous programme de calcul du max de 2 nombres
+# données dans MaxA et MaxB
+# résultat dans MaxRes
+#
+Max      word  0        # res. adresse de retour
+         load  MaxA     # si MaxA < MaxB, aller à MaxL2 
+         sub   MaxB
+         jneg  MaxL1    
+
+         load  MaxA     # Acc =  MaxA 
+         jmp   MaxL2
+
+MaxL1    load  MaxB     # Acc =  MaxB
+MaxL2    store MaxRes   # résultat
+         jmpx  max      # retour
+#
+# paramètres / résultats
+#
+MaxA     word  0        # paramètre
+MaxB     word  0
+MaxRes   word  0
+\end{lstlisting}
+
+Les conventions d'appel sont les suivantes
+\begin{itemize}
+\item placer les valeurs des deux paramètres dans MaxA et MaxB
+\item effectuer l'appel \texttt{call Max}
+\item le résultat est disponible dans MaxRes
+\end{itemize}
+
+Exemple : séquence de calcul pour \texttt{R = max(max(X,Y),Z)}
+\begin{lstlisting}
+     load   X
+     store  MaxA
+     load   Y
+     store  MaxB
+     call   Max   # calcul temp = max(X,Y)
+     load   MaxRes
+     store  MaxA
+     load   Z
+     store  MaxB
+     call   Max   # calcul max(temp,Z)
+     load   MaxRes
+     store  R
+\end{lstlisting}
+
+\paragraph{Exercice} Écrire un sous programme de multiplication par addition successives
+
+\paragraph{Exercice} Écrire un sous programme de calcul de factorielle.
+
+
+\paragraph{Exercice} Écrire un sous programme de division par soustractions successives
+
+\paragraph{Exercice} Écrire un sous programme de calcul de coefficients binomiaux  $C^p_n = \frac{n !}{p! (n-p)!}$
+
+
+\section{Passage de pointeurs}
+
+Une action qui doit modifier ses paramètres (par exemple
+échanger le contenu de deux variables) sera écrite sous forme
+d'un sous-programme qui reçoit les \emph{adresses} des
+données à échanger.
+
+Exemple
+\begin{lstlisting}
+Swap    word   0
+        loadx  SwapA    # tmp = *A
+        store  SwapTmp
+
+        loadx  SwapB    # *A = *B
+        storex SwapA
+
+        load   SwapTmp  # *B = tmp
+        storex SwapB
+        callx  Swap
+#
+# paramètres reçus
+#
+SwapA   word 0
+SwapB   word 0
+#
+# variable locale
+#
+SwapTmp word 0
+
+\end{lstlisting}
+
+\section{Utilisation d'une pile}
+
+La technique précédente ne convient pas aux fonctions qui s'appellent
+elles-mêmes, directement ou indirectement. Exemple, la fonction
+récursive définie par 
+\begin{verbatim}
+fib(0) = 0
+fib(1) = 1
+fib(n) = fib(n-1)+fib(n-2)
+\end{verbatim}
+ 
+en effet, avec la technique précédente, on ne réserve en
+mémoire que des emplacements (adresse de retour, paramètres, variables
+locales) pour une seule invocation de chaque fonction.
+
+Une solution classique est d'utiliser une pile, composée de ``cadres''
+contenant les données propres à chaque invocation de la fonction.
+
+Voici un exemple de programme utilisant cette technique. Les
+conventions d'appels du sous-programme FIB(N) sont ici :
+
+\begin{itemize}
+\item le paramètre d'entrée N est dans l'accumulateur
+\item la variable SP pointe sur un espace libre assez grand (environ 2N mots)
+qui sert de pile d'exécution
+\item au retour le résultat sera dans l'accumulateur
+\end{itemize}
+
+Le déroulement de la fonction est schématiquement le suivant
+\begin{verbatim}
+FIB(N)
+début
+    si N < 1
+       alors retourner N
+    sauvegarder N et l'adresse de retour dans la pile
+    calculer f1 =  FIB(N-1)
+    sauvegarder f1 dans la pile
+    calculer f2 =  FIB(N-2)
+    récupérer N, l'adresse de retour et f1
+    retourner la valeur f1 + f2
+fin
+\end{verbatim}
+
+\lstinputlisting[frame=single,numbers=left]{Exemples/fib.asm}
+   
+\end{document}

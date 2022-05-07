@@ -1,0 +1,43 @@
+
+\newcommand*{\titreEpreuve}[1]{\def\leTitreEpreuve{#1}}
+\newcommand*{\dateEpreuve}[1]{\def\laDateEpreuve{#1}}
+\newcommand*{\publicEpreuve}[1]{\def\lePublicEpreuve{#1}}
+
+\renewcommand{\rmdefault}{phv} % Arial
+\renewcommand{\sfdefault}{phv} % Arial
+
+
+%\renewcommand{\familydefault}{\sfdefault}
+
+\renewcommand{\maketitle}{
+\noindent
+\begin{tabular}{|l|l|l|}
+\hline
+\parbox{.20\linewidth}{
+\vspace{1mm}
+\includegraphics[width=\linewidth]{nouveau-logo-iut}
+}
+&
+\parbox{.50\linewidth}{
+\begin{center}
+\textsf{
+\large
+IUT - Université  Bordeaux 1 \\
+Département Informatique \\ 
+\vspace{1em}
+\Large
+\textbf{\leTitreEpreuve}}
+\end{center}
+}
+&
+\parbox{.20\linewidth}{
+\begin{center}
+\Large
+\laDateEpreuve
+\end{center}
+}
+\\
+\hline 
+\end{tabular}
+}
+

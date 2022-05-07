@@ -1,0 +1,61 @@
+26 mots lus
+--- Contenu de la memoire, adresses 0 a 25
+ addr	hexa	decimal	instr adr (dec)
+ ----	----	-------	----------------
+    0	0000	     0	loadi 0
+    1	3019	 12313	store 25
+    2	3017	 12311	store 23
+    3	1011	  4113	load  17
+    4	6017	 24599	sub   23
+    5	9010	-28656	jzero 16
+    6	0012	    18	loadi 18
+    7	5017	 20503	add   23
+    8	3018	 12312	store 24
+    9	2018	  8216	loadx 24
+   10	5019	 20505	add   25
+   11	3019	 12313	store 25
+   12	0001	     1	loadi 1
+   13	5017	 20503	add   23
+   14	3017	 12311	store 23
+   15	7003	 28675	jmp   3
+   16	C000	-16384	halt  0
+   17	0005	     5	loadi 5
+   18	2710	 10000	loadx 1808
+   19	07D0	  2000	loadi 2000
+   20	012C	   300	loadi 300
+   21	0028	    40	loadi 40
+   22	0005	     5	loadi 5
+   23	0000	     0	loadi 0
+   24	0000	     0	loadi 0
+   25	0000	     0	loadi 0
+--- fin simulation
+--- Contenu de la memoire, adresses 0 a 25
+ addr	hexa	decimal	instr adr (dec)
+ ----	----	-------	----------------
+    0	0000	     0	loadi 0
+    1	3019	 12313	store 25
+    2	3017	 12311	store 23
+    3	1011	  4113	load  17
+    4	6017	 24599	sub   23
+    5	9010	-28656	jzero 16
+    6	0012	    18	loadi 18
+    7	5017	 20503	add   23
+    8	3018	 12312	store 24
+    9	2018	  8216	loadx 24
+   10	5019	 20505	add   25
+   11	3019	 12313	store 25
+   12	0001	     1	loadi 1
+   13	5017	 20503	add   23
+   14	3017	 12311	store 23
+   15	7003	 28675	jmp   3
+*  16	C000	-16384	halt  0
+   17	0005	     5	loadi 5
+   18	2710	 10000	loadx 1808
+   19	07D0	  2000	loadi 2000
+   20	012C	   300	loadi 300
+   21	0028	    40	loadi 40
+   22	0005	     5	loadi 5
+   23	0005	     5	loadi 5
+   24	0016	    22	loadi 22
+   25	3039	 12345	store 57
+* Status=halted, A=0 (0x0000), CP=16 -> [halt 0]
