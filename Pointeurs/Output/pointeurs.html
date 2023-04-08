@@ -5,6 +5,7 @@
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <meta name="author" content="Michel Billaud" />
+  <meta name="dcterms.date" content="2022-05-07" />
   <title>Pour en finir avec les pointeurs en C</title>
   <style>
     code{white-space: pre-wrap;}
@@ -326,7 +327,7 @@ padding: 0.5em;
 <header id="title-block-header">
 <h1 class="title">Pour en finir avec les pointeurs en C</h1>
 <p class="author">Michel Billaud</p>
-<p class="date">07-05-2022</p>
+<p class="date">2022-05-07</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -415,7 +416,7 @@ padding: 0.5em;
 <ul>
 <li><a href="#structures-de-données"><span class="toc-section-number">10.1</span> Structures de données</a></li>
 <li><a href="#initialiser-une-file"><span class="toc-section-number">10.2</span> Initialiser une file</a></li>
-<li><a href="#pour-connaître-la-valeur-de-lélement-de-tête"><span class="toc-section-number">10.3</span> Pour connaître la valeur de l’élement de tête</a></li>
+<li><a href="#pour-connaître-la-valeur-de-lélément-de-tête"><span class="toc-section-number">10.3</span> Pour connaître la valeur de l’élément de tête</a></li>
 <li><a href="#pour-tester-si-la-pile-est-vide"><span class="toc-section-number">10.4</span> Pour tester si la pile est vide</a></li>
 <li><a href="#pour-ajouterenlever-un-élément"><span class="toc-section-number">10.5</span> Pour ajouter/enlever un élément</a></li>
 <li><a href="#code-de-test"><span class="toc-section-number">10.6</span> Code de test</a></li>
@@ -424,7 +425,7 @@ padding: 0.5em;
 <li><a href="#liste-ordonnée-priorityqueue"><span class="toc-section-number">11</span> Liste ordonnée (<em>PriorityQueue</em>)</a>
 <ul>
 <li><a href="#un-peu-dordre-dans-les-pensées"><span class="toc-section-number">11.1</span> Un peu d’ordre dans les pensées</a></li>
-<li><a href="#a-la-recherche-du-dernier-élément-inférieur"><span class="toc-section-number">11.2</span> A la recherche du dernier élément inférieur</a></li>
+<li><a href="#à-la-recherche-du-dernier-élément-inférieur"><span class="toc-section-number">11.2</span> À la recherche du dernier élément inférieur</a></li>
 <li><a href="#insertion"><span class="toc-section-number">11.3</span> Insertion</a></li>
 </ul></li>
 <li><a href="#conclusion"><span class="toc-section-number">12</span> Conclusion</a></li>
@@ -563,11 +564,11 @@ adresse de age =  0x7ffdef4accf8</code></pre>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true"></a>       printf(<span class="st">&quot;c&#39;est trop petit ...&quot;</span>);</span>
 <span id="cb12-4"><a href="#cb12-4" aria-hidden="true"></a>    }</span></code></pre></div>
 <p>on y emploie <code>*adr_variable</code> qui est un <code>int</code>, et qui est donc déclarée ainsi :</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a>    <span class="dt">int</span> *adr_variable`. </span></code></pre></div>
-<p>C’est simple, finalement, quand on connaît le principe.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true"></a>    <span class="dt">int</span> *adr_variable. </span></code></pre></div>
+<p>qui se lit &quot;<code>*adr_variable</code> est de type <code>int</code>. C’est simple, finalement, quand on connaît le principe.</p>
 <p>Autre exemple : si on avait un tableau <code>t</code> de 10 adresses d’entiers, <code>t[2]</code> contiendrait l’adresse d’un entier, et donc <code>*t[2]</code> contiendrait un entier. Donc le tableau serait déclaré</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true"></a>    <span class="dt">int</span> *t[<span class="dv">10</span>];</span></code></pre></div>
-<p><strong>À quoi ça sert de savoir ça ?</strong> En fait, c’est lié à une erreur dans laquelle les débutants tombent souvent. C’est de considérer que la déclaration</p>
+<p><strong>À quoi ça sert de savoir ça ?</strong> En fait, c’est lié à une erreur dans laquelle les débutants tombent souvent. C’est de croire que la déclaration</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true"></a><span class="dt">int</span> * a;</span></code></pre></div>
 <p>déclare <code>a</code> comme un pointeur d’entiers, et que “donc” dans</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true"></a><span class="dt">int</span> * a, b;</span></code></pre></div>
@@ -577,11 +578,11 @@ adresse de age =  0x7ffdef4accf8</code></pre>
 <li>et donc <code>a</code> est un pointeur d’entier,</li>
 <li>mais pas <code>b</code>, qui est un <code>int</code>.</li>
 </ul>
-<p>Pour éviter les confusions, le plus sage est donc d’écrire en collant l’étoile du côté de la variable, voire de déclarer les deux variables séparément (c’est recommandé par certaines “normes de programmation”).</p>
+<p>Pour éviter les confusions, le plus sage est donc d’écrire en collant l’étoile du côté de la variable, voire de déclarer les deux variables séparément (ce qui est recommandé par certaines “normes de programmation”).</p>
 <div class="sourceCode" id="cb17"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true"></a><span class="dt">int</span> *a;</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true"></a><span class="dt">int</span> b;</span></code></pre></div>
 <p>En réalité, C est un langage en “syntaxe libre”, le compilateur ne s’intéresse pas à savoir si c’est collé à gauche ou à droite, ou si il y a des espaces.</p>
-<p>Si on met des espaces, c’est pour faciliter la vie de ceux qui vont relire le programme. Attention : la personne qui va probablement bénéficier de votre délicate attention d’écrire proprement les choses, ça risque d’être vous un certain temps, pour le corriger tant qu’il ne marche pas, et aussi plus tard quand il faudra le modifier.</p>
+<p>Les espaces que l’on met, c’est pour faciliter la vie de ceux qui vont relire le programme. Attention : la personne qui va probablement bénéficier de votre délicate attention d’écrire proprement les choses, ça risque d’être vous un certain temps, pour le corriger tant qu’il ne marche pas, et aussi plus tard quand il faudra le modifier.</p>
 <p>Donc écrire les choses proprement, ça a un gros impact. C’est pas un truc décoratif à garder pour plus tard quand ça marchera, au contraire c’est à faire au plus tôt <strong>pour que ça marche</strong> le plus vite possible.</p>
 <h2 data-number="1.7" id="la-constante-null"><span class="header-section-number">1.7</span> La constante <code>NULL</code></h2>
 <p>Un pointeur sert à contenir l’adresse d’une donnée. Parfois on a besoin de savoir que le pointeur ne contient <strong>pas</strong> une adresse valide.</p>
@@ -1789,7 +1790,7 @@ adresse de age =  0x7ffdef4accf8</code></pre>
 <span id="cb101-3"><a href="#cb101-3" aria-hidden="true"></a>    queue_ptr-&gt;front_ptr = NULL;</span>
 <span id="cb101-4"><a href="#cb101-4" aria-hidden="true"></a>    queue_ptr-&gt;back_ptr  = NULL;</span>
 <span id="cb101-5"><a href="#cb101-5" aria-hidden="true"></a>}</span></code></pre></div>
-<h2 data-number="10.3" id="pour-connaître-la-valeur-de-lélement-de-tête"><span class="header-section-number">10.3</span> Pour connaître la valeur de l’élement de tête</h2>
+<h2 data-number="10.3" id="pour-connaître-la-valeur-de-lélément-de-tête"><span class="header-section-number">10.3</span> Pour connaître la valeur de l’élément de tête</h2>
 <div class="sourceCode" id="cb102"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true"></a><span class="dt">int</span> queue_front(<span class="kw">struct</span> Queue *queue_ptr)</span>
 <span id="cb102-2"><a href="#cb102-2" aria-hidden="true"></a>{</span>
 <span id="cb102-3"><a href="#cb102-3" aria-hidden="true"></a>    <span class="cf">return</span> queue_ptr-&gt;value;</span>
@@ -1802,8 +1803,8 @@ adresse de age =  0x7ffdef4accf8</code></pre>
 <p>Remarquez qu’il y a deux cas : si la liste est vide ou pas. Dans les deux cas, il faudra allouer un nouvel <code>Element</code> (qui deviendra le dernier).</p>
 <p>Mais :</p>
 <ul>
-<li>si la liste était vide, cet élément devient aussi le premier</li>
-<li>si le liste n’était pas vide, il devient le suivant de l’ancien dernier</li>
+<li>si la liste était vide, cet élément devient aussi le premier ;</li>
+<li>si le liste n’était pas vide, il devient le suivant de l’ancien dernier.</li>
 </ul>
 <p><strong>Illustration</strong> : effet de l’ajout d’une valeur -32 (à comparer au schéma précédent) dans une liste qui n’est pas vide.</p>
 <figure>
@@ -1897,7 +1898,7 @@ adresse de age =  0x7ffdef4accf8</code></pre>
 </ul></li>
 <li><p>dans les autres cas, le nombre 33 sera ajouté comme successeur d’un autre élément de la liste. Mais lequel ? Évidemment, il sera mis <strong>après le dernier élément inférieur</strong> à 33.</p></li>
 </ol>
-<h2 data-number="11.2" id="a-la-recherche-du-dernier-élément-inférieur"><span class="header-section-number">11.2</span> A la recherche du dernier élément inférieur</h2>
+<h2 data-number="11.2" id="à-la-recherche-du-dernier-élément-inférieur"><span class="header-section-number">11.2</span> À la recherche du dernier élément inférieur</h2>
 <p>Ça peut paraître compliqué de trouver le dernier élément inférieur, mais on peut procéder par étapes.</p>
 <ol type="1">
 <li><strong>Pour commencer</strong> on se donne un bout de programme qui joue avec une liste chaînée de trois éléments (11, 22, 44), et qui fait un <strong>parcours</strong></li>
@@ -1925,7 +1926,7 @@ adresse de age =  0x7ffdef4accf8</code></pre>
 <span id="cb106-21"><a href="#cb106-21" aria-hidden="true"></a>    afficher_tous(&amp; x);</span>
 <span id="cb106-22"><a href="#cb106-22" aria-hidden="true"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
 <span id="cb106-23"><a href="#cb106-23" aria-hidden="true"></a>}</span></code></pre></div>
-<p>La construction de la liste est un peu expéditive, elle ne fait pas appel à l’allocation dynamique, mais on a des éléments chaînes, c’est tout ce qui nous intéresse.</p>
+<p>La construction de la liste est un peu expéditive, elle ne fait pas appel à l’allocation dynamique, mais on a des éléments chaînés, c’est tout ce qui nous intéresse.</p>
 <p>Ce qu’il faut voir, c’est la boucle <code>for</code>, qui passe en revue tous les éléments, vous la connaissiez déjà.</p>
 <ol start="2" type="1">
 <li>Maintenant, comment faire <strong>afficher tous les éléments plus petits</strong> qu’une certaine valeur ? Voila du code de test</li>

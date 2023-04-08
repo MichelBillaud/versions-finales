@@ -1,6 +1,6 @@
 % Pour en finir avec les pointeurs en C
 % Michel Billaud 
-% 07-05-2022
+% 2022-05-07
 
 
 **Pourquoi ce document ?**
@@ -311,10 +311,12 @@ on y emploie `*adr_variable` qui est un `int`, et qui est
 donc déclarée ainsi : 
 
 ~~~C
-    int *adr_variable`. 
+    int *adr_variable. 
 ~~~
 
+qui se lit "`*adr_variable` est de type `int`.
 C'est simple, finalement, quand on connaît le principe.
+
 
 Autre exemple : si on avait un tableau `t` de 10 adresses d'entiers,
 `t[2]` contiendrait l'adresse d'un entier, et donc `*t[2]`
@@ -326,8 +328,9 @@ contiendrait un entier. Donc le tableau serait déclaré
 
 
 
-**À quoi ça sert de savoir ça ?** En fait, c'est lié à une erreur dans laquelle
-les débutants tombent souvent.  C'est de considérer que  la déclaration
+**À quoi ça sert de savoir ça ?** En fait, c'est lié à une erreur dans
+laquelle les débutants tombent souvent.  C'est de croire que la
+déclaration
 
 ~~~C
 int * a;
@@ -348,7 +351,8 @@ correcte, c'est que
 
 Pour éviter les confusions, le plus sage est donc d'écrire en collant
 l'étoile du côté de la variable, voire de déclarer les deux variables
-séparément (c'est recommandé par certaines "normes de programmation").
+séparément (ce qui est recommandé par certaines "normes de
+programmation").
 
 ~~~C
 int *a;
@@ -360,7 +364,7 @@ En réalité, C est un langage en "syntaxe libre", le compilateur ne
 s'intéresse pas à savoir si c'est collé à gauche ou à droite, ou si il
 y a des espaces.
 
-Si on met des espaces, c'est pour faciliter la vie de ceux qui 
+Les espaces que l'on met, c'est pour faciliter la vie de ceux qui 
 vont relire le programme. Attention : la personne qui va probablement
 bénéficier de votre délicate attention d'écrire proprement les choses,
 ça risque d'être vous un certain temps, pour le corriger tant qu'il ne
@@ -2377,7 +2381,7 @@ void queue_init(struct Queue *queue_ptr)
 }
 ~~~
 
-## Pour connaître la valeur de l'élement de tête
+## Pour connaître la valeur de l'élément de tête
 
 ~~~C
 int queue_front(struct Queue *queue_ptr)
@@ -2391,7 +2395,8 @@ avoir vérifié avant.
 
 ## Pour tester si la pile est vide
 
-Je vous laisse écrire la fonction `queue_is_empty`, qui retourne un `bool`.
+Je vous laisse écrire la fonction `queue_is_empty`, qui retourne un
+`bool`.
 
 ## Pour ajouter/enlever un élément
 
@@ -2403,8 +2408,9 @@ dernier).
 
 Mais :
 
-- si la liste était vide, cet élément devient aussi le premier
-- si le liste n'était pas vide, il devient le suivant de l'ancien dernier
+- si la liste était vide, cet élément devient aussi le premier ;
+- si le liste n'était pas vide, il devient le suivant de l'ancien
+  dernier.
 
 **Illustration** : effet de l'ajout d'une valeur -32 (à comparer au schéma
 précédent) dans une liste qui n'est pas vide.
@@ -2469,9 +2475,9 @@ void test_queue()
 ## Liste à double chaînage
 
 Si on veut une structure de données où on ajoute/retire aux deux bouts
-(ce qu'on appelle une `dequeue` en anglais),
-on rend la situation symétrique avec, dans chaque élément, deux pointeurs :
-le précédent et le suivant.
+(ce qu'on appelle une `dequeue` en anglais), on rend la situation
+symétrique avec, dans chaque élément, deux pointeurs : le précédent et
+le suivant.
 
 ~~~C
 struct Element {              
@@ -2552,13 +2558,14 @@ croissant)
    autre élément de la liste. Mais lequel ?  Évidemment, il sera mis
    **après le dernier élément inférieur** à 33.
 
-## A la recherche du dernier élément inférieur
+## À la recherche du dernier élément inférieur
 
-Ça peut paraître compliqué de trouver le dernier élément inférieur, mais on peut procéder par
-étapes.
+Ça peut paraître compliqué de trouver le dernier élément inférieur,
+mais on peut procéder par étapes.
 
-1. **Pour commencer** on se donne un bout de programme qui joue avec une
-  liste chaînée de trois éléments (11, 22, 44), et qui fait un **parcours**
+1. **Pour commencer** on se donne un bout de programme qui joue avec
+  une liste chaînée de trois éléments (11, 22, 44), et qui fait un
+  **parcours**
 
 ~~~C
 struct Element {
@@ -2586,9 +2593,9 @@ int main()
 }
 ~~~
 
-La construction de la liste est un peu expéditive, elle ne fait pas appel
-à l'allocation dynamique, mais on a des éléments chaînes, c'est tout ce qui
-nous intéresse.
+La construction de la liste est un peu expéditive, elle ne fait pas
+appel à l'allocation dynamique, mais on a des éléments chaînés, c'est
+tout ce qui nous intéresse.
 
 Ce qu'il faut voir, c'est la boucle `for`, qui passe en revue tous les
 éléments, vous la connaissiez déjà.
@@ -2625,7 +2632,8 @@ void afficher_plus_petits_que(struct Element *first_ptr, int value)
 	}
 ~~~
 
-remarquez que si il n'y en a pas, et bien ça n'affiche rien. Ça peut arriver, bien sûr.
+remarquez que si il n'y en a pas, et bien ça n'affiche rien. Ça peut
+arriver, bien sûr.
 
 
 3. Encore un petit effort, comment trouver **le dernier élément qui**
@@ -2637,7 +2645,8 @@ L'idée va être de *noter* (dans un pointeur) la position du dernier
 Pour cela on définit un pointeur
 
 - initialisé à `NULL` au départ (on n'a pas encore rencontré d'élément)
-- mis à jour chaque fois qu'on rencontre un meilleur élément (dans la boucle)
+- mis à jour chaque fois qu'on rencontre un meilleur élément (dans la
+  boucle)
 - qu'on utilisera après la boucle.
 
 ~~~C
@@ -2690,7 +2699,6 @@ on n'en n'a plus besoin. La difficulté pratique est de faire la
 libération au bon moment : pas trop tôt (libération prématurée alors
 qu'on en aura encore besoin), pas trop tard (parce que ça fera une
 fuite mémoire), et pas deux fois...
-
 
 Ce qui est plus compliqué, c'est d'arriver à s'en servir pour
 **réaliser des structures de données** qui peuvent effectuer un
