@@ -10,15 +10,10 @@ hachage**.
 Les opérations de base sur cet ensemble :
 
 -   l'initialiser,
-
 -   y ajouter un élément (si il n'y est pas déjà),
-
 -   savoir combien il y a d'éléments dans l'ensemble,
-
 -   tester si un élément est présent,
-
 -   enlever un élément,
-
 -   libérer les ressources utilisées.
 
 Ci-dessous un exemple d'utilisation où l'on ajoute une suite de mots
@@ -394,10 +389,11 @@ void ec_dump(const struct ens_chaines *e)
     for (int i = 0; i < e->nb_alveoles; i++) {
         printf("%d ->", i);
         for (struct ens_cellule *c = e->alveoles[i].premier;
-                c != NULL; c = c->suivant) {
+                c != NULL;
+				c = c->suivant) {
             printf("\t\"%s\" (%u)",
-		   c->chaine,
-		   ec_hash(c->chaine));
+				c->chaine,
+				ec_hash(c->chaine));
         }
         printf("\n");
     }
