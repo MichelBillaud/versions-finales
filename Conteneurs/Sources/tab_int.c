@@ -22,7 +22,7 @@ void ti_ajouter(struct tab_int *a, int valeur)
   }
   // ajout à la fin
   a->elements[a->taille] = valeur;
-  a-> taille += 1;
+  a->taille += 1;
 }
 
 void ti_detruire(struct tab_int *a)

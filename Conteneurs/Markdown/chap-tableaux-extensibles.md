@@ -2,7 +2,7 @@
 
 
 Nous appellons *tableau extensible* une structure de données qui sert à
-stocker des éléments, et
+stocker des éléments, et qui
 
 -   comme un tableau ordinaire, permet de désigner un élément par sa
     position (première = 0, seconde = 1, etc.), pour le modifier ou le
@@ -70,10 +70,14 @@ void afficher(const char *m,
 }
 ~~~
 
-Résultats :
+Il remplit un tableau avec des valeurs de 10 en 10, et modifie l'une
+d'elles. Affichage des résultats avant et après modification :
 
+~~~
     avant: 10 20 30 40 50 60 70 80 90 100 
     après: 10 20 30 421 50 60 70 80 90 100 
+~~~
+
 
 ### L'implémentation
 
@@ -103,8 +107,7 @@ void ti_ajouter (      struct tab_int *a, int valeur);
 void ti_detruire(      struct tab_int *a);
 int  ti_taille  (const struct tab_int *a); 
 int  ti_valeur  (const struct tab_int *a, int indice);
-void ti_changer (      struct tab_int *a, int indice,
-		                          int valeur);
+void ti_changer (      struct tab_int *a, int indice, int valeur);
 #endif
 ~~~
 
@@ -180,34 +183,33 @@ void ti_changer(struct tab_int *a, int indice,
 Lorsque le tableau est plein, on le ré-alloue avec une capacité
 supérieure.
 
-La stratégie de doublement de cette capacité est, contrairement à ce que
-suggère l'intuition, très efficace en terme de nombre de copies : au
-cours du remplissage, chaque élément a été copié **au plus une fois** en
-moyenne.
+La stratégie de doublement de cette capacité est, contrairement à ce
+que suggère l'intuition (souvent trompeuse pour ce genre de choses),
+**très efficace** en terme de nombre de copies : au cours du remplissage,
+chaque élément a été copié **au plus une fois** en moyenne.
 
-Imaginons qu'à un moment le *vector* ait grandi jusqu'à 500 éléments.
+Raisonnement pour s'en convaincre :
+
+1. Imaginons qu'à un moment le *vector* ait grandi jusqu'à 500 éléments.
 Comme le tableau grandit en doublant de taille, sa capacité est la
 première puissance de 2 supérieure à 500, soit 512.
-
-Le tableau sera agrandi (et ré-alloué) en ajoutant le 513ieme, sa
+2. Le tableau sera agrandi (et ré-alloué) en ajoutant le 513ieme, sa
 capacité passera à 1024 éléments, et pour cela il faudra ré-allouer ce
 qui provoquera la copie des 512 éléments existants. Coût : 512, si on
-prend comme unité la copie d'un élément.
-
-Mais pour arriver à 513, il avait fallu copier 256 éléments. Et pour
+prend comme unité de compte la copie d'un élément.
+3. Mais pour arriver à 513, il avait fallu copier 256 éléments. Et pour
 arriver à 257, en copier 128.
-
-Si on fait le total, si on en est au 513-ième élément ajouté (et
+4. Si on fait le total, si on en est au 513-ième élément ajouté (et
 jusqu'au 1024-ième) on a fait en tout $256 + 128 + 64 + ...$ copies
 d'éléments, ce qui est plus petit que 512.
 
-Dans le pire des cas (ajout du 513 ième), le coût moyen d'ajout d'un
-élément est inférieur à $512/513$ : il y a donc eu **moins d'une copie
-par élément**.
+Conclusion : Dans le pire des cas (ajout du 513 ième), le coût moyen
+d'ajout d'un élément est inférieur à $512/513$ : il y a donc eu
+**moins d'une copie par élément**.
 
 **Exercice :** 
 En général la première idée qui vient est d'augmenter d'une unité la
-capacité chaque ajout. Évaluez le coût de cette stratégie.
+capacité à chaque ajout. Évaluez le coût de cette stratégie.
 
 [^21]: autre que les limitations de l'allocation dynamique
 
