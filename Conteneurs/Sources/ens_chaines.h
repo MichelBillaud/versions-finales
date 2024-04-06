@@ -13,8 +13,7 @@ struct ens_chaines {
 
 
 void ec_init   (struct ens_chaines *e);
-void ec_ajouter(struct ens_chaines *e,
-		const char *chaine);
+void ec_ajouter(struct ens_chaines *e, const char *chaine);
 
 int ec_taille  (const struct ens_chaines *e);
 void ec_dump   (const struct ens_chaines *e);

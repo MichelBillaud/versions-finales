@@ -21,6 +21,8 @@ Ci-dessous un exemple d'utilisation où l'on ajoute une suite de mots
 (qui doit être 10).
 
 ~~~C
+// utilisation-ensemble-chaines.c
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -32,10 +34,10 @@ int main()
     ec_init(& ensemble);
 
     char *mots[] = {
-        "un", "deux", "trois", "un",
-        "quatre", "deux", "cinq", "six",
-        "sept", "trois", "huit", "neuf",
-        "dix", "trois", "sept",
+        "un",     "deux",  "trois", "un",
+        "quatre", "deux",  "cinq",  "six",
+        "sept",   "trois", "huit",  "neuf",
+        "dix",    "trois", "sept",
         NULL
     };
     for (int i = 0; mots[i] != NULL; i++) {
@@ -43,8 +45,8 @@ int main()
     }
 
     printf("-> taille %d (attendu = 10)\n",
-            ec_taille(& ensemble));
-    
+           ec_taille(& ensemble));
+
     ec_dump(& ensemble);
     ec_liberer(& ensemble);
 
@@ -55,23 +57,25 @@ int main()
 Le programme affiche également le contenu interne de l'ensemble de
 chaînes, ce qui nous facilitera les explications.
 
-    -> taille 10 (attendu = 10)
-    0 ->
-    1 ->	"trois" (10282497)
-    2 ->	"quatre" (170727922)
-    3 ->	"un" (2099)
-    4 ->	"six" (35140)
-    5 ->	"dix" (30805)
-    6 ->	"deux" (522598)
-    7 ->
-    8 ->
-    9 ->
-    10 ->	"huit" (546666)
-    11 ->	"cinq" (518715)
-    12 ->	"sept" (596204)
-    13 ->
-    14 ->	"neuf" (571710)
-    15 ->
+~~~
+-> taille 10 (attendu = 10)
+alvéole  0 ->
+alvéole  1 ->   "trois" (10282497)
+alvéole  2 ->   "quatre" (170727922)
+alvéole  3 ->   "un" (2099)
+alvéole  4 ->   "six" (35140)
+alvéole  5 ->   "dix" (30805)
+alvéole  6 ->   "deux" (522598)
+alvéole  7 ->
+alvéole  8 ->
+alvéole  9 ->
+alvéole 10 ->   "huit" (546666)
+alvéole 11 ->   "cinq" (518715)
+alvéole 12 ->   "sept" (596204)
+alvéole 13 ->
+alvéole 14 ->   "neuf" (571710)
+alvéole 15 ->
+~~~
 
 Nous ne présenterons que quelques opérations, les autres sont laissées
 en exercice.
@@ -82,10 +86,10 @@ en exercice.
 #### Répartition en alvéoles
 
 -   les chaînes de caractères qui font partie de l'ensemble sont
-    réparties dans des "alvéoles".
+    réparties dans des "alvéoles" (16 dans l'exemple)
 
 -   les alvéoles forment un tableau, ce qui permet un accès rapide par
-    indice.
+    indice (ici de 0 à 15)
 
 -   le numéro de l'alvéole dans laquelle se trouve (ou devrait se
     trouver) une chaîne de caractères est calculé à partir du contenu de
@@ -95,10 +99,27 @@ en exercice.
     (opération modulo) de la division de la valeur du hachage par le
     nombre d'alvéoles.
 
+Sur l'exemple, la chaîne `"un"` contient deux caractères qui ont pour valeurs 117 et 110 dans le code Ascii. Appliquée à cette chaîne la fonction de hachage
+
+~~~C
+static unsigned int ec_hash(const char * chaine)
+{
+    unsigned int hash = 0;
+    for (const char *c = chaine; *c != '\0'; c++) {
+        hash = 17 * hash + *c;
+    }
+    return hash;
+}
+~~~
+
+retourne `117 x 17 + 110 = 2099`. Le reste de la division de ce
+hashcode par 16 (le nombre d'alvéoles) donne le numéro d'alvéole 3 où
+ranger cette cchaîne.
+
 **Intérêt :** 
 La répartition en alvéoles permet de diviser le nombre de comparaisons
 nécessaires pour tester la présence d'une chaîne : on ne regarde que
-celles présentes dans son alvéole.
+celles présentes dans une seule alvéole.
 
 **Dans l'idéal,** 
 la fonction de hachage serait parfaite, et conduirait à une alvéole où
@@ -119,8 +140,9 @@ de chaînes présentes dans l'ensemble atteint certain seuil (3/4 du
 nombre d'alvéoles). Les chaînes sont alors redistribuées entre les
 alvéoles.
 
-Le respect de ce seuil garantit qu'il a au maximum 0.75 chaînes par
-alvéole. Il y aura donc peu d'alvéoles avec plus d'une chaîne.
+Le respect de ce seuil garantit qu'il y a en moyenne 0.75 chaînes par
+alvéole (au maximum). Il y aura donc peu d'alvéoles avec plus d'une
+chaîne (au maximum 3/8 i-èmes).
 
 Comme pour les tableaux extensibles, la stratégie de doublement fait
 qu'en moyenne chaque alvéole est copiée au plus une fois.
@@ -131,7 +153,6 @@ Le doublement a une autre propriété intéressante. Quand on redistribue
 les chaînes d'une alvéole,
 
 -   soit elles restent dans la même alvéole,
-
 -   soit elles vont dans une alvéole "jumelle" qui vient d'être ajoutée.
 
 **Exemple :**
@@ -139,15 +160,11 @@ pour la chaîne `"dix"`, la fonction de hachage vaut 30805.
 
 -   Si il y a 4 alvéoles, elle se trouve dans l'alvéole
     $30805 \ \%\  4 = 1$.
-
 -   En passant à 8 alvéoles, elle va dans la nouvelle alvéole
     $30805 \ \%\  8 = 5 = 4 + 1$.
-
 -   En passant à 16, elle reste en $30805 \ \%\  16 = 5$.
-
 -   En passant à 32, elle va en $30805 \ \%\  32 = 21 =
     16 + 5$.
-
 -   etc.
 
 Ceci nous autorise à redistribuer les chaînes en traitant les anciennes
@@ -186,19 +203,19 @@ obtenue par `strdup()`. Cette copie est une ressource appartenant à
 l'ensemble, et sera libérée quand
 
 -   on retire une chaîne de l'ensemble
-
 -   on libère l'ensemble
 
 #### Structure des alvéoles
 
-Nous choisissons de représenter les alvéoles, qui en principe ne contiendront que peu d'éléments (moins
-de $0.75$ en moyenne), par  des **listes chaînées non
-ordonnées**.
+Nous choisissons de représenter les alvéoles, qui en principe ne
+contiendront que peu d'éléments (moins de $0.75$ en moyenne), par des
+**listes chaînées non ordonnées**.
 
 ### Choix de la fonction de hachage
 
-Une fonction de hachage retourne un nombre non signé, parce qu'elle sert
-à calculer un indice (entier positif ou nul) comme reste d'une division entière.
+Une fonction de hachage retourne un nombre non signé, parce qu'elle
+sert à calculer un indice (entier positif ou nul) comme reste d'une
+division entière.
 
 Ce modulo (par une puissance de 2) fait qu'on utilise comme indice les
 bits de poids faible de la valeur retournée. Il est important que ces
@@ -236,7 +253,7 @@ de hachage.
 // ens_chaines.h
 
 #ifndef ENS_CHAINE_H
-#define ENS_CHAINE_H
+#define  ENS_CHAINE_H
 
 struct ens_alveole;            // prédéclaration
 
@@ -248,8 +265,7 @@ struct ens_chaines {
 
 
 void ec_init   (struct ens_chaines *e);
-void ec_ajouter(struct ens_chaines *e,
-		const char *chaine);
+void ec_ajouter(struct ens_chaines *e, const char *chaine);
 
 int ec_taille  (const struct ens_chaines *e);
 void ec_dump   (const struct ens_chaines *e);
@@ -262,6 +278,8 @@ void ec_liberer(struct ens_chaines *e);
 **Code**
 
 ~~~C
+// ens-chaines.c
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -286,7 +304,7 @@ void ec_init(struct ens_chaines *e)
     e->nb_elements = 0;
     e->nb_alveoles = NOMBRE_MIN_ALVEOLES;
     e->alveoles = malloc(e->nb_alveoles
-			 * sizeof (struct ens_alveole));
+                         * sizeof (struct ens_alveole));
 }
 
 static unsigned int ec_hash(const char * chaine)
@@ -302,11 +320,11 @@ static void ec_doubler_nb_alveoles(struct ens_chaines *e)
 {
     int na = e->nb_alveoles; // avant agrandissement
     e->nb_alveoles *= 2;
-    
+
     int taille =
-	e->nb_alveoles * sizeof (struct ens_alveole); 
+        e->nb_alveoles * sizeof (struct ens_alveole);
     e->alveoles = realloc(e->alveoles, taille);
-		
+
 
     // initialisation de nouvelles alvéoles
     for (int i = na; i < e->nb_alveoles; i++) {
@@ -316,16 +334,16 @@ static void ec_doubler_nb_alveoles(struct ens_chaines *e)
     // reclassement des éléments des anciennes alvéoles
     for (int i = 0; i < na; i++) {
         struct ens_cellule *premier
-	    = e->alveoles[i].premier;
+                = e->alveoles[i].premier;
         e->alveoles[i].premier = NULL;
-	
+
         while (premier != NULL) {
             struct ens_cellule *c = premier;
             premier = premier->suivant;
             int num_alveole
-		= ec_hash(c->chaine) % (e->nb_alveoles);
-	    struct ens_alveole *a
-		= &( e->alveoles[num_alveole] );
+                = ec_hash(c->chaine) % (e->nb_alveoles);
+            struct ens_alveole *a
+                = &( e->alveoles[num_alveole] );
             c->suivant = a->premier;
             a->premier = c;
         }
@@ -339,16 +357,16 @@ void ec_ajouter(struct ens_chaines *e, const char *chaine)
 
     // sortie si déjà present
     for (struct ens_cellule *c = a->premier;
-	 c != NULL;
-	 c = c->suivant) {
+            c != NULL;
+            c = c->suivant) {
         if (strcmp(c->chaine, chaine) == 0) {
             return;
         }
     }
 
-    // Ajout nouvelle cellule avec copie de chaîne
+    // Ajout nouvelle cellule avec copie de chaine
     struct ens_cellule *nc
-	= malloc(sizeof (struct ens_cellule));
+        = malloc(sizeof (struct ens_cellule));
     nc->chaine = strdup(chaine);
     nc->suivant = a->premier;
     a->premier = nc;
@@ -364,7 +382,7 @@ void ec_liberer(struct ens_chaines *e)
 {
     for (int i = 0; i < e->nb_alveoles; i++) {
         struct ens_cellule *premier
-	    = e->alveoles[i].premier;
+                = e->alveoles[i].premier;
         while (premier != NULL) {
             struct ens_cellule *c = premier;
             premier = premier->suivant;
@@ -373,7 +391,7 @@ void ec_liberer(struct ens_chaines *e)
         }
     }
     free(e->alveoles);
-    // par précaution 
+    // par précaution
     e->nb_alveoles = 0;
     e->nb_elements = 0;
     e->alveoles = NULL;
@@ -387,13 +405,12 @@ int ec_taille(const struct ens_chaines *e)
 void ec_dump(const struct ens_chaines *e)
 {
     for (int i = 0; i < e->nb_alveoles; i++) {
-        printf("%d ->", i);
+        printf("alvéole %2d ->", i);
         for (struct ens_cellule *c = e->alveoles[i].premier;
-                c != NULL;
-				c = c->suivant) {
+                c != NULL; c = c->suivant) {
             printf("\t\"%s\" (%u)",
-				c->chaine,
-				ec_hash(c->chaine));
+                   c->chaine,
+                   ec_hash(c->chaine));
         }
         printf("\n");
     }

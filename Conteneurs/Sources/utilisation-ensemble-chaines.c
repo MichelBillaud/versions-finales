@@ -1,3 +1,5 @@
+// utilisation-ensemble-chaines.c
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,10 +11,10 @@ int main()
     ec_init(& ensemble);
 
     char *mots[] = {
-        "un", "deux", "trois", "un",
-        "quatre", "deux", "cinq", "six",
-        "sept", "trois", "huit", "neuf",
-        "dix", "trois", "sept",
+        "un",     "deux",  "trois", "un",
+        "quatre", "deux",  "cinq",  "six",
+        "sept",   "trois", "huit",  "neuf",
+        "dix",    "trois", "sept",
         NULL
     };
     for (int i = 0; mots[i] != NULL; i++) {
@@ -20,8 +22,8 @@ int main()
     }
 
     printf("-> taille %d (attendu = 10)\n",
-            ec_taille(& ensemble));
-    
+           ec_taille(& ensemble));
+
     ec_dump(& ensemble);
     ec_liberer(& ensemble);
 
