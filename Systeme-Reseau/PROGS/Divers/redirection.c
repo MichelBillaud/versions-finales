@@ -26,7 +26,7 @@ int main (int argc, char * argv[])
     assert (fd_fichier >= 0);
 
     /* transfert du descripteur dans celui de l'entrée standard */
-    assert ( dup2(fd_fichier, STDIN_FILENO) >= 0);
+    assert (dup2(fd_fichier, STDIN_FILENO) >= 0);
 
     close(fd_fichier);
 

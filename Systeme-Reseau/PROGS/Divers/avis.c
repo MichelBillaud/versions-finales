@@ -50,7 +50,7 @@ void fabriquer_message_liste_fichiers(FILE *sortie)
     assert(stream_liste_fichiers != NULL);
 
     int c;
-    while( (c = fgetc(stream_liste_fichiers)) != EOF) {
+    while((c = fgetc(stream_liste_fichiers)) != EOF) {
         fputc(c, sortie);
     }
     pclose(stream_liste_fichiers);

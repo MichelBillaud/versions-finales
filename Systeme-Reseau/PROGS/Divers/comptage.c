@@ -14,7 +14,7 @@ void traiter_fichier(const char *nom_fichier)
     int nb_caracteres = 0;
     int nb_lignes     = 0;
     int c;
-    while ( (c = fgetc(f)) != EOF) {
+    while ((c = fgetc(f)) != EOF) {
         nb_caracteres += 1;
         if (c == '\n') {
             nb_lignes += 1;

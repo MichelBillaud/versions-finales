@@ -1,18 +1,16 @@
 LANG=C
-
 #
 # Makefile pour le polycop Systeme et Reseau
 #
 
+# packages debian nécessaires
+# - texlive-fonts-extra
+# - rubber
+
 src_dir = ../PROGS
 dst_dir = tmp
 
-
-pubdir = billaud@ssh1.labri.fr:SITE-PERSO-LABRI/travaux/SYSRESEAU
-
-all: polycop-psr.pdf  # test-polycop.pdf
-
-
+all: ../Output/polycop-psr.pdf  # test-polycop.pdf
 
 parties = polycop-psr.tex avant-propos.tex
 parties += bases-c.tex ipc.tex tcp-ip.tex
@@ -66,25 +64,17 @@ sources += $(src_dir)/Serveurs-Web/traitement-client.c
 sources += $(src_dir)/Serveurs-Web/traitement-client.h
 sources += $(src_dir)/Divers/passfd.c
 
-polycop-psr.pdf: polycop-psr.tex ${parties} $(sources)
-	rubber  -d $< 
-
-
-pretty:
-	for f in ${sources} ; do astyle -A3 $$f ; done
+../Output/polycop-psr.pdf:: polycop-psr.tex ${parties} $(sources)
+	rubber  -d $<
+	cp polycop-psr $@
 
 clean:
-	$(RM) *~ *.aux *.idx *.ilg *.ind *.log *.out *.toc
+	$(RM) *~
+	rubber --clean polycop-psr.tex
 	(cd $(src_dir) ; make clean)
 
 mrproper: clean
 	$(RM) polycop-psr.pdf 
-
-mount:
-	ssh billaud@ssh2.labri.fr montage-web.sh
-
-publish: polycop-psr.pdf clean
-	rsync -avz --exclude .svn --delete . $(pubdir)
 
 
 

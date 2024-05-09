@@ -20,9 +20,9 @@
 #define TAILLE_ALPHABET    26
 #define NOMBRE_REPETITIONS 10
 
-void produire_donnees (int fd_sortie);
-void consommer_donnees (int entree);
-int lire_donnees (int fd_entree, char *tampon, size_t taille_tampon);
+void produire_donnees(int fd_sortie);
+void consommer_donnees(int entree);
+int lire_donnees(int fd_entree, char *tampon, size_t taille_tampon);
 
 int main (void)
 {
@@ -52,7 +52,7 @@ int main (void)
     return EXIT_SUCCESS;
 }
 
-void produire_donnees (int fd_sortie)
+void produire_donnees(int fd_sortie)
 {
     char alphabet[TAILLE_ALPHABET];
 
@@ -91,11 +91,11 @@ void consommer_donnees (int fd_entree)
     char ligne[TAILLE_LIGNE+1];
     int taille, numero_ligne = 1;
 
-    while ( (taille = lire_donnees(fd_entree,
-                                   ligne, TAILLE_LIGNE)) > 0) {
+    while ((taille = lire_donnees(fd_entree,
+                                  ligne, TAILLE_LIGNE)) > 0) {
         ligne[taille] = '\0';
         printf("%3d %s\n", numero_ligne++, ligne);
     };
-    assert (taille >= 0);
+    assert(taille >= 0);
     close(fd_entree);
 }

@@ -51,8 +51,8 @@ void transfert(int fd_entree, int fd_sortie)
 {
     char tampon[TAILLE_TAMPON];
 
-    assert( fd_entree >= 0);
-    assert( fd_sortie >= 0);
+    assert(fd_entree >= 0);
+    assert(fd_sortie >= 0);
 
     for(;;) {
         int nb_octets_lus = read(fd_entree, tampon, TAILLE_TAMPON);

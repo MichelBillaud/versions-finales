@@ -18,7 +18,7 @@ jmp_buf debut_de_main;
 int main(void)
 {
     int code_retour = setjmp(debut_de_main);
-    if ( code_retour == 0 ) {  // toujours 0 après l'appel
+    if (code_retour == 0) {  // toujours 0 après l'appel
         traiter_des_equations();
         return EXIT_SUCCESS;
     }
@@ -45,7 +45,7 @@ float solution_equation(float a, float b)
             longjmp(debut_de_main, PAS_DE_SOLUTION);
         }
     };
-    return ( -b / a);
+    return (-b / a);
 }
 
 void traiter_des_equations()

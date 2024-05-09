@@ -47,7 +47,7 @@ void copyData (int from, int to)
 {
     char buf[1024];
     int amount;
-    while ( (amount = read(from, buf, sizeof(buf))) > 0) {
+    while ((amount = read(from, buf, sizeof(buf))) > 0) {
         if (write(to, buf, amount) != amount) {
             die("write");
         }
@@ -168,7 +168,7 @@ int main (int argc, char **argv)
         die("socketpair");
     }
 
-    if ( fork() == 0 ) { // child
+    if (fork() == 0) { // child
         close(socks[0]);
         return childProcess(argv[1], socks[1]);
     }
