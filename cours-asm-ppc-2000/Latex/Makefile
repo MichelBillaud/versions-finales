@@ -1,6 +1,15 @@
 
+OUTPUT_DIR =  ../Output
 
-all : ../Output/cours-asm-ppc.pdf
+all : $(OUTPUT_DIR)/cours-asm-ppc.pdf
 
-../Output/%.pdf: %.tex
-	xelatex -output-dir ../Output $<
+$(OUTPUT_DIR)/%.pdf: %.tex
+	rubber $<
+	cp *.pdf $@
+
+clean:
+	$(RM) *~
+	rubber --clean *.tex
+
+mrproper: clean
+	$(RM) $(OUTPUT_DIR)/*

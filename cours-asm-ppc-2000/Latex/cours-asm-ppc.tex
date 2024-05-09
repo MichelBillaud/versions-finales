@@ -1,85 +1,87 @@
-\documentclass[10pt]{article}
+%rubber: module xelatex
+\documentclass[10pt,twoside,a4paper]{article}
 
-\title{Architecture}
 
 \usepackage{fontspec}
+
 \usepackage{a4wide}
-\usepackage[french]{babel}
+
+% \usepackage[french]{babel}
+\usepackage{polyglossia}
+\setmainlanguage{french}
+
 \usepackage{moreverb}
 \usepackage{multicol}
 
 
-\title{Initiation à la programmation en langage d'assemblage}
+\title{Initiation Ã  la programmation en langage d'assemblage}
 \date{9 mai 2000}
 \author{M Billaud}
 
 \begin{document}
 
+\maketitle
+
 \begin{abstract}
-  Un plan de cours pour l'initiation à la programmation en langage
-  d'assemblage en utilisant un processeur PowerPC. Le cours a été
-  inauguré sur 
-  Bull Escala sous AIX, puis transposé sur un Mac, et enfin sur une
-  machine virtuelle simulant un PowerPC.
+  Un plan de cours pour l'initiation Ã  la programmation en langage
+  d'assemblage en utilisant un processeur PowerPC. Le cours a Ã©tÃ©
+  inaugurÃ© sur Bull Escala sous AIX, puis transposÃ© sur un Mac, et
+  enfin sur une machine virtuelle simulant un PowerPC.
 \end{abstract}
 
 % \renewcommand{\epsfsize}[2]{0.5#1}
 
-\newenvironment{tableinstr}{\begin{tabular}{p{3cm}l}}{\end{tabular}}
+\newenvironment{tableinstr}{\begin{tabular}{p{4cm}l}}{\end{tabular}}
 \newcommand{\titreinstr}[1]{\\ \multicolumn{2}{c}{\bf #1}}
 \newcommand{\definstr}[2]{\texttt{#1} & $ #2 $}
 
-\maketitle
-
 \begin{multicols}{2}
 \tableofcontents
-
-
 
 \section{Objectifs du cours}
 
 \begin{itemize}
 \item
-  Montrer les différents éléments : jeu d'instruction, registres, 
+  Montrer les diffÃ©rents Ã©lÃ©ments : jeu d'instruction, registres, 
 pointeurs, adressages, etc.
 \item
-  Réalisation des opérations de haut niveau (boucles, décisions,
+  RÃ©alisation des opÃ©rations de haut niveau (boucles, dÃ©cisions,
 sous-programmes) au moyen des  instructions
-élémentaires de la machine. 
+Ã©lÃ©mentaires de la machine. 
 \item
-  Conventions de passage des paramètres
+  Conventions de passage des paramÃ¨tres
 \item
-  Aperçu des techniques d'optimisation (déroulage de boucle, etc.).
-Méthodologie de l'optimisation (recherche des parties coûteuses,
+  AperÃ§u des techniques d'optimisation (dÃ©roulage de boucle, etc.).
+MÃ©thodologie de l'optimisation (recherche des parties coÃ»teuses,
 mesures et comparaisons).
 \end{itemize}
 
-Approche basée sur l'étude du code fabriqué par les compilateurs.
+Approche basÃ©e sur l'Ã©tude du code fabriquÃ© par les compilateurs.
 
 
-\section{Étude d'un processeur : le PowerPC 604}
+\section{Ã‰tude d'un processeur : le PowerPC 604}
 
 
 \begin{itemize}
 \item
 Processeur RISC, 
 \item 
-32 registres banalisés de 32 bits (+ 32 registres flottants de 64 bits 
-et registres spéciaux)
+32 registres banalisÃ©s de 32 bits (+ 32 registres flottants de 64 bits 
+et registres spÃ©ciaux)
 \item
-Registre de condition de 32 bits, découpé en 8 sous-registres
+Registre de condition de 32 bits, dÃ©coupÃ© en 8 sous-registres
 de 4 bits.
 \item 
-La plupart des instructions arithmétiques et logiques se réfèrent 
-à 3 registres. Par exemple \texttt{add 8,4,3} additionne les contenus de 
-$R4$ et $R3$ et met le résultat dans $R8$.
+La plupart des instructions arithmÃ©tiques et logiques se rÃ©fÃ¨rent 
+Ã  3 registres. Par exemple \texttt{add 8,4,3} additionne les contenus de 
+$R4$ et $R3$ et met le rÃ©sultat dans $R8$.
 
 \end{itemize}
 Signification : $ R_8 \leftarrow (R_4) + (R_3)$
 
-\section{Étude d'exemples simples}
+\section{Ã‰tude d'exemples simples}
 
-On ne regarde que des \emph{fonctions feuille}, qui n'appellent
+Pour commencer, on ne regarde que des \emph{fonctions ``feuilles''} (leaf functions), qui n'appellent
 pas d'autres fonctions.
 
 
@@ -99,7 +101,7 @@ int foo(int a,int b)
 \subsubsection{Traduction en langage d'assemblage}
 
 On demande la traduction de ce programme \texttt{foo.cc} en langage
-d'assemblage, grâce à l'option \texttt{-S} de \texttt{g++}, avec les
+d'assemblage, grÃ¢ce Ã  l'option \texttt{-S} de \texttt{g++}, avec les
 optimisations maximum.
 
 \begin{center}
@@ -148,8 +150,8 @@ _section_.text:
 
 \subsubsection{Analyse du code}
 
-La partie intéressante se limite en fait aux trois instructions 
-qui sont après l'étiquette d'entrée de la fonction~:
+La partie intÃ©ressante se limite en fait aux trois instructions 
+qui sont aprÃ¨s l'Ã©tiquette d'entrÃ©e de la fonction~:
 
 \begin{center}
 \begin{boxedverbatim}
@@ -160,33 +162,33 @@ qui sont après l'étiquette d'entrée de la fonction~:
 \end{boxedverbatim}
 \end{center}
 
-Le reste se compose de \emph{directives} que nous n'étudierons pas.
+Le reste se compose de \emph{directives} que nous n'Ã©tudierons pas.
 
-Commençons par la fin
+CommenÃ§ons par la fin
 \begin{itemize}
-\item L'instruction \texttt{blr} (\emph{Branch to link register}) fait revenir à
+\item L'instruction \texttt{blr} (\emph{Branch to link register}) fait revenir Ã 
 la fonction appelante. Celle-ci, lors de l'appel de \texttt{foo},
 a mis dans l'\emph{adresse de retour} dans le \emph{registre de liens}.
 \texttt{blr} copie cette adresse dans le registre pointeur de programme
 (compteur ordinal).
 \item L'instruction \texttt{addi 3,4,42} additionne la valeur 42 au
-contenu du registre R4, et place le résultat dans R3. Par convention,
+contenu du registre R4, et place le rÃ©sultat dans R3. Par convention,
 c'est dans le registre R3 qu'une fonction doit placer la valeur
-retournée.
+retournÃ©e.
 
-C'est une addition avec une ``valeur immédiate'' : en effet dans 
-l'instruction 42 n'est pas le numéro d'un registre, mais une valeur qui
-est utilisée telle quelle.
+C'est une addition avec une ``valeur immÃ©diate'' : en effet dans 
+l'instruction 42 n'est pas le numÃ©ro d'un registre, mais une valeur qui
+est utilisÃ©e telle quelle.
 
 \item \texttt{subf} est une soustraction (\emph{subtract from})  entre registres
-``$R4 \leftarrow (R3) - (R4)$'' (attention à l'ordre). À l'entrée de
-la fonction \texttt{foo} les paramètres
-\texttt{a} et \texttt{b} sont donc reçus respectivement dans R3 et R4.
+``$R4 \leftarrow (R3) - (R4)$'' (attention Ã  l'ordre). Ã€ l'entrÃ©e de
+la fonction \texttt{foo} les paramÃ¨tres
+\texttt{a} et \texttt{b} sont donc reÃ§us respectivement dans R3 et R4.
 \end{itemize}
 
 \subsubsection{Exercices}
 
-Essayez de traduire vous-même les deux fonctions qui suivent, puis 
+Essayez de traduire vous-mÃªme les deux fonctions qui suivent, puis 
 comparez avec ce que donne le compilateur:
 
 \begin{center}
@@ -227,42 +229,42 @@ L..2:
 
 \subsubsection{Explications}
 
-Structure générale : la première instruction (\texttt{cmpw} =
+Structure gÃ©nÃ©rale : la premiÃ¨re instruction (\texttt{cmpw} =
 \emph{Compare Word}, ligne 2) compare les contenus des registres R3 et
-R4, c'est-à-dire les valeurs de \texttt{a} et \texttt{b}.  La seconde
+R4, c'est-Ã -dire les valeurs de \texttt{a} et \texttt{b}.  La seconde
 (\texttt{bc}) est un branchement conditionnel~: dans certaines
-circonstances (liées à la comparaison) l'exécution saute à l'adresse
-\texttt{L..2}, sinon elle se poursuit en séquence à l'instruction
+circonstances (liÃ©es Ã  la comparaison) l'exÃ©cution saute Ã  l'adresse
+\texttt{L..2}, sinon elle se poursuit en sÃ©quence Ã  l'instruction
 suivante.
  
-On voit facilement que les lignes 7 et 8 correspondent à la partie ``alors'',
-le ``sinon'' étant lignes 4 et 5.
+On voit facilement que les lignes 7 et 8 correspondent Ã  la partie ``alors'',
+le ``sinon'' Ã©tant lignes 4 et 5.
 
-Fonctionnement détaillé de la comparaison~: le registre de condition CR
-contient 8 sous-registres de condition CR0 à CR7, de 4 bits chacun.
+Fonctionnement dÃ©taillÃ© de la comparaison~: le registre de condition CR
+contient 8 sous-registres de condition CR0 Ã  CR7, de 4 bits chacun.
 Le premier argument de \texttt{cmpw} indique que la comparaison des
 registres R3 et R4 positionnera le sous-registre de condition CR1, qui
-correspond aux bits 4 à 7 de CR (CR0 contient les bits 0 à 3, etc).
-Le premier bit d'un sous-registre de condition indique ``inférieur'',
-le second ``supérieur'', le troisième ``égal''. 
+correspond aux bits 4 Ã  7 de CR (CR0 contient les bits 0 Ã  3, etc).
+Le premier bit d'un sous-registre de condition indique ``infÃ©rieur'',
+le second ``supÃ©rieur'', le troisiÃ¨me ``Ã©gal''. 
 
 Si $a<b$, les bits 4, 5 et 6 de CR vaudront donc $100$, si $a=b$ on aura
 $001$ et si $a>b$ $010$.
 
-Le branchement conditionnel comporte trois éléments : un critère (ici
-12), un numéro de bit (ici 5) et une destination (\texttt{L..2}). Le
-critère est en réalité un masque binaire qui peut prendre des valeurs
+Le branchement conditionnel comporte trois Ã©lÃ©ments : un critÃ¨re (ici
+12), un numÃ©ro de bit (ici 5) et une destination (\texttt{L..2}). Le
+critÃ¨re est en rÃ©alitÃ© un masque binaire qui peut prendre des valeurs
 entre 0 et 15. Nous ne retiendrons ici que deux valeurs : 12 qui
-signifie ``si le bit désigné est à 1'' et 4 qui précise ``si le bit
-désigné est à 0''\footnote{Les autres valeurs permettent de tenir compte
-également du contenu d'un registre spécial (compteur)}.
+signifie ``si le bit dÃ©signÃ© est Ã  1'' et 4 qui prÃ©cise ``si le bit
+dÃ©signÃ© est Ã  0''\footnote{Les autres valeurs permettent de tenir compte
+Ã©galement du contenu d'un registre spÃ©cial (compteur)}.
 
 La combinaison des deux instructions peut donc se lire ``si
-R3 plus grand que R4, aller à L..2''.
+R3 plus grand que R4, aller Ã  L..2''.
 
 \subsubsection{Exercices}
 
-Écrire les fonctions ``maximum de deux nombres'' et ``valeur absolue''.
+Ã‰crire les fonctions ``maximum de deux nombres'' et ``valeur absolue''.
  
 \subsection{Boucles}
 
@@ -301,38 +303,38 @@ L..5:
 \subsubsection{Analyse}
 
 \begin{itemize} 
-\item On repère facilement le \emph{corps de la boucle}, délimité par l'étiquette
+\item On repÃ¨re facilement le \emph{corps de la boucle}, dÃ©limitÃ© par l'Ã©tiquette
 de la ligne 5 et le saut de la ligne 12.
 \item Dans ce corps de boucle on doit trouver le cumul dans \texttt{r},
-l'incrémentation de \texttt{k}, et la comparaison de \texttt{k} avec \texttt{n}.
-On en déduit facilement que \texttt{r} est dans R3, \texttt{k} dans R0, et 
+l'incrÃ©mentation de \texttt{k}, et la comparaison de \texttt{k} avec \texttt{n}.
+On en dÃ©duit facilement que \texttt{r} est dans R3, \texttt{k} dans R0, et 
 \texttt{n} dans R9.
-\item Remarquez le tour de passe-passe de la ligne 2, qui transfère
-\texttt{n} dans R9, ce qui permet d'employer le registre R3 pour \texttt{r}, qui sera le résultat.
+\item Remarquez le tour de passe-passe de la ligne 2, qui transfÃ¨re
+\texttt{n} dans R9, ce qui permet d'employer le registre R3 pour \texttt{r}, qui sera le rÃ©sultat.
 \item La boucle \texttt{for} n'est pas traduite sous la forme ``naturelle''
 d'une boucle tant-que
 \begin{verbatim}
       k = 1
 boucle:
       comparer k et n 
-      si > aller à ...
+      si > aller Ã  ...
       ...
       k++
-      aller à boucle
+      aller Ã  boucle
 
 \end{verbatim}
-mais en ``dépliant'' le premier cas
+mais en ``dÃ©pliant'' le premier cas
 \begin{verbatim}
       k = 1
       comparer k et n
-      si > aller à ....
+      si > aller Ã  ....
 boucle:
       ....
       k++
       comparer k et n
-      si <= aller à boucle
+      si <= aller Ã  boucle
 \end{verbatim}
-Ceci économise l'exécution d'une instruction à chaque tour de boucle
+Ceci Ã©conomise l'exÃ©cution d'une instruction Ã  chaque tour de boucle
 (ici on aurait 5 instructions au lieu de 4, soit une perte de 25 \%).
 
 \item L'instruction \texttt{bclr} est un retour conditionnel.
@@ -364,7 +366,7 @@ int element(int t[], int i)
 int somtab(int t[], int n)
 {
   /* somme des n premiers 
-     éléments du tableau t */
+     Ã©lÃ©ments du tableau t */
   int k, s;
   s = 0;
   for (k=0; k<n; k++)
@@ -397,7 +399,7 @@ L..5:
 
 \section{Exercices}
 
-\section{Passage de paramètre par valeur (C++)}
+\section{Passage de paramÃ¨tre par valeur (C++)}
 
 \begin{center}
 \begin{boxedverbatim}
@@ -421,7 +423,7 @@ void incrementer(int &n)
 \begin{center}
 \begin{boxedverbatim}
 void echanger(int &a, int &b)
-// pont aux ânes
+// pont aux Ã¢nes
 {
   int c;
   c=a;
@@ -444,10 +446,10 @@ void echanger(int &a, int &b)
 
 
 
-\section{Conventions de passage de paramètres}
+\section{Conventions de passage de paramÃ¨tres}
 
-Les paramètres sont passés dans les registres R3, R4, R5 etc.
-Si il y a un résultat il est transmis dans R3.
+Les paramÃ¨tres sont passÃ©s dans les registres R3, R4, R5 etc.
+Si il y a un rÃ©sultat il est transmis dans R3.
 
 \section{Utilisation de la pile}
 
@@ -484,8 +486,8 @@ int bar()
 \end{center}
 
 
-Le coeur de la fonction \texttt{bar} consiste à appeler la fonction
-\texttt{foo}, avec les paramètres 123 et 456. C'est ce qui est fait
+Le coeur de la fonction \texttt{bar} consiste Ã  appeler la fonction
+\texttt{foo}, avec les paramÃ¨tres 123 et 456. C'est ce qui est fait
 par les 3 instructions
 \begin{boxedverbatim}
         li 3,123
@@ -493,25 +495,25 @@ par les 3 instructions
         bl .foo__Fii
 \end{boxedverbatim}
 
-L'instruction \texttt{cror 31,31,31} est une ``non-opération'' qui ne fait 
-rien. Sa présence est cependant obligatoire (contrainte de l'éditeur de liens).
+L'instruction \texttt{cror 31,31,31} est une ``non-opÃ©ration'' qui ne fait 
+rien. Sa prÃ©sence est cependant obligatoire (contrainte de l'Ã©diteur de liens).
 
 
 En entrant dans \texttt{bar}, le registre de liens contient l'adresse
-à laquelle il faudra revenir. Le contenu de ce registre sera modifié
+Ã  laquelle il faudra revenir. Le contenu de ce registre sera modifiÃ©
 par l'appel de \texttt{foo}, il faut donc en sauver le contenu avant
 d'effectuer cet appel, et le restaurer ensuite.
 
-Pour la sauvegarde, manoeuvre en 2 temps : on transfère le registre de liens
+Pour la sauvegarde, manoeuvre en 2 temps : on transfÃ¨re le registre de liens
 dans le registre R0, que l'on sauve ensuite dans la pile.  (La restauration
-se fera de façon symétrique).
+se fera de faÃ§on symÃ©trique).
 
-Sur la pile dont le sommet est pointé par R1, la fonction
-\texttt{bar} se réserve ensuite un bloc de 56 octets~:
+Sur la pile dont le sommet est pointÃ© par R1, la fonction
+\texttt{bar} se rÃ©serve ensuite un bloc de 56 octets~:
 \begin{itemize}
-\item le contenu courant de R1 est sauvé au sommet de ce nouveau bloc
-(attention la pile croît vers le bas !)
-\item R1 est mis à jour pour pointer sur ce nouveau bloc.
+\item le contenu courant de R1 est sauvÃ© au sommet de ce nouveau bloc
+(attention la pile croÃ®t vers le bas !)
+\item R1 est mis Ã  jour pour pointer sur ce nouveau bloc.
 \end{itemize}
 
 
@@ -570,6 +572,7 @@ L..5:
 
 \end{multicols}
 
+\newpage
 \appendix
 \section{Annexe : Jeu d'instructions}
 
@@ -578,40 +581,40 @@ L..5:
 \subsection{Notations}
 
 \begin{tabular}{ll}
-$D$ & le déplacement \\
+$D$ & le dÃ©placement \\
 $CR$              & le Registre de Condition \\
 Rx              & registre entre r0 et r31 \\
-& (RT pour "Target", RS pour "Source", RA et RB pour des opérandes)  \\
+& (RT pour "Target", RS pour "Source", RA et RB pour des opÃ©randes)  \\
 $(Rx)$            & le contenu du registre Rx \\
 $(RA|0)$          & si RA=0, alors 0, sinon le contenu de RA \\
-$V, SI$           & quantité immédiate signée sur 16 bits \\
-$UI$              & quantité immédiate non signée sur 16 bits \\
-$rep(N,B)$        & champ formé de $N$ répétitions du bit $B$ \\
-$mem(A,N)$        & $N$ octets en mémoire à partir de l'adresse $A$ \\
-$A || B$          & Le champ obtenu par concaténation de $A$ et $B$ \\
+$V, SI$           & quantitÃ© immÃ©diate signÃ©e sur 16 bits \\
+$UI$              & quantitÃ© immÃ©diate non signÃ©e sur 16 bits \\
+$rep(N,B)$        & champ formÃ© de $N$ rÃ©pÃ©titions du bit $B$ \\
+$mem(A,N)$        & $N$ octets en mÃ©moire Ã  partir de l'adresse $A$ \\
+$A || B$          & Le champ obtenu par concatÃ©nation de $A$ et $B$ \\
 $exts(V)$         & la valeur $V$ avec extension de signe sur 32 bits \\
-$A\{i \ldots j\}$         & les bits d'indice $i$ à $j$ de $A$ \\
+$A\{i \ldots j\}$         & les bits d'indice $i$ Ã  $j$ de $A$ \\
 $A \leftarrow B$          & affectation \\
 \end{tabular}
 
 
-\subsection{Mouvements de données}
+\subsection{Mouvements de donnÃ©es}
 
 \subsubsection{Par octet}
 
 \begin{tableinstr}
-\titreinstr{Chargement octet et zéro} \\
+\titreinstr{Chargement octet et zÃ©ro} \\
 \definstr{lbz  RT,D(RA)}{RT \leftarrow  rep(24,0) || mem( (RA|0) + D, 1)} \\
 
-\titreinstr{Chargement octet et zéro avec mise-à-jour }  \\
+\titreinstr{Chargement octet et zÃ©ro avec mise-Ã -jour }  \\
 \definstr{lbzu  RT,D(RA)}{RT \leftarrow rep(24,0) || mem( (RA) + D, 1) ;} \\
 \definstr{}{RA \leftarrow (RA) + D} \\
 
-\titreinstr{Chargement indexé octet et zéro}   \\
+\titreinstr{Chargement indexÃ© octet et zÃ©ro}   \\
 \definstr{lbzx RT,RA,RB}{RT \leftarrow rep(24,0) || mem( (RA|0) + (RB), 1)} \\
 
 
-\titreinstr{Chargement indexé octet et zéro avec mise-à-jour } \\
+\titreinstr{Chargement indexÃ© octet et zÃ©ro avec mise-Ã -jour } \\
 
 \definstr{lbzux RT,RA,RB     }{RT \leftarrow rep(24,0) || mem( (RA) + (RB), 1)} \\
 \definstr{                   }{RA \leftarrow (RA) + (RB)} \\
@@ -619,23 +622,23 @@ $A \leftarrow B$          & affectation \\
 
 \titreinstr{Rangement octet } \\
 
-\definstr{stb  RS,D(RA)      }{mem( (RA|0) + D ,1)  \leftarrow (RS){24..31}} \\
+\definstr{stb  RS,D(RA)      }{mem( (RA|0) + D ,1)  \leftarrow (RS)\{24..31\}} \\
 
 
-\titreinstr{Rangement octet avec mise-à-jour } \\
+\titreinstr{Rangement octet avec mise-Ã -jour } \\
 
-\definstr{stbu  RS,D(RA)     }{mem( (RA) + D ,1)  \leftarrow (RS){24..31}} \\
+\definstr{stbu  RS,D(RA)     }{mem( (RA) + D ,1)  \leftarrow (RS)\{24..31\}} \\
 \definstr{                   }{RA \leftarrow (RA) + D} \\
 
 
-\titreinstr{Rangement indexé octet } \\
+\titreinstr{Rangement indexÃ© octet } \\
 
-\definstr{stbx RS,RA,RB      }{mem( (RA|0) + (RB), 1) \leftarrow (RS){24..31}} \\
+\definstr{stbx RS,RA,RB      }{mem( (RA|0) + (RB), 1) \leftarrow (RS)\{24..31\}} \\
 
 
-\titreinstr{Rangement indexé octet avec mise-à-jour } \\
+\titreinstr{Rangement indexÃ© octet avec mise-Ã -jour } \\
 
-\definstr{stbux RS,RA,RB     }{mem( (RA) + (RB), 1) \leftarrow (RS){24..31}} \\
+\definstr{stbux RS,RA,RB     }{mem( (RA) + (RB), 1) \leftarrow (RS)\{24..31\}} \\
 \definstr{                   }{RA \leftarrow (RA) + (RB)} \\
 
 \end{tableinstr}
@@ -645,44 +648,44 @@ $A \leftarrow B$          & affectation \\
 \subsubsection{Par demi-mot}
 
 \begin{tableinstr}
-\titreinstr{Chargement demi-mot et zéro } \\
-\definstr{lhz  RT,D(RA)          }{ RT \leftarrow rep(16,0) || mem( (RA|0) + D, 2) } \\
+\titreinstr{Chargement demi-mot et zÃ©ro } \\
+\definstr{lhz  RT,D(RA)          }{ RT \leftarrow rep(16,0)\ ||\ mem( (RA|0) + D, 2) } \\
 
 
-\titreinstr{Chargement demi-mot et zéro avec mise-à-jour } \\
+\titreinstr{Chargement demi-mot et zÃ©ro avec mise-Ã -jour } \\
 
-\definstr{lhzu  RT,D(RA)          }{RT \leftarrow rep(16,0) || mem( (RA) + D, 2) } \\
+\definstr{lhzu  RT,D(RA)          }{RT \leftarrow rep(16,0)\ ||\ mem( (RA) + D, 2) } \\
 \definstr{                        }{RA \leftarrow (RA) + D} \\
 
 
-\titreinstr{Chargement indexé demi-mot et zéro } \\
+\titreinstr{Chargement indexÃ© demi-mot et zÃ©ro } \\
 
 \definstr{lhzx RT,RA,RB           }{RT \leftarrow rep(16,0) || mem( (RA|0) + (RB), 2)} \\
 
 
-\titreinstr{Chargement indexé demi-mot et zéro avec mise-à-jour } \\
+\titreinstr{Chargement indexÃ© demi-mot et zÃ©ro avec mise-Ã -jour } \\
 
 \definstr{lhzux RT,RA,RB          }{RT \leftarrow rep(16,0) || mem( (RA) + (RB), 2)} \\
 \definstr{                        }{RA \leftarrow (RA) + (RB)} \\
 
 
-\titreinstr{Chargement algébrique demi-mot } \\
+\titreinstr{Chargement algÃ©brique demi-mot } \\
 
 \definstr{lha  RT,D(RA)           }{RT \leftarrow exts (mem( (RA|0) + D, 2)) } \\
 
 
-\titreinstr{Chargement algébrique demi-mot avec mise-à-jour } \\
+\titreinstr{Chargement algÃ©brique demi-mot avec mise-Ã -jour } \\
 
 \definstr{lhau  RT,D(RA)          }{RT \leftarrow exts (mem( (RA) + D, 2)) } \\
 \definstr{                        }{RA \leftarrow (RA) + D} \\
 
 
-\titreinstr{Chargement algébrique indexé demi-mot } \\
+\titreinstr{Chargement algÃ©brique indexÃ© demi-mot } \\
 
 \definstr{lhax  RT,RA,RB          }{RT \leftarrow exts (mem( (RA|0) + (RB), 2)) } \\
 
 
-\titreinstr{Chargement algébrique indexé demi-mot avec mise-à-jour } \\
+\titreinstr{Chargement algÃ©brique indexÃ© demi-mot avec mise-Ã -jour } \\
 
 \definstr{lhaux  RT,RA,RB         }{RT \leftarrow exts (mem( (RA) + (RB), 2)) } \\
 \definstr{                        }{RA \leftarrow (RA) + (RB)} \\
@@ -690,23 +693,23 @@ $A \leftarrow B$          & affectation \\
 
 \titreinstr{Rangement demi-mot } \\
 
-\definstr{sth  RS,D(RA)           }{mem( (RA|0) + D ),2)  \leftarrow (RS){16..31}} \\
+\definstr{sth  RS,D(RA)           }{mem( (RA|0) + D ),2)  \leftarrow (RS)\{16..31\}} \\
 
 
-\titreinstr{Rangement demi-mot avec mise-à-jour } \\
+\titreinstr{Rangement demi-mot avec mise-Ã -jour } \\
 
-\definstr{sthu  RS,D(RA)          }{mem( (RA) + D ),2)  \leftarrow (RS){16..31}} \\
+\definstr{sthu  RS,D(RA)          }{mem( (RA) + D ),2)  \leftarrow (RS)\{16..31\}} \\
 \definstr{                        }{RA \leftarrow (RA) + D} \\
 
 
-\titreinstr{Rangement indexé demi-mot } \\
+\titreinstr{Rangement indexÃ© demi-mot } \\
 
-\definstr{sthx RS,RA,RB           }{mem( (RA|0) + (RB), 2) \leftarrow (RS){16..31}} \\
+\definstr{sthx RS,RA,RB           }{mem( (RA|0) + (RB), 2) \leftarrow (RS)\{16..31\}} \\
 
 
-\titreinstr{Rangement indexé demi-mot avec mise-à-jour } \\
+\titreinstr{Rangement indexÃ© demi-mot avec mise-Ã -jour } \\
 
-\definstr{sthux RS,RA,RB          }{mem( (RA) + (RB), 2) \leftarrow (RS){16..31}} \\
+\definstr{sthux RS,RA,RB          }{mem( (RA) + (RB), 2) \leftarrow (RS)\{16..31\}} \\
 \definstr{                        }{RA \leftarrow (RA) + (RB)} \\
 
 \end{tableinstr}
@@ -721,18 +724,18 @@ $A \leftarrow B$          & affectation \\
 \definstr{lwz RT,D(RA)            }{RT \leftarrow mem( (RA|0) + D, 4)} \\
 
 
-\titreinstr{Chargement mot avec mise-à-jour } \\
+\titreinstr{Chargement mot avec mise-Ã -jour } \\
 
 \definstr{lwzu RT,D(RA)           }{RT \leftarrow mem( (RA) + D, 4)} \\
 \definstr{                        }{RA \leftarrow (RA) + D} \\
 
 
-\titreinstr{Chargement indexé mot } \\
+\titreinstr{Chargement indexÃ© mot } \\
 
 \definstr{lwzx RT,RA,RB           }{RT \leftarrow mem( (RA|0) + (RB), 4)} \\
 
 
-\titreinstr{Chargement indexé mot avec mise-à-jour } \\
+\titreinstr{Chargement indexÃ© mot avec mise-Ã -jour } \\
 
 \definstr{lwzux RT,RA,RB          }{RT \leftarrow mem( (RA) + (RB), 4)} \\
 \definstr{                        }{RA \leftarrow (RA) + (RB)} \\
@@ -743,18 +746,18 @@ $A \leftarrow B$          & affectation \\
 \definstr{stw  RS,D(RA)           }{mem( (RA|0) + D, 4)  \leftarrow (RS)} \\
 
                
-\titreinstr{Rangement mot avec mise-à-jour } \\
+\titreinstr{Rangement mot avec mise-Ã -jour } \\
 
 \definstr{stwu  RS,D(RA)          }{mem( (RA) + D, 4)  \leftarrow (RS)} \\
 \definstr{}{                        RA \leftarrow (RA) + D} \\
 
 
-\titreinstr{Rangement indexé mot } \\
+\titreinstr{Rangement indexÃ© mot } \\
 
 \definstr{stwx  RS,RA,RB          }{mem( (RA|0) + (RB), 4)  \leftarrow (RS) } \\
 
 
-\titreinstr{Rangement indexé mot avec mise-à-jour } \\
+\titreinstr{Rangement indexÃ© mot avec mise-Ã -jour } \\
 
 \definstr{stwux  RS,RA,RB         }{mem( (RA) + (RB), 4)  \leftarrow (RS) } \\
 \definstr{                        }{RA \leftarrow (RA) + (RB)} \\
@@ -765,32 +768,32 @@ $A \leftarrow B$          & affectation \\
 \subsubsection{Chargement de constantes}
 
 \begin{tableinstr}
-\titreinstr{Chargement immédiat } \\
+\titreinstr{Chargement immÃ©diat } \\
 
 \definstr{li      RT,V            }{RT \leftarrow exts(V)} \\
 
 
-\titreinstr{Chargement immédiat en partie haute } \\
+\titreinstr{Chargement immÃ©diat en partie haute } \\
 
 \definstr{lis     RT,V }{           RT(0..15) \leftarrow V}
 \end{tableinstr}
 
 
-En fait, ces deux instructions sont des mnémoniques étendus qui représentent respectivement
+En fait, ces deux instructions sont des mnÃ©moniques Ã©tendus qui reprÃ©sentent respectivement
 \texttt{addi    RT,0,V} et \texttt{addis   RT,0,V}
 
 
 
-\subsubsection{Mouvement de registre à registre}
+\subsubsection{Mouvement de registre Ã  registre}
 
 \begin{tableinstr}
-\titreinstr{Chargement registre général } \\
+\titreinstr{Chargement registre gÃ©nÃ©ral } \\
 
 \definstr{mr      RT,RS           }{RT \leftarrow (RS)} \\
-\definstr{}{\mbox{C'est un mnémonique étendu pour \texttt{or      RT,RS,RS}}} \\
+\definstr{}{\mbox{C'est un mnÃ©monique Ã©tendu pour \texttt{or      RT,RS,RS}}} \\
 
 
-\titreinstr{Chargement à partir du registre de lien (move from link register) } \\
+\titreinstr{Chargement Ã  partir du registre de lien (move from link register) } \\
 
 \definstr{mflr    RT              }{RT \leftarrow (LR)} \\
 
@@ -805,9 +808,9 @@ En fait, ces deux instructions sont des mnémoniques étendus qui représentent res
 \subsection{Branchements et conditions}
 
 
-BI (Bit In the CR) = numéro du bit de condition à tester (entre 0 et 31). 
+BI (Bit In the CR) = numÃ©ro du bit de condition Ã  tester (entre 0 et 31). 
 
-BO (Branch Option) = spécification du test à effectuer. Principales valeurs: 
+BO (Branch Option) = spÃ©cification du test Ã  effectuer. Principales valeurs: 
 
 \begin{itemize}
 \item       4 : branchement si faux 
@@ -848,42 +851,43 @@ BO (Branch Option) = spécification du test à effectuer. Principales valeurs:
 
 \titreinstr{Branchement au registre de lien } \\
 
-\definstr{blr}{\mbox{C'est une abréviation pour \texttt{bclr 20,0}}}
+\definstr{blr}{\mbox{C'est une abrÃ©viation pour \texttt{bclr 20,0}}} \\
 
 \titreinstr{Combinaisons de bits du registre de condition } \\
 
-\definstr{crand   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA} and CR_{BB}} \\
-\definstr{cror    BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA} or CR_{BB}} \\
-\definstr{crxor   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA} xor CR_{BB}} \\
-\definstr{crnand  BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA} nand CR_{BB}} \\
-\definstr{crnor   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA} nor CR_{BB}} \\
-\definstr{creqv   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA} eqv CR_{BB} (eqv=not xor)} \\
-\definstr{crandc  BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA} and not( CR_{BB} )} \\
-\definstr{crorc   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA} or not (CR_{BB})} \\
+\definstr{crand   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA}\ and\ CR_{BB}} \\
+\definstr{cror    BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA}\ or\ CR_{BB}} \\
+\definstr{crxor   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA}\ xor\ CR_{BB}} \\
+\definstr{crnand  BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA}\ nand\ CR_{BB}} \\
+\definstr{crnor   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA}\ nor\ CR_{BB}} \\
+\definstr{creqv   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA}\ eqv\ CR_{BB}\ (eqv=not\ xor)} \\
+\definstr{crandc  BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA}\ and\ not(CR_{BB} )} \\
+\definstr{crorc   BT,BA,BB                }{CR_{BT} \leftarrow CR_{BA}\ or\ not(CR_{BB})} \\
 \end{tableinstr}
 
 
 
-\subsection{Opérations arithmétiques et logiques}
+\subsection{OpÃ©rations arithmÃ©tiques et logiques}
 
-La notation \texttt{[.]} signifie que le mnémonique peut être
-suivi d'un point. Dans ce cas, l'opération met à jour le sous-registre
+La notation \texttt{[.]} signifie que le mnÃ©monique peut Ãªtre
+suivi d'un point. Dans ce cas, l'opÃ©ration met Ã  jour le sous-registre
 de condition CR0.
 
-\begin{tableinstr}
-\titreinstr{Opérations arithmétiques} \\
 
-\definstr{addi    RT,RA,SI                }{RT \leftarrow (RA|0) + exts(SI)} \\
-\definstr{addis   RT,RA,SI                }{RT \leftarrow (RA|0) + (SI)||rep(16,0)} \\
+\begin{tableinstr}
+\titreinstr{OpÃ©rations arithmÃ©tiques} \\
+
+\definstr{addi    RT,RA,SI                }{RT \leftarrow (RA|0)\ +\ exts(SI)} \\
+\definstr{addis   RT,RA,SI                }{RT \leftarrow (RA|0)\ +\ (SI)||rep(16,0)} \\
 \definstr{add[.]  RT,RA,RB                }{RT \leftarrow (RA)+(RB)} \\
 \definstr{subf[.] RT,RA,RB               }{ RT \leftarrow (RB)-(RA)} \\
 \definstr{neg[.]  RT,RA                  }{ RT \leftarrow -(RA)} \\
-\definstr{mulli    RT,RA,SI              }{ RT \leftarrow (RA) * exts(SI)} \\
-\definstr{mullw[.] RT,RA,RB               }{RT \leftarrow (RA) * (RB)       } \\
-\definstr{divw[.]  RT,RA,RB              }{ RT \leftarrow (RA) / (RB)} \\
+\definstr{mulli    RT,RA,SI              }{ RT \leftarrow (RA)\ *\ exts(SI)} \\
+\definstr{mullw[.] RT,RA,RB               }{RT \leftarrow (RA)\ *\ (RB)       } \\
+\definstr{divw[.]  RT,RA,RB              }{ RT \leftarrow (RA)\ /\ (RB)} \\
 \end{tableinstr}
 
-\paragraph*{Note~: } la séquence suivante permet de calculer le reste d'une division entière: 
+\paragraph*{Note~: } la sÃ©quence suivante permet de calculer le reste d'une division entiÃ¨re: 
 
 
 \begin{verbatim}
@@ -897,7 +901,7 @@ Les comparaisons positionnent les indicateurs d'un sous-registre de condition.
 \begin{tableinstr}
 \titreinstr{Comparaisons} \\
 \definstr{cmpwi   CR,RA,SI}{\mbox{comparaison de $(RA)$ et $exts(SI)$,
-                        résultat dans CR}} \\
+                        rÃ©sultat dans CR}} \\
 \definstr{cmpw    CR,RA,RB}{\mbox{comparaison de $(RA)$ et $(RB)$}} \\
 
 \end{tableinstr}
@@ -905,36 +909,36 @@ Les comparaisons positionnent les indicateurs d'un sous-registre de condition.
 
 
 \begin{tableinstr}
-\titreinstr{Opérations logiques} \\
-\definstr{andi    RA,RS,UI }{       RA \leftarrow (RS) and rep(16,0)||UI} \\
-\definstr{ori     RA,RS,UI }{       RA \leftarrow (RS) or  rep(16,0)||UI} \\
-\definstr{xori    RA,RS,UI }{       RA \leftarrow (RS) xor rep(16,0)||UI} \\
+\titreinstr{OpÃ©rations logiques} \\
+\definstr{andi    RA,RS,UI }{       RA \leftarrow (RS)\ and\ rep(16,0)||UI} \\
+\definstr{ori     RA,RS,UI }{       RA \leftarrow (RS)\ or\  rep(16,0)||UI} \\
+\definstr{xori    RA,RS,UI }{       RA \leftarrow (RS)\ xor\ rep(16,0)||UI} \\
 
-\definstr{andis   RA,RS,UI }{       RA \leftarrow (RS) and UI||rep(16,0)} \\
-\definstr{oris    RA,RS,UI }{       RA \leftarrow (RS) or  UI||rep(16,0)} \\
-\definstr{xoris   RA,RS,UI }{       RA \leftarrow (RS) xor UI||rep(16,0)} \\
+\definstr{andis   RA,RS,UI }{       RA \leftarrow (RS)\ and\ UI||rep(16,0)} \\
+\definstr{oris    RA,RS,UI }{       RA \leftarrow (RS)\ or\  UI||rep(16,0)} \\
+\definstr{xoris   RA,RS,UI }{       RA \leftarrow (RS)\ xor\ UI||rep(16,0)} \\
 
-\definstr{and[.]  RA,RS,RB }{       RA \leftarrow (RS) and  (RB)} \\
-\definstr{or[.]   RA,RS,RB }{       RA \leftarrow (RS) or   (RB)} \\
-\definstr{xor[.]  RA,RS,RB }{       RA \leftarrow (RS) xor  (RB)} \\
-\definstr{nand[.] RA,RS,RB }{       RA \leftarrow (RS) nand (RB)} \\
-\definstr{nor[.]  RA,RS,RB }{       RA \leftarrow (RS) nor  (RB)} \\
-\definstr{eqv[.]  RA,RS,RB }{       RA \leftarrow (RS) eqv  (RB) (eqv=not xor)} \\
-\definstr{andc[.] RA,RS,RB }{       RA \leftarrow (RS) and not(RB)} \\
-\definstr{orc[.]  RA,RS,RB }{       RA \leftarrow (RS) or  not(RB)} \\
+\definstr{and[.]  RA,RS,RB }{       RA \leftarrow (RS)\ and\  (RB)} \\
+\definstr{or[.]   RA,RS,RB }{       RA \leftarrow (RS)\ or\   (RB)} \\
+\definstr{xor[.]  RA,RS,RB }{       RA \leftarrow (RS)\ xor\  (RB)} \\
+\definstr{nand[.] RA,RS,RB }{       RA \leftarrow (RS)\ nand\ (RB)} \\
+\definstr{nor[.]  RA,RS,RB }{       RA \leftarrow (RS)\ nor\  (RB)} \\
+\definstr{eqv[.]  RA,RS,RB }{       RA \leftarrow (RS)\ eqv\  (RB) (eqv=not xor)} \\
+\definstr{andc[.] RA,RS,RB }{       RA \leftarrow (RS)\ and\ not(RB)} \\
+\definstr{orc[.]  RA,RS,RB }{       RA \leftarrow (RS)\ or\  not(RB)} \\
 
 \titreinstr{Extension de signe} \\
 
-\definstr{extsb[.] RA,RS }{         RA \leftarrow exts( RS{24..31} )} \\
-\definstr{extsh[.] RA,RS }{         RA \leftarrow exts( RS{16..31} )} \\
+\definstr{extsb[.] RA,RS }{         RA \leftarrow exts( RS\{24..31\} )} \\
+\definstr{extsh[.] RA,RS }{         RA \leftarrow exts( RS\{16..31\} )} \\
 
-\titreinstr{Décalages} \\
+\titreinstr{DÃ©calages} \\
 
 \definstr{slw[.]  RA,RS,RB}{        RA \leftarrow (RS) << (RB)} \\
 \definstr{srw[.]  RA,RS,RN}{        RA \leftarrow (RS) >> (RB)} \\
-\definstr{sraw[.] RA,RS,RB}{        RA \leftarrow exts( RS{0..31-(RB)} )  } \\
-\definstr{}{   \mbox{    (décalage algébrique)}} \\
-\definstr{srawi[.] RA,RS,SI}{       RA \leftarrow exts( RS{0..31-SI} )  } \\
+\definstr{sraw[.] RA,RS,RB}{        RA \leftarrow exts( RS\{0..31-(RB)\} )  } \\
+\definstr{}{   \mbox{    (dÃ©calage algÃ©brique)}} \\
+\definstr{srawi[.] RA,RS,SI}{       RA \leftarrow exts( RS\{0..31-SI\} )  } \\
 \end{tableinstr}
 
 
