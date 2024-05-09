@@ -190,22 +190,21 @@ courant. La sortie S est donc ramené à 0v par la résistance de rappel.
 Si une des entrées est à +V et l'autre à la masse, la diode passante
 suffit, comme dans le premier cas, à amener la tension +V sur S.
 
-#### Table de vérité
+#### Table de vérité de l'opérateur OU
 
 Si nous prenons la convention de logique positive, la tension +V
 correspond à la valeur logique "vrai" (notée 1) et 0v à "faux" (0). La
 table de vérité de l'opération "$+$" ainsi obtenue est celle de
-l'opérateur "OU logique":
-$$\begin{array}{|cc|c|}
-\hline
-A & B & A+B \\
-\hline
-0 & 0 & 0 \\
-0 & 1 & 1 \\
-1 & 0 & 1 \\
-1 & 1 & 1 \\
-\hline
-\end{array}$$
+l'opérateur "OU logique": $
+
+| $A$ | $B$ | $A+B$ |
+|---|---|-----|
+| 0 | 0 | 0   |
+| 0 | 1 | 1   |
+| 1 | 0 | 1   |
+| 1 | 1 | 1   |
+
+
 
 La sortie est à 1 si au moins une des entrées est à 1.
 
@@ -246,19 +245,18 @@ une des entrées est à 0, la sortie sera donc également à 0. Par contre
 si les deux entrées sont à +V, la sortie S sera à +V au travers de la
 résistance de rappel.
 
-#### Table de vérité
+#### Table de vérité de l'opérateur ET
 
 L'opération logique "ET" (noté "$\cdot$") correspondant à ce montage
-possède donc la table de vérité suivante: $$\begin{array}{|cc|c|}
-\hline
-A & B & A \cdot B \\
-\hline
-0 & 0 & 0 \\
-0 & 1 & 0 \\
-1 & 0 & 0 \\
-1 & 1 & 1 \\
-\hline
-\end{array}$$
+possède donc la table de vérité suivante:
+
+
+| $A$ | $B$ | $A \cdot B$ |
+|---|---|-------------|
+| 0 | 0 | 0           |
+| 0 | 1 | 0           |
+| 1 | 0 | 0           |
+| 1 | 1 | 1           |
 
 La sortie est à 1 si les deux entrées sont à 1.
 
@@ -293,17 +291,16 @@ très faible du transistor : la sortie S est au niveau bas.
 Lorsque l'entrée est au niveau bas, le transistor est bloqué. La
 résistance de rappel ramène donc la sortie au niveau haut.
 
-#### Table de vérité
+#### Table de vérité  de l'opérateur NON
 
 La table de l'opérateur NON "$\neg$" ainsi obtenu est
-$$\begin{array}{|c|c|}
-\hline
-A & \neg A \\
-\hline
-0& 1 \\
-1& 0 \\
-\hline
-\end{array}$$ La sortie est à 1 si et seulement si l'entrée est à 0.
+
+| $A$ | $\neg A$ |
+|-----|----------|
+| 0   | 1        |
+| 1   | 0        |
+
+La sortie est à 1 si et seulement si l'entrée est à 0.
 
 On symbolise cet opérateur (figure
 [\[log10\]](#log10){reference-type="ref" reference="log10"}) par un
@@ -318,18 +315,16 @@ triangle (indiquant par convention l'amplification) suivi d'un rond
 
 Le montage de la figure [\[log9\]](#log9){reference-type="ref"
 reference="log9"} réalise une fonction dont la table de vérité est:
-$$\begin{array}{|cc|c|}
-\hline
-A & B & S\\
-\hline
-0 & 0 & 1 \\
-0 & 1 & 1 \\
-1 & 0 & 1 \\
-1 & 1 & 0 \\
-\hline
-\end{array}$$
 
-On remarque aisément que l'on a $S = \overline{A.B}$, et on appelle cet
+| $A$ | $B$ | $S$ |
+|-----|-----|-----|
+| 0   | 0   | 1   |
+| 0   | 1   | 1   |
+| 1   | 0   | 1   |
+| 1   | 1   | 0   |
+
+
+On remarque aisément que l'on a $S = \neg(A.B)$, et on appelle cet
 opérateur le NON-ET (ou "nand").
 
 > **Exercice** Donnez un schéma de cet opérateur utilisant 2 diodes, une
@@ -344,21 +339,21 @@ reference="log11"}).
 La porte NAND a un intérêt pratique évident: elle permet de reconstituer
 tous les autres types de portes.
 
--   La porte NON, puisque $\overline{A}= A \ nand\ 1$
+-   La porte NON, puisque $\neg A = A \ nand\ 1$
 
--   La porte ET, puisque $A . B = \overline{(A \ nand\ B)} =
+-   La porte ET, puisque $A . B = \neg(A \ nand\ B) =
      (A \ nand\ B) \ nand\ 1$
 
--   La porte OU, puisque $A + B = \overline{\overline{A}.\overline{B}}$
+-   La porte OU, puisque $A + B = \neg(\neg{A} \cdot \neg{B})$
     et donc $A+B= ((A \ nand\ 1) \ nand\ (B \ nand\ 1)) \ nand\ 1$.
 
 ### Porte NON-OU (NOR)
 
 La fonction "non-ou" (symbolisée fig.
 [\[log14\]](#log14){reference-type="ref" reference="log14"}) est définie
-de la même façon, par l'équation $$nor(A,B) = \overline{A + B}$$
+de la même façon, par l'équation $$nor(A,B) = \neg(A + B)$$
 
-![Symbole de la porte NOR
+  * [ ] ![Symbole de la porte NOR
 (non-ou)[]{label="log14"}](../Png/log14.png)
 
 > **Exercice** Proposez une porte NOR à transistors.
@@ -368,7 +363,7 @@ de la même façon, par l'équation $$nor(A,B) = \overline{A + B}$$
 La fonction XOR "ou-exclusif" (fig.
 [\[log15\]](#log15){reference-type="ref" reference="log15"}) est souvent
 notée $\oplus$. On la définit par:
-$$A \oplus B = \overline{A}B +A\overline{B}$$
+$$A \oplus B = (\neg{A} \cdot B) + (A \cdot\neg{B})$$
 
 ![Symbole de la porte XOR
 (ou-exclusif)[]{label="log15"}](../Png/log15.png)
